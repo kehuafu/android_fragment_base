@@ -9,12 +9,21 @@ import androidx.viewbinding.ViewBinding
 import com.example.mvr.core.container.IContainer
 import com.example.mvr.core.container.inject.injectVB
 import com.example.mvr.core.container.inject.injectVM
+import com.example.mvr.core.fragment.RouterController
 import com.example.mvr.core.mvvm.BaseViewModel
 import com.example.mvr.core.redux.IState
 import com.example.mvr.core.viewbinding.IViewBinding
 
 abstract class BaseFragment<VB : ViewBinding, VM : BaseViewModel<State>, State : IState> :
     Fragment(), IContainer, IViewBinding {
+
+
+    /**
+     * 获取baseActivity方便调用navigation方法进行页面切换
+     */
+    protected val baseActivity by lazy {
+        requireActivity() as BaseActivity<*, *, *>
+    }
 
     protected val viewModel: VM by lazy {
         return@lazy injectVM(this.javaClass)
@@ -51,13 +60,17 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseViewModel<State>, State :
         // 3.extra check
         checkArgs()
         // 4.view created
-        onViewCreated()
+        onViewCreated(savedInstanceState)
         // 5.subscribe state changed
         viewModel.subscribe(lifecycleOwner = this, subscriber = { state: State ->
             onStateChanged(state)
         })
         // 6.load dataSource
         onLoadDataSource()
+    }
+
+    override fun frameLayoutId(): Int {
+        return -1
     }
 
     override fun onInflateArgs(arguments: Bundle) {

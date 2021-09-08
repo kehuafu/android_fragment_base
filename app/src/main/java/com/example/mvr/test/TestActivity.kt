@@ -1,6 +1,7 @@
 package com.example.mvr.test
 
 import android.annotation.SuppressLint
+import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -9,6 +10,8 @@ import com.example.mvr.test.mvr.TestViewModel
 import com.example.mvr.core.container.base.BaseActivity
 import com.example.mvr.core.container.base.adapter.BaseRecyclerViewAdapterV2
 import com.example.mvr.core.container.widget.toast.showToast
+import com.example.mvr.core.fragment.constant.NavMode
+import com.example.mvr.core.fragment.constant.Router
 import com.example.mvr.databinding.ActivityTestBinding
 import com.example.mvr.test.adapter.TestListAdapter
 import com.example.mvr.test.bean.Token
@@ -28,7 +31,7 @@ class TestActivity : BaseActivity<ActivityTestBinding, TestViewModel, TestState>
     private var mTestListAdapter = TestListAdapter()
     private val data = mutableListOf<Token>()
 
-    override fun onViewCreated() {
+    override fun onViewCreated(savedInstanceState: Bundle?) {
         mTestListAdapter.setOnItemClickListener(this)
         withViewBinding {
             rvTest.itemAnimator = null
@@ -72,5 +75,9 @@ class TestActivity : BaseActivity<ActivityTestBinding, TestViewModel, TestState>
 
     override fun onItemClick(itemView: View, item: Token, position: Int) {
         showToast("点击了$position")
+    }
+
+    override fun navigation(name: Router, bundle: Bundle?, navMode: NavMode) {
+        TODO("Not yet implemented")
     }
 }

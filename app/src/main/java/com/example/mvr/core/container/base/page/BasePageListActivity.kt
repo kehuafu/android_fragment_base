@@ -1,5 +1,6 @@
 package com.example.mvr.core.container.base.page
 
+import android.os.Bundle
 import androidx.viewbinding.ViewBinding
 import com.example.mvr.core.container.base.BaseActivity
 import com.example.mvr.core.mvvm.BasePageListViewModel
@@ -30,7 +31,7 @@ abstract class BasePageListActivity<T, VM : BasePageListViewModel<T>, VB : ViewB
     override fun onRefreshing() {
     }
 
-    override fun onViewCreated() {
+    override fun onViewCreated(savedInstanceState: Bundle?) {
         refreshLayout?.setSuperRefreshLayoutListener(this)
     }
 

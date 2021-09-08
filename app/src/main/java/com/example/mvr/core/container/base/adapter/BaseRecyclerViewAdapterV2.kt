@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import androidx.viewbinding.ViewBinding
-import com.example.mvr.core.ktx.viewBindings
 import com.example.mvr.core.viewbinding.IViewBinding
 
 /**

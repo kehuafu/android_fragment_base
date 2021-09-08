@@ -18,13 +18,18 @@
         android:theme="@style/Theme.Mvr"
         tools:targetApi="n">
         <activity
-            android:name=".test.TestActivity"
+            android:name=".use.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".test.TestActivity"
+            android:exported="true">
+
         </activity>
     </application>
 

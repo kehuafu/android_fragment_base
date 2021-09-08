@@ -20,9 +20,9 @@ inline fun <reified VB : ViewBinding> View.viewBindings(view: View? = null): Bas
 }
 
 @MainThread
-inline fun <reified VB : ViewBinding> Fragment.viewBindings(): BaseViewBindingDelegate<Fragment, VB> {
+inline fun <reified VB : ViewBinding> Fragment.viewBindings(view: View? = null): BaseViewBindingDelegate<Fragment, VB> {
     val viewViewBindingDelegate: BaseViewBindingDelegate<Fragment, VB> =
-        BaseViewBindingDelegate(VB::class.java)
+        BaseViewBindingDelegate(VB::class.java, this)
     lifecycle.addObserver(viewViewBindingDelegate)
     return viewViewBindingDelegate
 }

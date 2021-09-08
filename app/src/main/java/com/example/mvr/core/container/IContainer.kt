@@ -7,11 +7,13 @@ import android.view.ViewGroup
 
 interface IContainer {
 
+    fun frameLayoutId(): Int
+
     fun onInflateArgs(arguments: Bundle)
 
     fun onInflateLayout(inflater: LayoutInflater, parent: ViewGroup?, attachToRoot: Boolean): View
 
-    fun onViewCreated()
+    fun onViewCreated(savedInstanceState: Bundle?)
 
     fun onLoadDataSource()
 
