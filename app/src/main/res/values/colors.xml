@@ -8,7 +8,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="tab_selected">#1E77FF</color>
-    <color name="tab_default">#808080</color>
+    <color name="tab_selected">#07C160</color>
+    <color name="tab_default">#333333</color>
+    <color name="tab_background">#f5f6f7</color>
     <color name="background">#FFFFFFFF</color>
+    <color name="message_space_line">#ffececec</color>
 </resources>

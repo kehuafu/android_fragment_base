@@ -14,8 +14,8 @@ import com.example.demo.databinding.FragmentMainBinding
 import com.example.demo.databinding.ItemTabMainBinding
 import com.example.demo.use.mvvm.MainState
 import com.example.demo.use.mvvm.MainViewModel
-import com.example.demo.use.tab.CircleFragment
-import com.example.demo.use.tab.HomeFragment
+import com.example.demo.use.tab.MailListFragment
+import com.example.demo.use.tab.MessageFragment
 import com.example.demo.use.tab.MineFragment
 import com.kehuafu.base.core.container.base.BaseFragment
 import com.kehuafu.base.core.container.widget.toast.showToast
@@ -29,11 +29,11 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>
         private const val TAG = "MainFragment"
     }
 
-    private val tabTexts = arrayOf("首页", "圈子", "我的")
+    private val tabTexts = arrayOf("微信", "通讯录", "我")
     private val tabDrawable = intArrayOf(
-        R.drawable.tab_recommend_selected,
-        R.drawable.tab_circle_selected,
-        R.drawable.tab_profile_selected,
+        R.drawable.message_icon,
+        R.drawable.mail_list_icon,
+        R.drawable.mine_icon,
     )
 
     private val itemTab by viewBindings<ItemTabMainBinding>()
@@ -50,22 +50,21 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>
         //获取MainActivity传过来的值
         val arg = arguments?.get("key")
         Log.d(TAG, "onViewCreated: $arg")
-        initTestView()
         setTabView(savedInstanceState)
         initViewPager()
     }
 
     override fun onStateChanged(state: MainState) {
         super.onStateChanged(state)
-        itemTab.tvTabName.text = state.token.uid
+//        itemTab.tvTabName.text = state.token.uid
     }
 
     private fun initTestView() {
-        itemTab.tvTabName.text = "点击试试"
-        itemTab.tvTabName.setOnClickListener {
-            showToast("哈哈哈哈")
-            viewModel.main("uid9999", "token")
-        }
+//        itemTab.tvTabName.text = "点击试试"
+//        itemTab.tvTabName.setOnClickListener {
+//            showToast("哈哈哈哈")
+//            viewModel.main("uid9999", "token")
+//        }
     }
 
     private fun initViewPager() {
@@ -80,10 +79,10 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>
             override fun getItem(position: Int): Fragment {
                 return when (position) {
                     0 -> {
-                        HomeFragment.newInstance()
+                        MessageFragment.newInstance()
                     }
                     1 -> {
-                        CircleFragment.newInstance()
+                        MailListFragment.newInstance()
                     }
                     2 -> {
                         MineFragment.newInstance()
@@ -118,6 +117,7 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>
                 val txtTab = tabView.findViewById<TextView>(R.id.tv_tab_name)
                 imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.tab_selected))
                 txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.tab_selected))
+                viewBinding.title.text = tabTexts[position]
             }
 
             override fun onTabUnselected(tabView: View, position: Int) {
