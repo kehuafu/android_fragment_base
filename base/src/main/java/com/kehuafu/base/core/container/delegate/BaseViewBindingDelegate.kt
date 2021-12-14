@@ -68,7 +68,7 @@ class BaseViewBindingDelegate<ContainerContext, VB : ViewBinding>(
                         }
                     }
                     is View -> {
-                        method.invoke(null, layoutInflater, null, false) as VB
+                        method.invoke(null, layoutInflater, context, false) as VB//null--->context解决问题
                     }
                     else -> {
                         throw  InterruptedException(" context=$context is not a fragment")
