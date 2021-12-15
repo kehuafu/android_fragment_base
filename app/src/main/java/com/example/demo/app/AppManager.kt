@@ -1,5 +1,6 @@
 package com.example.demo.app
 
+import android.app.Application
 import android.content.Context
 import com.blankj.utilcode.util.Utils
 import com.kehuafu.base.core.container.widget.toast.setup
@@ -20,6 +21,6 @@ object AppManager {
 
     fun registerAppService(context: Context) {
         setup(context)
-        Utils.init(context)
+        Utils.init(context as Application)
     }
 }

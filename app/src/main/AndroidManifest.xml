@@ -18,18 +18,14 @@
         android:theme="@style/Theme.Mvr"
         tools:targetApi="n">
         <activity
-            android:name="com.example.demo.use.MainActivity"
-            android:exported="true">
+            android:name="com.example.demo.main.MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="stateVisible|adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity
-            android:name="com.example.demo.test.TestActivity"
-            android:exported="true">
-
         </activity>
     </application>
 

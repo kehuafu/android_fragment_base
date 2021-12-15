@@ -4,14 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/tab_background">
+    android:background="@color/tab_nav_background">
 
     <TextView
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/viewpager"
-        android:background="@color/tab_background"
+        android:background="@color/tab_nav_background"
         android:gravity="center"
         android:padding="8dp"
         android:text="微信"
@@ -41,7 +41,7 @@
         android:id="@+id/tab"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="@color/tab_background"
+        android:background="@color/tab_nav_background"
         android:clipChildren="false"
         app:layout_constraintBottom_toTopOf="@+id/line_bottom" />
 

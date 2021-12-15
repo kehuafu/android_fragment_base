@@ -15,6 +15,7 @@
         <!-- Customize your theme here. -->
         <!-- 隐藏标题栏 -->
         <item name="android:windowNoTitle">true</item>
-        <item name="android:navigationBarColor">@color/tab_background</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+        <item name="android:navigationBarColor">@color/tab_nav_background</item>
     </style>
 </resources>

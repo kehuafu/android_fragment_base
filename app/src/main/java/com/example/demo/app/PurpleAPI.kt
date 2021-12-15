@@ -2,8 +2,7 @@
 
 package com.example.demo.app
 
-import com.example.demo.test.bean.Token
-import com.example.demo.test.body.TestBody
+import com.example.demo.fragment.message.bean.Message
 import retrofit2.http.Body
 import retrofit2.http.POST
 
@@ -19,6 +18,6 @@ import retrofit2.http.POST
 interface PurpleAPI {
 
     @POST("auth/test")
-    suspend fun test(@Body testBody: TestBody): Token
+    suspend fun test(@Body message: Message): Message
 
 }
