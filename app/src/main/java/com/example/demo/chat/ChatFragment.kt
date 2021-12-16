@@ -3,31 +3,43 @@ package com.example.demo.chat
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.animation.AccelerateInterpolator
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.blankj.utilcode.util.BarUtils
 import com.blankj.utilcode.util.KeyboardUtils
+import com.example.demo.chat.adapter.ChatListAdapter
 import com.example.demo.utils.GestureFrameLayout
 import com.example.demo.utils.GestureFrameLayoutCallBack
 import com.example.demo.databinding.FragmentChatBinding
 import com.example.demo.databinding.LayChatInputViewBinding
+import com.example.demo.fragment.message.bean.Message
+import com.example.demo.fragment.message.mvvm.MessageViewModel
 import com.example.demo.main.mvvm.MainState
 import com.example.demo.main.mvvm.MainViewModel
 import com.example.demo.utils.HeightProvider
 import com.kehuafu.base.core.container.base.BaseFragment
+import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV2
 import com.kehuafu.base.core.container.widget.toast.showToast
 import com.kehuafu.base.core.ktx.viewBindings
 
-class ChatFragment : BaseFragment<FragmentChatBinding, MainViewModel, MainState>() {
+class ChatFragment :
+    BaseFragment<FragmentChatBinding, MessageViewModel, MessageViewModel.MessageState>(),
+    BaseRecyclerViewAdapterV2.OnItemClickListener<Message> {
 
 
     private var heightProvider: HeightProvider? = null
 
 //    private val mLayChatInputViewBinding by viewBindings<LayChatInputViewBinding>() XXX
+
+    private var mChatListAdapter = ChatListAdapter()
 
     @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onViewCreated(savedInstanceState: Bundle?) {
@@ -47,10 +59,17 @@ class ChatFragment : BaseFragment<FragmentChatBinding, MainViewModel, MainState>
         }
         heightProvider!!.setHeightListener {
             if (it.toFloat() > 0f) {
-                startTranslateY(viewBinding.chatInputRl.root, -it.toFloat())
+                viewBinding.chatRv.stopScroll()
+//                startTranslateY(viewBinding.chatInputRl.root, -it.toFloat())
+                viewBinding.chatInput.root.translationY = -it.toFloat()
+//                (viewBinding.chatRv.layoutManager as LinearLayoutManager)
+//                    .scrollToPositionWithOffset(mChatListAdapter.itemCount - 1, Integer.MIN_VALUE)
+                viewBinding.chatRv.scrollToPosition(0)
+                viewBinding.chatRv.translationY = -it.toFloat()
                 return@setHeightListener
             }
-            viewBinding.chatInputRl.root.translationY = -it.toFloat()
+            viewBinding.chatInput.root.translationY = -it.toFloat()
+            viewBinding.chatRv.translationY = -it.toFloat()
         }
 
         withViewBinding {
@@ -82,11 +101,32 @@ class ChatFragment : BaseFragment<FragmentChatBinding, MainViewModel, MainState>
                     viewBinding.chatInputRl.ivNavMore.visibility = View.GONE
                 }
             }
+            mChatListAdapter.setOnItemClickListener(this@ChatFragment)
+            chatRv.itemAnimator = null
+            chatRv.layoutManager = LinearLayoutManager(baseActivity)
+            (chatRv.layoutManager as LinearLayoutManager).reverseLayout = true//列表翻转
+//            (chatRv.layoutManager as LinearLayoutManager).stackFromEnd = true//列表在底部开始展示，反转后由上面开始展示
+            chatRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    super.onScrollStateChanged(recyclerView, newState)
+                    Log.e("@@", "滑动")
+                    if (heightProvider!!.isSoftInputVisible) {
+                        KeyboardUtils.hideSoftInput(requireView())
+                    }
+                }
+            })
         }
     }
 
     override fun onLoadDataSource() {
         super.onLoadDataSource()
+        viewModel.getMessage("123456")
+    }
+
+    override fun onStateChanged(state: MessageViewModel.MessageState) {
+        super.onStateChanged(state)
+        viewBinding.chatRv.adapter = mChatListAdapter
+        mChatListAdapter.resetItems(state.messageList)
     }
 
     /**
@@ -116,5 +156,11 @@ class ChatFragment : BaseFragment<FragmentChatBinding, MainViewModel, MainState>
     override fun onDestroy() {
         super.onDestroy()
         Log.e("@@", "ChatFragment--->onDestroy")
+    }
+
+    override fun onItemClick(itemView: View, item: Message, position: Int) {
+//        if (heightProvider!!.isSoftInputVisible) {
+//            KeyboardUtils.hideSoftInput(requireView())
+//        }
     }
 }

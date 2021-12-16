@@ -36,7 +36,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
 
 
             val messageList = mutableListOf<Message>()
-            for (i in 0..8) {
+            for (i in 0..100) {
                 val message = Message(
                     mid = i.toString(),
                     uid = uid,

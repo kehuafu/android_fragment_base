@@ -36,22 +36,48 @@
                     android:layout_width="match_parent"
                     android:layout_height="50dp" />
 
-                <FrameLayout
-                    android:id="@+id/frame_layout"
+                <androidx.core.widget.NestedScrollView
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="1"
-                    app:layout_constraintBottom_toTopOf="@+id/chat_input_rl"
+                    android:fillViewport="true"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/nav"
                     app:layout_constraintVertical_weight="1">
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/chat_rv"
+                    <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null" />
+                        android:layout_height="match_parent">
 
-                </FrameLayout>
+                        <LinearLayout
+                            android:id="@+id/frame_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:orientation="vertical"
+                            app:layout_constraintBottom_toTopOf="@+id/chat_input_rl"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintVertical_weight="1">
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/chat_rv"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" />
+
+
+                        </LinearLayout>
+
+                        <include
+                            android:id="@+id/chat_input_rl"
+                            layout="@layout/lay_chat_input_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:visibility="invisible"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            tools:visibility="invisible" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+                </androidx.core.widget.NestedScrollView>
 
                 <!--                <com.example.demo.chat.widget.ChatInputView-->
                 <!--                    android:id="@+id/chat_input_rl"-->
@@ -61,12 +87,11 @@
                 <!--                    app:layout_constraintTop_toBottomOf="@+id/frame_layout" />-->
 
                 <include
-                    android:id="@+id/chat_input_rl"
+                    android:id="@+id/chat_input"
                     layout="@layout/lay_chat_input_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/frame_layout" />
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </FrameLayout>
