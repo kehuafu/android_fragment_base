@@ -35,8 +35,6 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>
         R.drawable.mine_icon,
     )
 
-    private val itemTab by viewBindings<ItemTabMainBinding>()
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt(

@@ -14,4 +14,5 @@
     <color name="background">#FFFFFFFF</color>
     <color name="message_space_line">#ffececec</color>
     <color name="text_color">#515151</color>
+    <color name="text_color_pressed">#8007C160</color>
 </resources>

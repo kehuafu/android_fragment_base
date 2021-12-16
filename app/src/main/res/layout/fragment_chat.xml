@@ -1,118 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
-
+    android:orientation="vertical">
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitXY"
-            android:src="@drawable/chat_bg" />
-
-    </FrameLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <include
-            android:id="@+id/nav"
-            layout="@layout/lay_nav_bar"
-            android:layout_width="match_parent"
-            android:layout_height="50dp" />
-
         <FrameLayout
-            android:id="@+id/frame_layout"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            app:layout_constraintBottom_toTopOf="@+id/line_bottom"
-            app:layout_constraintTop_toBottomOf="@+id/nav"
-            app:layout_constraintVertical_weight="1">
+            android:layout_height="match_parent">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/chat_rv"
+            <ImageView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                android:src="@drawable/chat_bg" />
 
         </FrameLayout>
 
-        <View
-            android:id="@+id/line_bottom"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/message_space_line"
-            app:layout_constraintBottom_toTopOf="@+id/chat_input_rl"
-            app:layout_constraintTop_toBottomOf="@+id/frame_layout" />
+            android:layout_height="match_parent">
 
-        <LinearLayout
-            android:id="@+id/chat_input_rl"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/tab_nav_background"
-            android:gravity="bottom"
-            android:maxHeight="120dp"
-            android:orientation="horizontal"
-            android:padding="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/line_bottom">
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-            <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_margin="6dp"
-                android:src="@drawable/voice_icon" />
+                <include
+                    android:id="@+id/nav"
+                    layout="@layout/lay_nav_bar"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp" />
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/shape_radius_4">
+                <FrameLayout
+                    android:id="@+id/frame_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    app:layout_constraintBottom_toTopOf="@+id/chat_input_rl"
+                    app:layout_constraintTop_toBottomOf="@+id/nav"
+                    app:layout_constraintVertical_weight="1">
 
-                <EditText
-                    android:id="@+id/input_et"
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/chat_rv"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@null" />
+
+                </FrameLayout>
+
+                <!--                <com.example.demo.chat.widget.ChatInputView-->
+                <!--                    android:id="@+id/chat_input_rl"-->
+                <!--                    android:layout_width="match_parent"-->
+                <!--                    android:layout_height="wrap_content"-->
+                <!--                    app:layout_constraintBottom_toBottomOf="parent"-->
+                <!--                    app:layout_constraintTop_toBottomOf="@+id/frame_layout" />-->
+
+                <include
+                    android:id="@+id/chat_input_rl"
+                    layout="@layout/lay_chat_input_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@null"
-                    android:gravity="start|center_vertical"
-                    android:maxHeight="120dp"
-                    android:minHeight="40dp"
-                    android:padding="6dp"
-                    android:textSize="16sp" />
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/frame_layout" />
 
-            </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </FrameLayout>
 
-            <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="6dp"
-                android:layout_marginEnd="3dp"
-                android:layout_marginBottom="6dp"
-                android:padding="3dp"
-                android:src="@drawable/expression_icon" />
+    </FrameLayout>
 
-            <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_marginStart="3dp"
-                android:layout_marginTop="6dp"
-                android:layout_marginEnd="6dp"
-                android:layout_marginBottom="6dp"
-                android:src="@drawable/file_icon" />
-
-        </LinearLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-</FrameLayout>
+</LinearLayout>
 
 
