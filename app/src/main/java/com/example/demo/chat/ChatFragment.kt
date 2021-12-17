@@ -3,36 +3,25 @@ package com.example.demo.chat
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
-import androidx.recyclerview.widget.SimpleItemAnimator
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.blankj.utilcode.util.BarUtils
 import com.blankj.utilcode.util.KeyboardUtils
 import com.example.demo.R
 import com.example.demo.chat.adapter.ChatListAdapter
-import com.example.demo.utils.GestureFrameLayout
-import com.example.demo.utils.GestureFrameLayoutCallBack
 import com.example.demo.databinding.FragmentChatBinding
-import com.example.demo.databinding.LayChatInputViewBinding
 import com.example.demo.fragment.message.bean.Message
 import com.example.demo.fragment.message.mvvm.MessageViewModel
-import com.example.demo.main.mvvm.MainState
-import com.example.demo.main.mvvm.MainViewModel
 import com.example.demo.utils.HeightProvider
 import com.kehuafu.base.core.container.base.BaseFragment
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV2
 import com.kehuafu.base.core.container.widget.toast.showToast
-import com.kehuafu.base.core.ktx.viewBindings
 
 class ChatFragment :
     BaseFragment<FragmentChatBinding, MessageViewModel, MessageViewModel.MessageState>(),
@@ -64,11 +53,12 @@ class ChatFragment :
                 viewBinding.chatRv.stopScroll()
                 startTranslateY(viewBinding.chatInputRl.root, -it.toFloat())
                 viewBinding.chatRv.scrollToPosition(0)
-                viewBinding.chatRv.translationY = -it.toFloat()
+                viewBinding.frameLayout.translationY = -it.toFloat()
+                viewBinding.chatInputRl.etMsg.requestFocus()
                 return@setHeightListener
             }
             viewBinding.chatInputRl.root.translationY = -it.toFloat()
-            viewBinding.chatRv.translationY = -it.toFloat()
+            viewBinding.frameLayout.translationY = -it.toFloat()
         }
 
         withViewBinding {
@@ -79,12 +69,40 @@ class ChatFragment :
             chatInputRl.ivVoice.setOnClickListener {
                 if (chatInputRl.etMsg.isVisible) {
                     showToast("切换语音模式")
-
+                    if (heightProvider!!.isSoftInputVisible) {
+                        KeyboardUtils.hideSoftInput(requireView())
+                    }
+                    chatInputRl.ivVoice.setPadding(6, 6, 6, 6)
+                    chatInputRl.ivVoice.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            requireContext(),
+                            R.drawable.keyboard
+                        )
+                    )
                 } else {
                     showToast("切换文本模式")
+                    if (!heightProvider!!.isSoftInputVisible) {
+                        KeyboardUtils.showSoftInput(requireView())
+                    }
+                    chatInputRl.ivVoice.setPadding(0, 0, 0, 0)
+                    chatInputRl.ivVoice.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            requireContext(),
+                            R.drawable.voice_icon
+                        )
+                    )
                 }
                 chatInputRl.etMsg.isVisible = !chatInputRl.etMsg.isVisible
                 chatInputRl.tvVoice.isVisible = !chatInputRl.etMsg.isVisible
+            }
+            chatInputRl.ivExpression.setOnClickListener {
+                showToast("显示我的表情包")
+                chatInputRl.ivExpression.setImageDrawable(
+                    ContextCompat.getDrawable(
+                        requireContext(),
+                        R.drawable.keyboard
+                    )
+                )
             }
             chatInputRl.btnSendMsg.setOnClickListener {
                 showToast("发送成功")
