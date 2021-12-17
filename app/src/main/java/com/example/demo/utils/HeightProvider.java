@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
 import com.blankj.utilcode.util.BarUtils;
+import com.blankj.utilcode.util.ScreenUtils;
 
 public class HeightProvider extends PopupWindow implements ViewTreeObserver.OnGlobalLayoutListener {
     private Activity mActivity;
@@ -72,9 +73,12 @@ public class HeightProvider extends PopupWindow implements ViewTreeObserver.OnGl
         int keyboardHeight = heightMax - rect.bottom;
         Log.e("@@", "heightMax-->" + heightMax);
         Log.e("@@", "bottom-->" + rect.bottom);
+        Log.e("@@", "keyboardHeight-->" + keyboardHeight);
         if (listener != null) {
             if (BarUtils.getNavBarHeight() == keyboardHeight) {
                 heightMax = heightMax - BarUtils.getNavBarHeight();
+                return;
+            } else if (keyboardHeight > rect.bottom + 300) {
                 return;
             }
             listener.onHeightChanged(keyboardHeight);

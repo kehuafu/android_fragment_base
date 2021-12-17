@@ -60,7 +60,9 @@
                             <androidx.recyclerview.widget.RecyclerView
                                 android:id="@+id/chat_rv"
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent" />
+                                android:layout_height="match_parent"
+                                android:overScrollMode="never"
+                                android:scrollbars="none" />
 
 
                         </LinearLayout>
@@ -70,28 +72,20 @@
                             layout="@layout/lay_chat_input_view"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:visibility="invisible"
                             app:layout_constraintBottom_toBottomOf="parent"
-                            tools:visibility="invisible" />
+                            tools:visibility="visible" />
+
+                        <!--                        <com.example.demo.chat.widget.ChatInputView-->
+                        <!--                            android:id="@+id/chat_input_rl"-->
+                        <!--                            android:layout_width="match_parent"-->
+                        <!--                            android:layout_height="wrap_content"-->
+                        <!--                            app:layout_constraintBottom_toBottomOf="parent"-->
+                        <!--                            app:layout_constraintTop_toBottomOf="@+id/frame_layout" />-->
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
                 </androidx.core.widget.NestedScrollView>
-
-                <!--                <com.example.demo.chat.widget.ChatInputView-->
-                <!--                    android:id="@+id/chat_input_rl"-->
-                <!--                    android:layout_width="match_parent"-->
-                <!--                    android:layout_height="wrap_content"-->
-                <!--                    app:layout_constraintBottom_toBottomOf="parent"-->
-                <!--                    app:layout_constraintTop_toBottomOf="@+id/frame_layout" />-->
-
-                <include
-                    android:id="@+id/chat_input"
-                    layout="@layout/lay_chat_input_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintBottom_toBottomOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </FrameLayout>

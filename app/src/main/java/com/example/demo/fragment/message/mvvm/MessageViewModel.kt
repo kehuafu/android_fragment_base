@@ -36,7 +36,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
 
 
             val messageList = mutableListOf<Message>()
-            for (i in 0..100) {
+            for (i in 0..20) {
                 val message = Message(
                     mid = i.toString(),
                     uid = uid,
@@ -44,7 +44,8 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                     avatar = "",
                     messageContent = "消息内容",
                     messageType = 0,
-                    messageTime = "16:37:45"
+                    messageTime = "16:37:45",
+                    messageSender = i % 2 == 0
                 )
                 messageList.add(message)
             }
@@ -52,6 +53,11 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
 //            val token = AppManager.apiService.test(testBody = TestBody(uid = uid, token = token))
             dispatch(MessageAction.Success(messageList = messageList))
         }
+    }
+
+    fun sendMsg(text: String, messageList: MutableList<Message>) {
+        messageList.add(0, Message(messageContent = text, messageSender = true))
+        dispatch(MessageAction.Success(messageList = messageList))
     }
 
     sealed class MessageAction : Action {

@@ -5,9 +5,14 @@
       <map>
         <entry key="..\:/android_fragment_base/mvr/app/src/main/res/layout/fragment_main.xml" value="0.22135416666666666" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.23333333333333334" />
+        <entry key="..\:/flutter/android_fragment_base/app/src/main/res/drawable/chat_msg_bg_radius_4.xml" value="0.1828125" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/drawable/ic_launcher_background.xml" value="0.23333333333333334" />
+        <entry key="..\:/flutter/android_fragment_base/app/src/main/res/drawable/input_selector_radius_4.xml" value="0.22083333333333333" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/drawable/input_shape_radius_4.xml" value="0.23802083333333332" />
+        <entry key="..\:/flutter/android_fragment_base/app/src/main/res/drawable/shape_left_triangle.xml" value="0.1828125" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/drawable/shape_radius_4.xml" value="0.3764102564102564" />
+        <entry key="..\:/flutter/android_fragment_base/app/src/main/res/drawable/shape_reverse_triangle.xml" value="0.22083333333333333" />
+        <entry key="..\:/flutter/android_fragment_base/app/src/main/res/drawable/shape_right_triangle.xml" value="0.22083333333333333" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout-v23/lay_chat_input_view.xml" value="0.2171875" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/activity_main.xml" value="0.36614583333333334" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/activity_test.xml" value="0.22135416666666666" />
@@ -18,7 +23,8 @@
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/fragment_message.xml" value="0.22135416666666666" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/fragment_mine.xml" value="0.36614583333333334" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/item_tab_main.xml" value="0.36614583333333334" />
-        <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/lay_chat_input_view.xml" value="0.21979166666666666" />
+        <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/lay_chat_input_view.xml" value="0.2046875" />
+        <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/lay_item_chat_msg.xml" value="0.16666666666666666" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/lay_item_message.xml" value="0.3605128205128205" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/lay_item_test.xml" value="0.19947916666666668" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/lay_nav_bar.xml" value="0.36614583333333334" />

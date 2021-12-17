@@ -8,13 +8,17 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
+import androidx.recyclerview.widget.SimpleItemAnimator
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.blankj.utilcode.util.BarUtils
 import com.blankj.utilcode.util.KeyboardUtils
+import com.example.demo.R
 import com.example.demo.chat.adapter.ChatListAdapter
 import com.example.demo.utils.GestureFrameLayout
 import com.example.demo.utils.GestureFrameLayoutCallBack
@@ -41,6 +45,8 @@ class ChatFragment :
 
     private var mChatListAdapter = ChatListAdapter()
 
+    private var mChatMsgList = mutableListOf<Message>()
+
     @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onViewCreated(savedInstanceState: Bundle?) {
         val arg = arguments?.getString("mid")
@@ -53,26 +59,20 @@ class ChatFragment :
                 KeyboardUtils.hideSoftInput(requireView())
             }
         }
-
-        withViewBinding {
-            nav.titleTv.text = "消息ID:$arg"
-        }
         heightProvider!!.setHeightListener {
             if (it.toFloat() > 0f) {
                 viewBinding.chatRv.stopScroll()
-//                startTranslateY(viewBinding.chatInputRl.root, -it.toFloat())
-                viewBinding.chatInput.root.translationY = -it.toFloat()
-//                (viewBinding.chatRv.layoutManager as LinearLayoutManager)
-//                    .scrollToPositionWithOffset(mChatListAdapter.itemCount - 1, Integer.MIN_VALUE)
+                startTranslateY(viewBinding.chatInputRl.root, -it.toFloat())
                 viewBinding.chatRv.scrollToPosition(0)
                 viewBinding.chatRv.translationY = -it.toFloat()
                 return@setHeightListener
             }
-            viewBinding.chatInput.root.translationY = -it.toFloat()
+            viewBinding.chatInputRl.root.translationY = -it.toFloat()
             viewBinding.chatRv.translationY = -it.toFloat()
         }
 
         withViewBinding {
+            nav.titleTv.text = "消息ID:$arg"
             chatInputRl.root.setOnTouchListener { v, event ->
                 true
             }
@@ -89,6 +89,7 @@ class ChatFragment :
             chatInputRl.btnSendMsg.setOnClickListener {
                 showToast("发送成功")
                 withViewBinding {
+                    viewModel.sendMsg(chatInputRl.etMsg.text.toString(), mChatMsgList)
                     chatInputRl.etMsg.text.clear()
                 }
             }
@@ -102,10 +103,10 @@ class ChatFragment :
                 }
             }
             mChatListAdapter.setOnItemClickListener(this@ChatFragment)
+            viewBinding.chatRv.adapter = mChatListAdapter
             chatRv.itemAnimator = null
             chatRv.layoutManager = LinearLayoutManager(baseActivity)
             (chatRv.layoutManager as LinearLayoutManager).reverseLayout = true//列表翻转
-//            (chatRv.layoutManager as LinearLayoutManager).stackFromEnd = true//列表在底部开始展示，反转后由上面开始展示
             chatRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                     super.onScrollStateChanged(recyclerView, newState)
@@ -125,8 +126,9 @@ class ChatFragment :
 
     override fun onStateChanged(state: MessageViewModel.MessageState) {
         super.onStateChanged(state)
-        viewBinding.chatRv.adapter = mChatListAdapter
         mChatListAdapter.resetItems(state.messageList)
+        Log.d("@@", "有新消息！" + state.messageList.size)
+        mChatMsgList = state.messageList
     }
 
     /**
@@ -143,7 +145,7 @@ class ChatFragment :
 
         animatorSet.play(translateYAnimator).after(alphaAnimator)
         animatorSet.duration = 80
-        animatorSet.interpolator = AccelerateInterpolator()
+        animatorSet.interpolator = DecelerateInterpolator()
         animatorSet.start()
     }
 
@@ -151,16 +153,31 @@ class ChatFragment :
     override fun onPause() {
         super.onPause()
         KeyboardUtils.hideSoftInput(requireView())
+        if (heightProvider!!.isSoftInputVisible) {
+            KeyboardUtils.hideSoftInput(requireView())
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.e("@@", "ChatFragment--->onDestroy")
+        if (heightProvider!!.isSoftInputVisible) {
+            KeyboardUtils.hideSoftInput(requireView())
+        }
     }
 
-    override fun onItemClick(itemView: View, item: Message, position: Int) {
-//        if (heightProvider!!.isSoftInputVisible) {
-//            KeyboardUtils.hideSoftInput(requireView())
-//        }
+    override fun onItemClick(itemView: View, item: Message, position: Int?) {
+        when (itemView.id) {
+            R.id.left_message_avatar, R.id.right_message_avatar -> {
+                showToast("头像")
+            }
+            R.id.left_msg_text, R.id.right_msg_text -> {
+                showToast("文本")
+            }
+            else -> {
+                if (heightProvider!!.isSoftInputVisible) {
+                    KeyboardUtils.hideSoftInput(requireView())
+                }
+            }
+        }
     }
 }

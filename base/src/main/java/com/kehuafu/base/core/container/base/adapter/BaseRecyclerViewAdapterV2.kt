@@ -29,7 +29,7 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
 
     val mItems: MutableList<Item> = mutableListOf()
 
-    private var mOnItemClickListener: OnItemClickListener<Item>? = null
+    protected var mOnItemClickListener: OnItemClickListener<Item>? = null
 
     private var mOnCreateEmptyViewHolderCallback: OnCreateEmptyViewHolderCallback? = null
 
@@ -71,6 +71,7 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
                 mOnCreateEmptyViewHolderCallback?.onBindEmptyViewHolder(holder, position)
             }
             else -> {
+                if (mItems.isEmpty()) return
                 val item = mItems[position]
                 holder.setOnItemClickListener(mOnItemClickListener)
                 holder.setState(item)
@@ -79,11 +80,12 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (getRealItemCount() == 0) {
-            EMPTY_TYPE
-        } else {
-            super.getItemViewType(position)
-        }
+//        return if (getRealItemCount() == 0) {
+//            EMPTY_TYPE
+//        } else {
+//            super.getItemViewType(position)
+//        }
+        return super.getItemViewType(position)
     }
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
@@ -139,7 +141,7 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
     }
 
     interface OnItemClickListener<Item> {
-        fun onItemClick(itemView: View, item: Item, position: Int)
+        fun onItemClick(itemView: View, item: Item, position: Int? = 0)
     }
 
     interface OnItemLongClickListener<Item> : OnItemClickListener<Item> {

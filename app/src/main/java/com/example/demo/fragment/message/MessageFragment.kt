@@ -51,7 +51,7 @@ class MessageFragment :
         mMessageListAdapter.resetItems(state.messageList)
     }
 
-    override fun onItemClick(itemView: View, item: Message, position: Int) {
+    override fun onItemClick(itemView: View, item: Message, position: Int?) {
         val args = Bundle()
         args.putString("mid", item.mid)
         baseActivity.navigation(Router.CHAT_FRAGMENT, args)
