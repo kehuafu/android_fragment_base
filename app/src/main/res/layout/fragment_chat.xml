@@ -12,13 +12,15 @@
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="@color/tab_nav_background">
 
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="fitXY"
-                android:src="@drawable/chat_bg" />
+                android:src="@drawable/chat_bg"
+                android:visibility="invisible" />
 
         </FrameLayout>
 
@@ -28,7 +30,9 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:focusable="true"
+                android:focusableInTouchMode="true">
 
                 <include
                     android:id="@+id/nav"
@@ -37,10 +41,11 @@
                     android:layout_height="50dp" />
 
                 <androidx.core.widget.NestedScrollView
+                    android:id="@+id/ns_view"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:fillViewport="true"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintBottom_toTopOf="@+id/chat_input_rl"
                     app:layout_constraintTop_toBottomOf="@+id/nav"
                     app:layout_constraintVertical_weight="1">
 
@@ -53,7 +58,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="0dp"
                             android:orientation="vertical"
-                            app:layout_constraintBottom_toTopOf="@+id/chat_input_rl"
+                            app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintVertical_weight="1">
 
@@ -67,13 +72,13 @@
 
                         </LinearLayout>
 
-                        <include
-                            android:id="@+id/chat_input_rl"
-                            layout="@layout/lay_chat_input_view"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            tools:visibility="visible" />
+                        <!--                        <include-->
+                        <!--                            android:id="@+id/chat_input_rl"-->
+                        <!--                            layout="@layout/lay_chat_input_view"-->
+                        <!--                            android:layout_width="match_parent"-->
+                        <!--                            android:layout_height="wrap_content"-->
+                        <!--                            app:layout_constraintBottom_toBottomOf="parent"-->
+                        <!--                            tools:visibility="visible" />-->
 
                         <!--                        <com.example.demo.chat.widget.ChatInputView-->
                         <!--                            android:id="@+id/chat_input_rl"-->
@@ -86,6 +91,16 @@
 
 
                 </androidx.core.widget.NestedScrollView>
+
+
+                <include
+                    android:id="@+id/chat_input_rl"
+                    layout="@layout/lay_chat_input_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/ns_view"
+                    tools:visibility="visible" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </FrameLayout>

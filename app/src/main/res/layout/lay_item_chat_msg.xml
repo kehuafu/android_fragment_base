@@ -41,6 +41,7 @@
                 android:id="@+id/left_msg_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:autoLink="all"
                 android:background="@drawable/shape_radius_4"
                 android:gravity="top"
                 android:maxWidth="250dp"
@@ -49,6 +50,7 @@
                 息内容消息内容消息内容消息内容消息内容消息内容
                 息内容消息内容消息内容消息内容消息内容消息内容"
                 android:textColor="@color/chat_text_color"
+                android:textColorLink="@color/chat_link_text_color"
                 android:textSize="16sp"
                 tools:ignore="HardcodedText" />
 
@@ -77,6 +79,7 @@
                 android:id="@+id/right_msg_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:autoLink="all"
                 android:background="@drawable/chat_msg_bg_radius_4"
                 android:gravity="top"
                 android:maxWidth="250dp"
@@ -85,6 +88,7 @@
                 息内容消息内容消息内容消息内容消息内容消息内容
                 息内容消息内容消息内容消息内容消息内容消息内容"
                 android:textColor="@color/chat_text_color"
+                android:textColorLink="@color/chat_link_text_color"
                 android:textSize="16sp"
                 tools:ignore="HardcodedText" />
 
