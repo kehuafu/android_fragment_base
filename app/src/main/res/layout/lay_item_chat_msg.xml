@@ -63,7 +63,6 @@
         android:id="@+id/layout_right_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
         android:gravity="top"
         android:orientation="horizontal"
         app:layout_constraintRight_toRightOf="parent"

@@ -3,10 +3,8 @@ package com.example.demo.chat.adapter
 import android.annotation.SuppressLint
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import com.example.demo.databinding.LayItemChatMsgBinding
-import com.example.demo.databinding.LayItemMessageBinding
-import com.example.demo.fragment.message.bean.Message
+import com.example.demo.chat.bean.Message
 import com.kehuafu.base.core.container.base.adapter.BaseListAdapter
 import com.kehuafu.base.core.ktx.viewBindings
 

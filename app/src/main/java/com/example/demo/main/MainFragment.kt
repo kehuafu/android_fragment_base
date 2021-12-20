@@ -1,7 +1,6 @@
 package com.example.demo.main
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
@@ -10,19 +9,22 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import com.example.demo.R
+import com.example.demo.app.AppManager
 import com.example.demo.databinding.FragmentMainBinding
-import com.example.demo.databinding.ItemTabMainBinding
 import com.example.demo.main.mvvm.MainState
 import com.example.demo.main.mvvm.MainViewModel
 import com.example.demo.fragment.mail.MailListFragment
-import com.example.demo.fragment.message.MessageFragment
+import com.example.demo.fragment.conversation.ConversationFragment
 import com.example.demo.fragment.mine.MineFragment
+import com.example.demo.utils.GenerateTestUserSig
 import com.kehuafu.base.core.container.base.BaseFragment
+import com.kehuafu.base.core.container.widget.toast.showToast
 import com.kehuafu.base.core.fragment.widget.TabLayout
-import com.kehuafu.base.core.ktx.viewBindings
+import com.tencent.imsdk.v2.V2TIMCallback
+import com.tencent.imsdk.v2.V2TIMSDKListener
 import java.lang.IndexOutOfBoundsException
 
-class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>() {
+class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>(), V2TIMCallback {
 
     companion object {
         private const val TAG = "MainFragment"
@@ -44,24 +46,31 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>
     }
 
     override fun onViewCreated(savedInstanceState: Bundle?) {
-        //获取MainActivity传过来的值
-        val arg = arguments?.get("key")
-        Log.d(TAG, "onViewCreated: $arg")
         setTabView(savedInstanceState)
         initViewPager()
     }
 
-    override fun onStateChanged(state: MainState) {
-        super.onStateChanged(state)
-//        itemTab.tvTabName.text = state.token.uid
+    override fun onLoadDataSource() {
+        super.onLoadDataSource()
+        AppManager.iCloudImManager.login(
+            AppManager.currentUserID,
+            GenerateTestUserSig.genTestUserSig(AppManager.currentUserID),
+            this
+        )
+        AppManager.iCloudImManager.addIMSDKListener(object : V2TIMSDKListener() {
+            override fun onKickedOffline() {
+                super.onKickedOffline()
+                //TODO:当前用户被踢下线，此时可以 UI 提示用户，并再次调用 V2TIMManager 的 login() 函数重新登录。
+                showToast("当前用户被踢下线")
+            }
+        })
     }
 
-    private fun initTestView() {
-//        itemTab.tvTabName.text = "点击试试"
-//        itemTab.tvTabName.setOnClickListener {
-//            showToast("哈哈哈哈")
-//            viewModel.main("uid9999", "token")
-//        }
+    override fun onDestroy() {
+        super.onDestroy()
+        AppManager.iCloudImManager.removeIMSDKListener(object : V2TIMSDKListener() {
+        })
+        AppManager.iCloudImManager.logout(this)
     }
 
     private fun initViewPager() {
@@ -76,7 +85,7 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>
             override fun getItem(position: Int): Fragment {
                 return when (position) {
                     0 -> {
-                        MessageFragment.newInstance()
+                        ConversationFragment.newInstance()
                     }
                     1 -> {
                         MailListFragment.newInstance()
@@ -125,5 +134,13 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>
             }
         })
         tab.selectTab(savedInstanceState?.getInt("MAIN_CURRENT_POSITION") ?: 0)
+    }
+
+    override fun onSuccess() {
+        showToast("IM 登录成功！")
+    }
+
+    override fun onError(p0: Int, p1: String?) {
+        showToast("IM 登录失败！-->$p1")
     }
 }

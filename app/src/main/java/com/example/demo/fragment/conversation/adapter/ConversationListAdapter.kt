@@ -1,8 +1,8 @@
-package com.example.demo.fragment.message.adapter
+package com.example.demo.fragment.conversation.adapter
 
 import android.view.ViewGroup
 import com.example.demo.databinding.LayItemMessageBinding
-import com.example.demo.fragment.message.bean.Message
+import com.example.demo.chat.bean.Message
 import com.kehuafu.base.core.container.base.adapter.BaseListAdapter
 import com.kehuafu.base.core.ktx.viewBindings
 
@@ -13,7 +13,7 @@ import com.kehuafu.base.core.ktx.viewBindings
  * 3.初始化->①设置状态监听，②属性委托对应的VB
  * 4.UI状态绑定->当数据的state变化时，对应的UI跟随状态改变
  */
-class MessageListAdapter : BaseListAdapter<Message, LayItemMessageBinding>() {
+class ConversationListAdapter : BaseListAdapter<Message, LayItemMessageBinding>() {
 
     /**
      * 初始化适配器

@@ -2,7 +2,7 @@
 
 package com.example.demo.app
 
-import com.example.demo.fragment.message.bean.Message
+import com.example.demo.chat.bean.Message
 import retrofit2.http.Body
 import retrofit2.http.POST
 
@@ -18,6 +18,6 @@ import retrofit2.http.POST
 interface PurpleAPI {
 
     @POST("auth/test")
-    suspend fun test(@Body message: Message): Message
+    suspend fun test(@Body conversation: Message): Message
 
 }

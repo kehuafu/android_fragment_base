@@ -11,6 +11,7 @@ import android.widget.Checkable
 import androidx.annotation.ColorRes
 import androidx.annotation.StringRes
 import androidx.annotation.StyleableRes
+import androidx.fragment.app.Fragment
 import com.kehuafu.base.core.container.widget.toast.showToast
 import kotlin.math.roundToInt
 

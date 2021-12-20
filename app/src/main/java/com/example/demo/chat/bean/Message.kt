@@ -1,4 +1,4 @@
-package com.example.demo.fragment.message.bean
+package com.example.demo.chat.bean
 
 import com.kehuafu.base.core.redux.IState
 

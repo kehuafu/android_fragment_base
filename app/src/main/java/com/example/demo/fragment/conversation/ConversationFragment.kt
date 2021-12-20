@@ -1,4 +1,4 @@
-package com.example.demo.fragment.message
+package com.example.demo.fragment.conversation
 
 import android.os.Bundle
 import android.util.Log
@@ -7,29 +7,28 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.demo.app.Router
 import com.example.demo.databinding.FragmentMessageBinding
 import com.example.demo.databinding.ItemTabMainBinding
-import com.example.demo.fragment.message.adapter.MessageListAdapter
-import com.example.demo.fragment.message.bean.Message
-import com.example.demo.fragment.message.mvvm.MessageViewModel
+import com.example.demo.fragment.conversation.adapter.ConversationListAdapter
+import com.example.demo.chat.bean.Message
+import com.example.demo.fragment.conversation.mvvm.MessageViewModel
 import com.kehuafu.base.core.container.base.BaseFragment
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV2
-import com.kehuafu.base.core.container.widget.toast.showToast
 import com.kehuafu.base.core.ktx.viewBindings
 
 
-class MessageFragment :
+class ConversationFragment :
     BaseFragment<FragmentMessageBinding, MessageViewModel, MessageViewModel.MessageState>(),
     BaseRecyclerViewAdapterV2.OnItemClickListener<Message> {
 
     companion object {
         @JvmStatic
-        fun newInstance(): MessageFragment {
-            return MessageFragment()
+        fun newInstance(): ConversationFragment {
+            return ConversationFragment()
         }
     }
 
     private val itemTab by viewBindings<ItemTabMainBinding>()
 
-    private var mMessageListAdapter = MessageListAdapter()
+    private var mMessageListAdapter = ConversationListAdapter()
 
     override fun onViewCreated(savedInstanceState: Bundle?) {
         mMessageListAdapter.setOnItemClickListener(this)
@@ -41,19 +40,24 @@ class MessageFragment :
 
     override fun onLoadDataSource() {
         super.onLoadDataSource()
-        viewModel.getMessage("123456")
+        viewModel.getConversationList()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.getConversationList()
     }
 
     override fun onStateChanged(state: MessageViewModel.MessageState) {
         super.onStateChanged(state)
-        Log.e("@@", "messageList--->" + state.messageList.size)
+        Log.e("@@", "onStateChanged:messageList--->" + state.conversationList.size)
         viewBinding.messageList.adapter = mMessageListAdapter
-        mMessageListAdapter.resetItems(state.messageList)
+        mMessageListAdapter.resetItems(state.conversationList)
     }
 
     override fun onItemClick(itemView: View, item: Message, position: Int?) {
         val args = Bundle()
-        args.putString("mid", item.mid)
+        args.putString("name", item.name)
         baseActivity.navigation(Router.CHAT_FRAGMENT, args)
     }
 }
