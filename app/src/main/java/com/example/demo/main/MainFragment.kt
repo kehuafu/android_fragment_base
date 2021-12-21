@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import com.example.demo.R
 import com.example.demo.app.AppManager
+import com.example.demo.common.receiver.event.LocalLifecycleEvent
 import com.example.demo.databinding.FragmentMainBinding
 import com.example.demo.main.mvvm.MainState
 import com.example.demo.main.mvvm.MainViewModel
@@ -20,8 +21,7 @@ import com.example.demo.utils.GenerateTestUserSig
 import com.kehuafu.base.core.container.base.BaseFragment
 import com.kehuafu.base.core.container.widget.toast.showToast
 import com.kehuafu.base.core.fragment.widget.TabLayout
-import com.tencent.imsdk.v2.V2TIMCallback
-import com.tencent.imsdk.v2.V2TIMSDKListener
+import com.tencent.imsdk.v2.*
 import java.lang.IndexOutOfBoundsException
 
 class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>(), V2TIMCallback {
@@ -64,12 +64,57 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>
                 showToast("当前用户被踢下线")
             }
         })
+        AppManager.iCloudConversationManager.addConversationListener(object :
+            V2TIMConversationListener() {
+            override fun onNewConversation(conversationList: MutableList<V2TIMConversation>?) {
+                super.onNewConversation(conversationList)
+                showToast("有新的会话列表")
+                AppManager.localEventLifecycleViewModel.postLifecycleEvent(
+                    LocalLifecycleEvent.ReceivedNewConversationEvent(
+                        conversationList!!
+                    )
+                )
+            }
+
+            override fun onConversationChanged(conversationList: MutableList<V2TIMConversation>?) {
+                super.onConversationChanged(conversationList)
+//                showToast("会话列表有更新")
+                AppManager.localEventLifecycleViewModel.postLifecycleEvent(
+                    LocalLifecycleEvent.ReceivedConversationChangedEvent(
+                        conversationList!!
+                    )
+                )
+            }
+
+            override fun onTotalUnreadMessageCountChanged(totalUnreadCount: Long) {
+                super.onTotalUnreadMessageCountChanged(totalUnreadCount)
+//                showToast("会话未读-->$totalUnreadCount")
+            }
+        })
+        AppManager.iCloudMessageManager.addAdvancedMsgListener(object : V2TIMAdvancedMsgListener() {
+            override fun onRecvNewMessage(msg: V2TIMMessage?) {
+                super.onRecvNewMessage(msg)
+//                showToast("收到新的消息")
+                AppManager.localEventLifecycleViewModel.postLifecycleEvent(
+                    LocalLifecycleEvent.ReceivedChatMsgEvent(
+                        msg!!
+                    )
+                )
+            }
+
+            override fun onRecvMessageRevoked(msgID: String?) {
+                super.onRecvMessageRevoked(msgID)
+                showToast("消息已被撤回！")
+            }
+        })
     }
 
     override fun onDestroy() {
         super.onDestroy()
         AppManager.iCloudImManager.removeIMSDKListener(object : V2TIMSDKListener() {
         })
+        AppManager.iCloudConversationManager.removeConversationListener(object :
+            V2TIMConversationListener() {})
         AppManager.iCloudImManager.logout(this)
     }
 

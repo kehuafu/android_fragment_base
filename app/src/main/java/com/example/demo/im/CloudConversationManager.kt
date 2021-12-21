@@ -60,4 +60,12 @@ class CloudConversationManager private constructor() : ICloudConversationManager
     override fun getTotalUnreadMessageCount(callback: V2TIMValueCallback<Long>) {
         TODO("Not yet implemented")
     }
+
+    override fun addConversationListener(listener: V2TIMConversationListener) {
+        V2TIMManager.getConversationManager().addConversationListener(listener)
+    }
+
+    override fun removeConversationListener(listener: V2TIMConversationListener) {
+        V2TIMManager.getConversationManager().removeConversationListener(listener)
+    }
 }

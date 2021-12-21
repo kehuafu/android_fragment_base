@@ -1,11 +1,13 @@
 package com.example.demo.fragment.conversation.mvvm
 
 import android.util.Log
+import com.blankj.utilcode.constant.TimeConstants
 import com.blankj.utilcode.util.TimeUtils
 import com.example.demo.app.AppManager
 import com.kehuafu.base.core.container.widget.toast.showToast
 import com.example.demo.base.BaseRequestViewModel
 import com.example.demo.chat.bean.Message
+import com.example.demo.fragment.conversation.bean.Conversation
 import com.kehuafu.base.core.ktx.asyncCall
 import com.kehuafu.base.core.ktx.runOnMainThread
 import com.kehuafu.base.core.redux.Action
@@ -71,6 +73,8 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
             val messageList = mutableListOf<Message>()
             val messages = AppManager.iCloudMessageManager.getC2CHistoryMessageList(uid)
             if (messages != null) {
+                var lastTemp = TimeUtils.getNowMills()
+                var showTemp: Boolean
                 for (msg in messages) {
                     val message = Message(
                         mid = msg.msgID,
@@ -79,9 +83,18 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                         avatar = msg.faceUrl,
                         messageContent = msg.textElem.text,
                         messageType = 0,
-                        messageTime = TimeUtils.date2String(TimeUtils.millis2Date(msg.timestamp)),
-                        messageSender = msg.sender == AppManager.currentUserID
+                        messageTime = TimeUtils.date2String(TimeUtils.millis2Date(msg.timestamp * 1000)),
+                        messageSender = msg.sender == AppManager.currentUserID,
+                        showTime = lastTemp - TimeUtils.getMillis(
+                            msg.timestamp * 1000,
+                            60 * 5L,
+                            TimeConstants.SEC
+                        ) >= 60 * 5L
                     )
+                    showTemp = message.showTime!!
+                    if (showTemp) {
+                        lastTemp = msg.timestamp * 1000
+                    }
                     messageList.add(message)
                 }
             }
@@ -95,17 +108,11 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
         httpAsyncCall({
             showToast(it.errorMsg)
         }) {
-            val messageList = mutableListOf<Message>()
+            val conList = mutableListOf<Conversation>()
             val conversationList =
                 AppManager.iCloudConversationManager.getConversationList(0, 100, null)
-            Log.e("@@", "conversationList---->" + conversationList.size)
-
             for (conversation in conversationList) {
-                Log.d(
-                    "@@",
-                    "ggggggg-->" + TimeUtils.millis2String(conversation.lastMessage.timestamp * 1000)
-                )
-                val message = Message(
+                val message = Conversation(
                     mid = conversation.conversationID,
                     uid = "",
                     name = conversation.showName,
@@ -113,28 +120,27 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                     messageContent = conversation.lastMessage.textElem.text,
                     messageType = 0,
                     messageTime = TimeUtils.date2String(TimeUtils.millis2Date(conversation.lastMessage.timestamp * 1000)),
-                    messageSender = conversation.userID == AppManager.currentUserID
+                    messageSender = conversation.userID == AppManager.currentUserID,
+                    messageUnreadCount = conversation.unreadCount
                 )
-                messageList.add(message)
+                conList.add(message)
             }
-            //请求后台数据
-//            val token = AppManager.apiService.test(testBody = TestBody(uid = uid, token = token))
-            dispatch(MessageAction.Success(conversationList = messageList))
+            dispatch(MessageAction.Success(conversationList = conList))
         }
     }
 
-    fun sendMsg(text: String, conversationList: MutableList<Message>) {
-        conversationList.add(0, Message(messageContent = text, messageSender = true))
+    fun sendMsg(text: String, conversationList: MutableList<Conversation>) {
+        conversationList.add(0, Conversation(messageContent = text, messageSender = true))
         dispatch(MessageAction.Success(conversationList = conversationList))
     }
 
     sealed class MessageAction : Action {
-        class Success(val conversationList: MutableList<Message>) : MessageAction()
+        class Success(val conversationList: MutableList<Conversation>) : MessageAction()
         class C2CHistoryMessageList(val messageList: MutableList<Message>) : MessageAction()
     }
 
     data class MessageState(
-        val conversationList: MutableList<Message>,
+        val conversationList: MutableList<Conversation>,
         val messageList: MutableList<Message>
     ) : IState {
 

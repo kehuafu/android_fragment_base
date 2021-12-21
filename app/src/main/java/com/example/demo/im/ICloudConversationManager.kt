@@ -14,4 +14,8 @@ interface ICloudConversationManager {
     fun deleteConversation(conversationID: String, callback: V2TIMCallback)
 
     fun getTotalUnreadMessageCount(callback: V2TIMValueCallback<Long>)
+
+    fun addConversationListener(listener: V2TIMConversationListener)
+
+    fun removeConversationListener(listener: V2TIMConversationListener)
 }

@@ -3,6 +3,7 @@ package com.example.demo.chat.adapter
 import android.annotation.SuppressLint
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import com.example.demo.databinding.LayItemChatMsgBinding
 import com.example.demo.chat.bean.Message
 import com.kehuafu.base.core.container.base.adapter.BaseListAdapter
@@ -52,5 +53,7 @@ class ChatListAdapter : BaseListAdapter<Message, LayItemChatMsgBinding>() {
             viewBinding.layoutRightText.visibility = View.GONE
             viewBinding.leftMsgText.text = item.messageContent
         }
+        viewBinding.tvTime.isVisible = item.showTime!!
+        viewBinding.tvTime.text = item.messageTime
     }
 }

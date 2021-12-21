@@ -35,7 +35,7 @@ interface ICloudMessageManager {
 
     fun revokeMessage(msg: V2TIMMessage, callback: V2TIMCallback)
 
-    fun markC2CMessageAsRead(userID: String, callback: V2TIMCallback)
+    fun markC2CMessageAsRead(userID: String, callback: V2TIMCallback? = null)
 
     fun markGroupMessageAsRead(groupID: String, callback: V2TIMCallback)
 
@@ -45,5 +45,5 @@ interface ICloudMessageManager {
 
     fun removeAdvancedMsgListener(listener: V2TIMAdvancedMsgListener)
 
-    suspend fun getC2CHistoryMessageList(userID: String, ): List<V2TIMMessage>?
+    suspend fun getC2CHistoryMessageList(userID: String): List<V2TIMMessage>?
 }

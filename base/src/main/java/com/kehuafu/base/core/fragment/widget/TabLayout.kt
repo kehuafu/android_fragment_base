@@ -22,6 +22,10 @@ import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.animation.AnimationUtils
 import kotlin.math.roundToInt
+import android.R.attr.bitmap
+import androidx.core.content.ContextCompat
+import com.kehuafu.base.R
+
 
 class TabLayout @JvmOverloads constructor(
     context: Context,
@@ -62,7 +66,20 @@ class TabLayout @JvmOverloads constructor(
     private var pagerAdapter: PagerAdapter? = null
 
     private var mod = MODE.FIXED
+
+    private var mPiant: Paint? = null
+    private var mTextPiant: Paint? = null //画文字的笔
+    private var rate = 6 //圆和正方形的比例
+    private var square_color = 0//正方形的颜色
+    private var circle_color = 0
+    private var text_color = 0
+    private var isShow = false//是否显示圆圈消息
+    private var text: String? = null
+
     init {
+        mPiant = Paint(Paint.ANTI_ALIAS_FLAG)
+        mTextPiant = Paint(Paint.ANTI_ALIAS_FLAG)
+
         isHorizontalScrollBarEnabled = false
         isFillViewport = true  //使子布局match_parent属性生效
 
@@ -83,6 +100,29 @@ class TabLayout @JvmOverloads constructor(
             val position = tabView.tag as Int
             selectTab(position)
         }
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+
+//        val w = width.coerceAtMost(height).toFloat()
+//        val h = width.coerceAtMost(height).toFloat()
+//
+//        val rect1 = Rect()
+//        //如果需要展示图标
+//        drawCircle(canvas, w, h)//画圆圈
+//        drawText(canvas, w, h, rect1)//画文本
+    }
+
+    private fun drawText(canvas: Canvas, r: Float, c: Float, rect1: Rect) {
+        val x = c - rect1.centerX();
+        val y = r - rect1.centerY();
+        canvas.drawText("99+", x, y, mTextPiant!!)
+    }
+
+    private fun drawCircle(canvas: Canvas, r: Float, c: Float) {
+        mPiant!!.color = Color.RED
+        canvas.drawCircle(c, r, 30f, mPiant!!)
     }
 
     fun removeAllTabs() {

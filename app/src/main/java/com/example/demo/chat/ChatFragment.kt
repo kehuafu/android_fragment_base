@@ -12,11 +12,16 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.blankj.utilcode.constant.TimeConstants
 import com.blankj.utilcode.util.KeyboardUtils
+import com.blankj.utilcode.util.TimeUtils
 import com.example.demo.R
+import com.example.demo.app.AppManager
 import com.example.demo.chat.adapter.ChatListAdapter
 import com.example.demo.databinding.FragmentChatBinding
 import com.example.demo.chat.bean.Message
+import com.example.demo.common.receiver.LocalEventLifecycleViewModel
+import com.example.demo.common.receiver.event.LocalLifecycleEvent
 import com.example.demo.fragment.conversation.mvvm.MessageViewModel
 import com.example.demo.utils.HeightProvider
 import com.kehuafu.base.core.container.base.BaseFragment
@@ -26,7 +31,8 @@ import java.util.*
 
 class ChatFragment :
     BaseFragment<FragmentChatBinding, MessageViewModel, MessageViewModel.MessageState>(),
-    BaseRecyclerViewAdapterV2.OnItemClickListener<Message> {
+    BaseRecyclerViewAdapterV2.OnItemClickListener<Message>,
+    LocalEventLifecycleViewModel.OnLocalEventCallback<LocalLifecycleEvent> {
 
 
     private var heightProvider: HeightProvider? = null
@@ -39,8 +45,11 @@ class ChatFragment :
 
     private var keyBoardHeight = 0f
 
+    private var messageList: MutableList<Message> = mutableListOf()
+
     @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onViewCreated(savedInstanceState: Bundle?) {
+        AppManager.localEventLifecycleViewModel.register(this, this)
         val arg = arguments?.getString("name")
         userId = arg
         heightProvider = HeightProvider(requireActivity()).init()
@@ -129,7 +138,7 @@ class ChatFragment :
             chatInputRl.btnSendMsg.setOnClickListener {
                 showToast("发送成功")
                 withViewBinding {
-                    viewModel.sendMsg(chatInputRl.etMsg.text.toString(), userId!!)
+                    viewModel.sendMsg(chatInputRl.etMsg.text.toString().trim(), userId!!)
                     viewModel.getC2CHistoryMessageList(userId!!)
                     if (viewBinding.chatRv.canScrollVertically(-1) || viewBinding.chatRv.canScrollVertically(
                             1
@@ -189,7 +198,8 @@ class ChatFragment :
 
     override fun onStateChanged(state: MessageViewModel.MessageState) {
         super.onStateChanged(state)
-        mChatListAdapter.resetItems(state.messageList)
+        messageList = state.messageList
+        mChatListAdapter.resetItems(messageList)
     }
 
     /**
@@ -218,8 +228,14 @@ class ChatFragment :
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        AppManager.iCloudMessageManager.markC2CMessageAsRead(userId!!)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+        AppManager.localEventLifecycleViewModel.unRegister(this)
     }
 
     override fun onItemClick(itemView: View, item: Message, position: Int?) {
@@ -234,6 +250,32 @@ class ChatFragment :
                 if (heightProvider!!.isSoftInputVisible) {
                     KeyboardUtils.hideSoftInput(requireView())
                 }
+            }
+        }
+    }
+
+    override fun onEventCallback(event: LocalLifecycleEvent) {
+        when (event) {
+            is LocalLifecycleEvent.ReceivedChatMsgEvent -> {
+                if (event.msg.userID.equals(userId)) {
+                    val message = Message(
+                        mid = event.msg.msgID,
+                        uid = event.msg.userID,
+                        name = event.msg.nickName,
+                        avatar = event.msg.faceUrl,
+                        messageContent = event.msg.textElem.text,
+                        messageType = 0,
+                        messageTime = TimeUtils.date2String(TimeUtils.millis2Date(event.msg.timestamp * 1000)),
+                        messageSender = event.msg.sender == AppManager.currentUserID,
+                        showTime = false
+                    )
+                    messageList.add(0, message)
+                    mChatListAdapter.resetItems(messageList)
+                    AppManager.iCloudMessageManager.markC2CMessageAsRead(userId!!)
+                }
+            }
+            else -> {
+
             }
         }
     }

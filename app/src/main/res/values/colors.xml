@@ -18,4 +18,6 @@
     <color name="text_color_pressed">#CC07C160</color>
     <color name="chat_msg_bg_color">#97EC6A</color>
     <color name="chat_link_text_color">#506B83</color>
+    <color name="chat_time_color">#e3e3e3</color>
+    <color name="conversation_item_unread_color">#DC143C</color>
 </resources>

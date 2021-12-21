@@ -73,8 +73,8 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
         TODO("Not yet implemented")
     }
 
-    override fun markC2CMessageAsRead(userID: String, callback: V2TIMCallback) {
-        TODO("Not yet implemented")
+    override fun markC2CMessageAsRead(userID: String, callback: V2TIMCallback?) {
+        V2TIMManager.getMessageManager().markC2CMessageAsRead(userID, callback)
     }
 
     override fun markGroupMessageAsRead(groupID: String, callback: V2TIMCallback) {
@@ -86,11 +86,11 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
     }
 
     override fun addAdvancedMsgListener(listener: V2TIMAdvancedMsgListener) {
-        TODO("Not yet implemented")
+        V2TIMManager.getMessageManager().addAdvancedMsgListener(listener)
     }
 
     override fun removeAdvancedMsgListener(listener: V2TIMAdvancedMsgListener) {
-        TODO("Not yet implemented")
+        V2TIMManager.getMessageManager().removeAdvancedMsgListener(listener)
     }
 
     override suspend fun getC2CHistoryMessageList(userID: String): List<V2TIMMessage>? {

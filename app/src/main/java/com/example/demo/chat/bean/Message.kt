@@ -10,6 +10,7 @@ class Message(
     val messageContent: String,
     val messageType: Int? = 0,
     val messageSender: Boolean,
-    val messageTime: String? = ""
+    val messageTime: String? = "",
+    val showTime: Boolean? = true
 ) : IState {
 }

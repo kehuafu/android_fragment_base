@@ -14,5 +14,4 @@ interface ICloudImManager {
     fun login(userID: String, userSig: String, callback: V2TIMCallback)
 
     fun logout(callback: V2TIMCallback)
-
 }

@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import com.blankj.utilcode.util.Utils
 import com.example.demo.BuildConfig
+import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.im.*
 import com.kehuafu.base.core.container.widget.toast.setup
 
@@ -33,6 +34,14 @@ object AppManager {
 
     val iCloudConversationManager: ICloudConversationManager by lazy {
         CloudConversationManager.create()
+    }
+
+    val iCloudGroupManager: ICloudGroupManager by lazy {
+        CloudGroupManager.create()
+    }
+
+    val localEventLifecycleViewModel by lazy {
+        LocalEventLifecycleViewModel(App.appContext as Application)
     }
 
     fun registerAppService(context: Context) {

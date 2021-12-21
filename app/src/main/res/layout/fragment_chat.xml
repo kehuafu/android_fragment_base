@@ -20,7 +20,7 @@
                 android:layout_height="match_parent"
                 android:scaleType="fitXY"
                 android:src="@drawable/chat_bg"
-                android:visibility="invisible" />
+                android:visibility="visible" />
 
         </FrameLayout>
 
