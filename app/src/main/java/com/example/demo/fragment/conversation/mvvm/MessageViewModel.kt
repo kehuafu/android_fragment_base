@@ -6,12 +6,16 @@ import com.example.demo.app.AppManager
 import com.kehuafu.base.core.container.widget.toast.showToast
 import com.example.demo.base.BaseRequestViewModel
 import com.example.demo.chat.bean.Message
+import com.kehuafu.base.core.ktx.asyncCall
+import com.kehuafu.base.core.ktx.runOnMainThread
 import com.kehuafu.base.core.redux.Action
 import com.kehuafu.base.core.redux.IState
 import com.kehuafu.base.core.redux.Reducer
 import com.tencent.imsdk.v2.V2TIMMessage
 import com.tencent.imsdk.v2.V2TIMSendCallback
 import com.tencent.imsdk.v2.V2TIMValueCallback
+import java.util.*
+import kotlin.concurrent.schedule
 
 
 class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
@@ -58,39 +62,32 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                     override fun onProgress(p0: Int) {
                         Log.e("@@", "onProgress-->$p0")
                     }
-
                 })
         }
     }
 
     fun getC2CHistoryMessageList(uid: String) {
-        httpAsyncCall({
-            showToast(it.errorMsg)
-        }) {
+        asyncCall {
             val messageList = mutableListOf<Message>()
-            AppManager.iCloudMessageManager.getC2CHistoryMessageList(uid,
-                object : V2TIMValueCallback<List<V2TIMMessage>> {
-                    override fun onSuccess(p0: List<V2TIMMessage>?) {
-                        for (msg in p0!!) {
-                            val message = Message(
-                                mid = msg.msgID,
-                                uid = msg.userID,
-                                name = msg.nickName,
-                                avatar = msg.faceUrl,
-                                messageContent = msg.textElem.text,
-                                messageType = 0,
-                                messageTime = TimeUtils.date2String(TimeUtils.millis2Date(msg.timestamp)),
-                                messageSender = msg.sender == AppManager.currentUserID
-                            )
-                            messageList.add(message)
-                        }
-                        dispatch(MessageAction.C2CHistoryMessageList(messageList = messageList))
-                    }
-
-                    override fun onError(p0: Int, p1: String?) {
-                        dispatch(MessageAction.C2CHistoryMessageList(messageList = messageList))
-                    }
-                })
+            val messages = AppManager.iCloudMessageManager.getC2CHistoryMessageList(uid)
+            if (messages != null) {
+                for (msg in messages) {
+                    val message = Message(
+                        mid = msg.msgID,
+                        uid = msg.userID,
+                        name = msg.nickName,
+                        avatar = msg.faceUrl,
+                        messageContent = msg.textElem.text,
+                        messageType = 0,
+                        messageTime = TimeUtils.date2String(TimeUtils.millis2Date(msg.timestamp)),
+                        messageSender = msg.sender == AppManager.currentUserID
+                    )
+                    messageList.add(message)
+                }
+            }
+            Timer().schedule(200) {
+                dispatch(MessageAction.C2CHistoryMessageList(messageList = messageList))
+            }
         }
     }
 
@@ -104,6 +101,10 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
             Log.e("@@", "conversationList---->" + conversationList.size)
 
             for (conversation in conversationList) {
+                Log.d(
+                    "@@",
+                    "ggggggg-->" + TimeUtils.millis2String(conversation.lastMessage.timestamp * 1000)
+                )
                 val message = Message(
                     mid = conversation.conversationID,
                     uid = "",
@@ -111,7 +112,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                     avatar = "",
                     messageContent = conversation.lastMessage.textElem.text,
                     messageType = 0,
-                    messageTime = TimeUtils.date2String(TimeUtils.millis2Date(conversation.lastMessage.timestamp)),
+                    messageTime = TimeUtils.date2String(TimeUtils.millis2Date(conversation.lastMessage.timestamp * 1000)),
                     messageSender = conversation.userID == AppManager.currentUserID
                 )
                 messageList.add(message)

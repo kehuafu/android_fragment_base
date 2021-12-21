@@ -3,7 +3,11 @@ package com.example.demo.im
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import com.example.demo.app.App
+import com.kehuafu.base.core.network.error.ErrorResponse
 import com.tencent.imsdk.v2.*
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 class CloudMessageManager private constructor() : ICloudMessageManager,
     AndroidViewModel(App.appContext as Application) {
@@ -89,10 +93,28 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
         TODO("Not yet implemented")
     }
 
-    override fun getC2CHistoryMessageList(
-        userID: String,
-        callback: V2TIMValueCallback<List<V2TIMMessage>>
-    ) {
-        V2TIMManager.getMessageManager().getC2CHistoryMessageList(userID, 20, null, callback)
+    override suspend fun getC2CHistoryMessageList(userID: String): List<V2TIMMessage>? {
+        return suspendCancellableCoroutine { continuation ->
+            V2TIMManager.getMessageManager().getC2CHistoryMessageList(
+                userID,
+                20,
+                null,
+                object : V2TIMValueCallback<List<V2TIMMessage>> {
+                    override fun onSuccess(p0: List<V2TIMMessage>?) {
+                        continuation.resume(p0!!)
+                    }
+
+                    override fun onError(p0: Int, p1: String?) {
+                        continuation.resumeWithException(
+                            CloudException(
+                                ErrorResponse.createError(
+                                    error = p1!!,
+                                    code = p0
+                                )
+                            )
+                        )
+                    }
+                })
+        }
     }
 }

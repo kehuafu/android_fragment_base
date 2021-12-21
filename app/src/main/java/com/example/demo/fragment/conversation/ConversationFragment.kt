@@ -5,10 +5,10 @@ import android.util.Log
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.demo.app.Router
-import com.example.demo.databinding.FragmentMessageBinding
 import com.example.demo.databinding.ItemTabMainBinding
 import com.example.demo.fragment.conversation.adapter.ConversationListAdapter
 import com.example.demo.chat.bean.Message
+import com.example.demo.databinding.FragmentConversationBinding
 import com.example.demo.fragment.conversation.mvvm.MessageViewModel
 import com.kehuafu.base.core.container.base.BaseFragment
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV2
@@ -16,7 +16,7 @@ import com.kehuafu.base.core.ktx.viewBindings
 
 
 class ConversationFragment :
-    BaseFragment<FragmentMessageBinding, MessageViewModel, MessageViewModel.MessageState>(),
+    BaseFragment<FragmentConversationBinding, MessageViewModel, MessageViewModel.MessageState>(),
     BaseRecyclerViewAdapterV2.OnItemClickListener<Message> {
 
     companion object {

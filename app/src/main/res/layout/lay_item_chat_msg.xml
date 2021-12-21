@@ -14,9 +14,11 @@
         android:layout_height="wrap_content"
         android:gravity="top"
         android:orientation="horizontal"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/layout_right_text"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible">
 
         <ImageView
             android:id="@+id/left_message_avatar"
@@ -46,13 +48,13 @@
                 android:gravity="top"
                 android:maxWidth="250dp"
                 android:padding="10dp"
-                android:text="消息内容消息内容消息内容消息内容消
-                息内容消息内容消息内容消息内容消息内容消息内容
-                息内容消息内容消息内容消息内容消息内容消息内容"
                 android:textColor="@color/chat_text_color"
                 android:textColorLink="@color/chat_link_text_color"
                 android:textSize="16sp"
-                tools:ignore="HardcodedText" />
+                tools:ignore="HardcodedText"
+                tools:text="消息内容消息内容消息内容消息内容消
+                息内容消息内容消息内容消息内容消息内容消息内容
+                息内容消息内容消息内容消息内容消息内容消息内容" />
 
 
         </LinearLayout>
@@ -65,8 +67,10 @@
         android:layout_height="wrap_content"
         android:gravity="top"
         android:orientation="horizontal"
+        android:visibility="gone"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layout_left_text">
+        app:layout_constraintTop_toBottomOf="@+id/layout_left_text"
+        tools:visibility="visible">
 
 
         <LinearLayout
@@ -83,13 +87,13 @@
                 android:gravity="top"
                 android:maxWidth="250dp"
                 android:padding="10dp"
-                android:text="消息内容消息内容消息内容消息内容消
-                息内容消息内容消息内容消息内容消息内容消息内容
-                息内容消息内容消息内容消息内容消息内容消息内容"
                 android:textColor="@color/chat_text_color"
                 android:textColorLink="@color/chat_link_text_color"
                 android:textSize="16sp"
-                tools:ignore="HardcodedText" />
+                tools:ignore="HardcodedText"
+                tools:text="消息内容消息内容消息内容消息内容消
+                息内容消息内容消息内容消息内容消息内容消息内容
+                息内容消息内容消息内容消息内容消息内容消息内容" />
 
             <View
                 android:layout_width="12dp"

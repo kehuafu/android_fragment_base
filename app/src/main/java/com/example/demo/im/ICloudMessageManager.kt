@@ -45,8 +45,5 @@ interface ICloudMessageManager {
 
     fun removeAdvancedMsgListener(listener: V2TIMAdvancedMsgListener)
 
-    fun getC2CHistoryMessageList(
-        userID: String,
-        callback: V2TIMValueCallback<List<V2TIMMessage>>
-    )
+    suspend fun getC2CHistoryMessageList(userID: String, ): List<V2TIMMessage>?
 }

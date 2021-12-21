@@ -4,7 +4,6 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.view.animation.DecelerateInterpolator
@@ -13,10 +12,8 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.blankj.utilcode.util.AdaptScreenUtils
 import com.blankj.utilcode.util.KeyboardUtils
 import com.example.demo.R
-import com.example.demo.app.AppManager
 import com.example.demo.chat.adapter.ChatListAdapter
 import com.example.demo.databinding.FragmentChatBinding
 import com.example.demo.chat.bean.Message
@@ -25,9 +22,7 @@ import com.example.demo.utils.HeightProvider
 import com.kehuafu.base.core.container.base.BaseFragment
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV2
 import com.kehuafu.base.core.container.widget.toast.showToast
-import com.kehuafu.base.core.ktx.dp2px
-import com.tencent.imsdk.v2.V2TIMMessage
-import com.tencent.imsdk.v2.V2TIMSendCallback
+import java.util.*
 
 class ChatFragment :
     BaseFragment<FragmentChatBinding, MessageViewModel, MessageViewModel.MessageState>(),
@@ -40,9 +35,9 @@ class ChatFragment :
 
     private var mChatListAdapter = ChatListAdapter()
 
-    private var mChatMsgList = mutableListOf<Message>()
-
     private var userId: String? = ""
+
+    private var keyBoardHeight = 0f
 
     @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onViewCreated(savedInstanceState: Bundle?) {
@@ -60,18 +55,24 @@ class ChatFragment :
         heightProvider!!.setHeightListener {
             if (!this.isAdded) return@setHeightListener
             if (it.toFloat() > 0f) {
+                keyBoardHeight = it.toFloat()
                 viewBinding.chatRv.stopScroll()
                 startTranslateY(viewBinding.chatInputRl.root, -it.toFloat())
                 viewBinding.chatRv.scrollToPosition(0)
                 if (viewBinding.chatRv.findViewHolderForLayoutPosition(0) != null) {
-                    viewBinding.frameLayout.translationY =
-                        -(viewBinding.chatRv.findViewHolderForLayoutPosition(
-                            0
-                        )!!.itemView.bottom - it.toFloat() - TypedValue.applyDimension(
-                            TypedValue.COMPLEX_UNIT_DIP,
-                            44f,//键盘组件高度
-                            resources.displayMetrics
-                        ))
+                    if (viewBinding.chatRv.findViewHolderForLayoutPosition(0)!!.itemView.bottom < it.toFloat()) {
+                        viewBinding.chatInputRl.etMsg.requestFocus()
+                        return@setHeightListener
+                    } else {
+                        viewBinding.frameLayout.translationY =
+                            -(viewBinding.chatRv.findViewHolderForLayoutPosition(
+                                0
+                            )!!.itemView.bottom - it.toFloat() - TypedValue.applyDimension(
+                                TypedValue.COMPLEX_UNIT_DIP,
+                                44f,//键盘组件高度
+                                resources.displayMetrics
+                            ))
+                    }
                     viewBinding.chatInputRl.etMsg.requestFocus()
                 } else {
                     viewBinding.frameLayout.translationY = -it.toFloat()
@@ -130,6 +131,28 @@ class ChatFragment :
                 withViewBinding {
                     viewModel.sendMsg(chatInputRl.etMsg.text.toString(), userId!!)
                     viewModel.getC2CHistoryMessageList(userId!!)
+                    if (viewBinding.chatRv.canScrollVertically(-1) || viewBinding.chatRv.canScrollVertically(
+                            1
+                        )
+                    ) {
+                        viewBinding.frameLayout.translationY = -keyBoardHeight
+                    } else if (viewBinding.chatRv.findViewHolderForLayoutPosition(0) != null) {
+                        if (viewBinding.chatRv.findViewHolderForLayoutPosition(0)!!.itemView.bottom > keyBoardHeight + TypedValue.applyDimension(
+                                TypedValue.COMPLEX_UNIT_DIP,
+                                44f,//键盘组件高度
+                                resources.displayMetrics
+                            )
+                        ) {
+                            viewBinding.frameLayout.translationY =
+                                -(viewBinding.chatRv.findViewHolderForLayoutPosition(
+                                    0
+                                )!!.itemView.bottom - keyBoardHeight - TypedValue.applyDimension(
+                                    TypedValue.COMPLEX_UNIT_DIP,
+                                    44f,//键盘组件高度
+                                    resources.displayMetrics
+                                ))
+                        }
+                    }
                     viewBinding.chatRv.scrollToPosition(0)
                     chatInputRl.etMsg.text.clear()
                 }
@@ -144,14 +167,13 @@ class ChatFragment :
                 }
             }
             mChatListAdapter.setOnItemClickListener(this@ChatFragment)
-            viewBinding.chatRv.adapter = mChatListAdapter
             chatRv.itemAnimator = null
             chatRv.layoutManager = LinearLayoutManager(baseActivity)
             (chatRv.layoutManager as LinearLayoutManager).reverseLayout = true//列表翻转
+            viewBinding.chatRv.adapter = mChatListAdapter
             chatRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                     super.onScrollStateChanged(recyclerView, newState)
-                    Log.e("@@", "滑动")
                     if (heightProvider!!.isSoftInputVisible) {
                         KeyboardUtils.hideSoftInput(requireView())
                     }
@@ -168,8 +190,6 @@ class ChatFragment :
     override fun onStateChanged(state: MessageViewModel.MessageState) {
         super.onStateChanged(state)
         mChatListAdapter.resetItems(state.messageList)
-        Log.d("@@", "有新消息！" + state.messageList.size)
-        mChatMsgList = state.messageList
     }
 
     /**
