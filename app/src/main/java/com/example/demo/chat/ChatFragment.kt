@@ -4,6 +4,7 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.view.animation.DecelerateInterpolator
@@ -12,7 +13,6 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.blankj.utilcode.constant.TimeConstants
 import com.blankj.utilcode.util.KeyboardUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.example.demo.R
@@ -37,8 +37,6 @@ class ChatFragment :
 
     private var heightProvider: HeightProvider? = null
 
-//    private val mLayChatInputViewBinding by viewBindings<LayChatInputViewBinding>() XXX
-
     private var mChatListAdapter = ChatListAdapter()
 
     private var userId: String? = ""
@@ -47,6 +45,8 @@ class ChatFragment :
 
     private var messageList: MutableList<Message> = mutableListOf()
 
+    private var showFileMode = false
+
     @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onViewCreated(savedInstanceState: Bundle?) {
         AppManager.localEventLifecycleViewModel.register(this, this)
@@ -54,40 +54,48 @@ class ChatFragment :
         userId = arg
         heightProvider = HeightProvider(requireActivity()).init()
         viewBinding.nav.backIv.setOnClickListener {
+            showFileMode = false
+            keyBoardHeight = 0F
             baseActivity.onBackPressed()
         }
         viewBinding.frameLayout.setOnClickListener {
+            showFileMode = false
+            keyBoardHeight = 0F
             if (heightProvider!!.isSoftInputVisible) {
                 KeyboardUtils.hideSoftInput(requireView())
+            } else {
+                viewBinding.chatInputRl.root.translationY = 0F
+                viewBinding.chatFile.root.visibility = View.INVISIBLE
             }
         }
         heightProvider!!.setHeightListener {
             if (!this.isAdded) return@setHeightListener
+            if (showFileMode && keyBoardHeight != 0F) {
+                viewBinding.chatInputRl.root.translationY = -keyBoardHeight
+                viewBinding.chatFile.chatFileLl.minimumHeight = keyBoardHeight.toInt()
+                viewBinding.frameLayout.translationY = viewBinding.chatInputRl.root.translationY
+                return@setHeightListener
+            }
             if (it.toFloat() > 0f) {
+                AppManager.keyboardHeight = it.toFloat()
                 keyBoardHeight = it.toFloat()
                 viewBinding.chatRv.stopScroll()
-                startTranslateY(viewBinding.chatInputRl.root, -it.toFloat())
+                if (!showFileMode && keyBoardHeight != 0F) {
+                    viewBinding.chatInputRl.root.translationY = -keyBoardHeight
+                } else {
+                    viewBinding.chatFile.chatFileLl.minimumHeight = it
+                    startTranslateY(viewBinding.chatInputRl.root, -it.toFloat())
+                }
                 viewBinding.chatRv.scrollToPosition(0)
                 if (viewBinding.chatRv.findViewHolderForLayoutPosition(0) != null) {
-                    if (viewBinding.chatRv.findViewHolderForLayoutPosition(0)!!.itemView.bottom < it.toFloat()) {
-                        viewBinding.chatInputRl.etMsg.requestFocus()
-                        return@setHeightListener
-                    } else {
-                        viewBinding.frameLayout.translationY =
-                            -(viewBinding.chatRv.findViewHolderForLayoutPosition(
-                                0
-                            )!!.itemView.bottom - it.toFloat() - TypedValue.applyDimension(
-                                TypedValue.COMPLEX_UNIT_DIP,
-                                44f,//键盘组件高度
-                                resources.displayMetrics
-                            ))
-                    }
+                    viewBinding.frameLayout.translationY = viewBinding.chatInputRl.root.translationY
                     viewBinding.chatInputRl.etMsg.requestFocus()
                 } else {
                     viewBinding.frameLayout.translationY = -it.toFloat()
                 }
                 return@setHeightListener
             }
+            viewBinding.chatFile.root.visibility = View.INVISIBLE
             viewBinding.chatInputRl.root.translationY = -it.toFloat()
             viewBinding.frameLayout.translationY = -it.toFloat()
         }
@@ -97,11 +105,44 @@ class ChatFragment :
             chatInputRl.root.setOnTouchListener { v, event ->
                 true
             }
+            chatInputRl.ivNavMore.setOnClickListener {
+                showFileMode = !showFileMode
+                showToast("切换文件模式$showFileMode")
+                if (showFileMode) {
+                    viewBinding.chatFile.root.visibility = View.VISIBLE
+                    if (heightProvider!!.isSoftInputVisible) {
+                        KeyboardUtils.hideSoftInput(requireView())
+                        chatInputRl.etMsg.isVisible = true
+                        chatInputRl.tvVoice.isVisible = false
+                    } else if (keyBoardHeight == 0F) {
+                        if (AppManager.keyboardHeight != 0F) {
+                            viewBinding.chatFile.chatFileLl.minimumHeight =
+                                AppManager.keyboardHeight.toInt()
+                            viewBinding.chatInputRl.root.translationY = -AppManager.keyboardHeight
+                            viewBinding.frameLayout.translationY =
+                                viewBinding.chatInputRl.root.translationY
+                        } else {
+                            viewBinding.chatInputRl.root.translationY =
+                                -viewBinding.chatFile.root.height.toFloat()
+                            viewBinding.frameLayout.translationY =
+                                viewBinding.chatInputRl.root.translationY
+                        }
+                    }
+                } else {
+                    KeyboardUtils.showSoftInput(requireView())
+                }
+            }
             chatInputRl.ivVoice.setOnClickListener {
+                showFileMode = false
+                keyBoardHeight = 0F
                 if (chatInputRl.etMsg.isVisible) {
                     showToast("切换语音模式")
                     if (heightProvider!!.isSoftInputVisible) {
                         KeyboardUtils.hideSoftInput(requireView())
+                    } else {
+                        viewBinding.chatFile.root.visibility = View.INVISIBLE
+                        viewBinding.chatInputRl.root.translationY = -keyBoardHeight
+                        viewBinding.frameLayout.translationY = -keyBoardHeight
                     }
                     chatInputRl.ivVoice.setPadding(6, 6, 6, 6)
                     chatInputRl.ivVoice.setImageDrawable(
@@ -127,6 +168,7 @@ class ChatFragment :
                 chatInputRl.tvVoice.isVisible = !chatInputRl.etMsg.isVisible
             }
             chatInputRl.ivExpression.setOnClickListener {
+                showFileMode = false
                 showToast("显示我的表情包")
                 chatInputRl.ivExpression.setImageDrawable(
                     ContextCompat.getDrawable(
@@ -136,7 +178,6 @@ class ChatFragment :
                 )
             }
             chatInputRl.btnSendMsg.setOnClickListener {
-                showToast("发送成功")
                 withViewBinding {
                     viewModel.sendMsg(chatInputRl.etMsg.text.toString().trim(), userId!!)
                     viewModel.getC2CHistoryMessageList(userId!!)
@@ -146,21 +187,8 @@ class ChatFragment :
                     ) {
                         viewBinding.frameLayout.translationY = -keyBoardHeight
                     } else if (viewBinding.chatRv.findViewHolderForLayoutPosition(0) != null) {
-                        if (viewBinding.chatRv.findViewHolderForLayoutPosition(0)!!.itemView.bottom > keyBoardHeight + TypedValue.applyDimension(
-                                TypedValue.COMPLEX_UNIT_DIP,
-                                44f,//键盘组件高度
-                                resources.displayMetrics
-                            )
-                        ) {
-                            viewBinding.frameLayout.translationY =
-                                -(viewBinding.chatRv.findViewHolderForLayoutPosition(
-                                    0
-                                )!!.itemView.bottom - keyBoardHeight - TypedValue.applyDimension(
-                                    TypedValue.COMPLEX_UNIT_DIP,
-                                    44f,//键盘组件高度
-                                    resources.displayMetrics
-                                ))
-                        }
+                        viewBinding.frameLayout.translationY =
+                            -viewBinding.chatInputRl.root.translationY
                     }
                     viewBinding.chatRv.scrollToPosition(0)
                     chatInputRl.etMsg.text.clear()
@@ -174,6 +202,10 @@ class ChatFragment :
                     viewBinding.chatInputRl.btnSendMsg.visibility = View.VISIBLE
                     viewBinding.chatInputRl.ivNavMore.visibility = View.GONE
                 }
+            }
+            chatInputRl.etMsg.setOnClickListener {
+                showFileMode = false
+                keyBoardHeight = 0F
             }
             mChatListAdapter.setOnItemClickListener(this@ChatFragment)
             chatRv.itemAnimator = null
@@ -264,7 +296,7 @@ class ChatFragment :
                         name = event.msg.nickName,
                         avatar = event.msg.faceUrl,
                         messageContent = event.msg.textElem.text,
-                        messageType = 0,
+                        messageType = Message.MSG_TYPE_TEXT,
                         messageTime = TimeUtils.date2String(TimeUtils.millis2Date(event.msg.timestamp * 1000)),
                         messageSender = event.msg.sender == AppManager.currentUserID,
                         showTime = false

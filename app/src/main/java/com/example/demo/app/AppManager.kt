@@ -20,6 +20,8 @@ object AppManager {
 
     const val currentUserID = "android"
 
+    var keyboardHeight = 0F
+
     val apiService: PurpleAPI by lazy {
         NetManager().apiService
     }

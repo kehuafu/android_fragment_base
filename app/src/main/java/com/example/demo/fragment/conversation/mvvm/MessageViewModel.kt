@@ -82,7 +82,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                         name = msg.nickName,
                         avatar = msg.faceUrl,
                         messageContent = msg.textElem.text,
-                        messageType = 0,
+                        messageType = Message.MSG_TYPE_TEXT,
                         messageTime = TimeUtils.date2String(TimeUtils.millis2Date(msg.timestamp * 1000)),
                         messageSender = msg.sender == AppManager.currentUserID,
                         showTime = lastTemp - TimeUtils.getMillis(

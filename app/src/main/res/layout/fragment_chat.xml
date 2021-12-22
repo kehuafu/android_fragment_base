@@ -61,7 +61,9 @@
                             android:orientation="vertical"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintVertical_weight="1">
+                            app:layout_constraintVertical_bias="0.0"
+                            app:layout_constraintVertical_weight="1"
+                            tools:layout_editor_absoluteX="0dp">
 
                             <androidx.recyclerview.widget.RecyclerView
                                 android:id="@+id/chat_rv"
@@ -93,6 +95,14 @@
 
                 </androidx.core.widget.NestedScrollView>
 
+                <include
+                    android:id="@+id/chat_file"
+                    layout="@layout/lay_chat_file_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    tools:visibility="visible" />
 
                 <include
                     android:id="@+id/chat_input_rl"
@@ -102,6 +112,7 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/ns_view"
                     tools:visibility="visible" />
+
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </FrameLayout>

@@ -25,6 +25,7 @@
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/fragment_message.xml" value="0.22135416666666666" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/fragment_mine.xml" value="0.36614583333333334" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/item_tab_main.xml" value="0.36614583333333334" />
+        <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/lay_chat_file_view.xml" value="0.215625" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/lay_chat_input_view.xml" value="0.253125" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/lay_item_chat_msg.xml" value="0.33240740740740743" />
         <entry key="..\:/flutter/android_fragment_base/app/src/main/res/layout/lay_item_conversation.xml" value="0.36614583333333334" />
