@@ -19,8 +19,12 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
         fun create(): CloudMessageManager = CloudMessageManager()
     }
 
-    override fun createTextMessage(text: String): V2TIMMessage {
-        return V2TIMManager.getMessageManager().createTextMessage(text)
+    override suspend fun createTextMessage(text: String): V2TIMMessage {
+        return suspendCancellableCoroutine { continuation ->
+            continuation.resume(
+                V2TIMManager.getMessageManager().createTextMessage(text)
+            )
+        }
     }
 
     override fun createImageMessage(imagePath: String): V2TIMMessage {
@@ -56,7 +60,7 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
         TODO("Not yet implemented")
     }
 
-    override fun sendMessage(
+    override suspend fun sendMessage(
         message: V2TIMMessage,
         receiver: String?,
         groupID: String?,
@@ -65,8 +69,12 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
         offlinePushInfo: V2TIMOfflinePushInfo?,
         callback: V2TIMSendCallback<V2TIMMessage>
     ): String {
-        return V2TIMManager.getMessageManager()
-            .sendMessage(message, receiver, groupID, priority, false, null, callback)
+        return suspendCancellableCoroutine { continuation ->
+            continuation.resume(
+                V2TIMManager.getMessageManager()
+                    .sendMessage(message, receiver, groupID, priority, false, null, callback)
+            )
+        }
     }
 
     override fun revokeMessage(msg: V2TIMMessage, callback: V2TIMCallback) {

@@ -1,6 +1,7 @@
 package com.example.demo.chat.bean
 
 import com.kehuafu.base.core.redux.IState
+import com.tencent.imsdk.v2.V2TIMMessage
 
 class Message(
     val mid: String? = "",
@@ -11,7 +12,10 @@ class Message(
     val messageType: Int = MSG_TYPE_TEXT,
     val messageSender: Boolean,
     val messageTime: String? = "",
-    val showTime: Boolean? = true
+    val showTime: Boolean? = true,
+    var loading: Boolean = false,
+    var sendFailed: Boolean = false,
+    val v2TIMMessage: V2TIMMessage
 ) : IState {
 
     companion object {

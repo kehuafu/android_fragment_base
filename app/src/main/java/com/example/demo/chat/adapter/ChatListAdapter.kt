@@ -3,7 +3,11 @@ package com.example.demo.chat.adapter
 import android.annotation.SuppressLint
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
+import android.view.animation.LinearInterpolator
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import com.example.demo.R
 import com.example.demo.databinding.LayItemChatMsgBinding
 import com.example.demo.chat.bean.Message
 import com.kehuafu.base.core.container.base.adapter.BaseListAdapter
@@ -31,18 +35,21 @@ class ChatListAdapter : BaseListAdapter<Message, LayItemChatMsgBinding>() {
      * UI状态绑定
      */
     @SuppressLint("SetTextI18n")
-    override fun setState(item: Message, viewBinding: LayItemChatMsgBinding) {
+    override fun setState(item: Message, viewBinding: LayItemChatMsgBinding, position: Int) {
         viewBinding.leftMessageAvatar.setOnClickListener {
-            mOnItemClickListener?.onItemClick(it, item = item)
+            mOnItemClickListener?.onItemClick(it, item = item, position)
         }
         viewBinding.rightMessageAvatar.setOnClickListener {
-            mOnItemClickListener?.onItemClick(it, item = item)
+            mOnItemClickListener?.onItemClick(it, item = item, position)
         }
         viewBinding.leftMsgText.setOnClickListener {
-            mOnItemClickListener?.onItemClick(it, item = item)
+            mOnItemClickListener?.onItemClick(it, item = item, position)
         }
         viewBinding.rightMsgText.setOnClickListener {
-            mOnItemClickListener?.onItemClick(it, item = item)
+            mOnItemClickListener?.onItemClick(it, item = item, position)
+        }
+        viewBinding.ivSendFailed.setOnClickListener {
+            mOnItemClickListener?.onItemClick(it, item = item, position)
         }
         if (item.messageSender) {
             viewBinding.layoutLeftText.visibility = View.GONE
@@ -55,5 +62,15 @@ class ChatListAdapter : BaseListAdapter<Message, LayItemChatMsgBinding>() {
         }
         viewBinding.tvTime.isVisible = item.showTime!!
         viewBinding.tvTime.text = item.messageTime
+        if (item.loading) {
+            viewBinding.ivSendLoading.visibility = View.VISIBLE
+            val mOperatingAnimCenter =
+                AnimationUtils.loadAnimation(viewBinding.root.context, R.anim.loading_rotate_center)
+            mOperatingAnimCenter.interpolator = LinearInterpolator()
+            viewBinding.ivSendLoading.startAnimation(mOperatingAnimCenter)
+        } else {
+            viewBinding.ivSendLoading.visibility = View.GONE
+        }
+        viewBinding.ivSendFailed.isVisible = item.sendFailed
     }
 }

@@ -2,6 +2,7 @@ package com.kehuafu.base.core.container.base.adapter
 
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
+import java.text.FieldPosition
 
 /**
  *  Created by light
@@ -28,19 +29,19 @@ abstract class BaseListAdapter<T, VB : ViewBinding> :
     ) : BaseViewHolder<T, VB>(viewBinding) {
         override fun setState(item: T) {
             super.setState(item)
-            mStateListener?.onStateListener(item, viewBinding)
+            mStateListener?.onStateListener(item, viewBinding, adapterPosition)
         }
     }
 
     abstract fun init(parent: ViewGroup): VB
 
-    abstract fun setState(item: T, viewBinding: VB)
+    abstract fun setState(item: T, viewBinding: VB, position: Int)
 
-    override fun onStateListener(item: T, viewBinding: VB) {
-        this.setState(item, viewBinding)
+    override fun onStateListener(item: T, viewBinding: VB, position: Int) {
+        this.setState(item, viewBinding, position)
     }
 }
 
 interface StateListener<T, VB> {
-    fun onStateListener(item: T, viewBinding: VB)
+    fun onStateListener(item: T, viewBinding: VB, position: Int)
 }

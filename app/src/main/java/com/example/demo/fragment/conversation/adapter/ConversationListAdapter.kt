@@ -28,7 +28,11 @@ class ConversationListAdapter : BaseListAdapter<Conversation, LayItemConversatio
     /**
      * UI状态绑定
      */
-    override fun setState(item: Conversation, viewBinding: LayItemConversationBinding) {
+    override fun setState(
+        item: Conversation,
+        viewBinding: LayItemConversationBinding,
+        position: Int
+    ) {
         viewBinding.title.text = item.name
         viewBinding.time.text = item.messageTime
         viewBinding.tvContent.text = item.messageContent

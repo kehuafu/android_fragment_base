@@ -20,6 +20,7 @@ import com.example.demo.app.AppManager
 import com.example.demo.chat.adapter.ChatListAdapter
 import com.example.demo.databinding.FragmentChatBinding
 import com.example.demo.chat.bean.Message
+import com.example.demo.chat.widget.OverScrollLayout
 import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.common.receiver.event.LocalLifecycleEvent
 import com.example.demo.fragment.conversation.mvvm.MessageViewModel
@@ -58,6 +59,7 @@ class ChatFragment :
             keyBoardHeight = 0F
             baseActivity.onBackPressed()
         }
+
         viewBinding.frameLayout.setOnClickListener {
             showFileMode = false
             keyBoardHeight = 0F
@@ -68,6 +70,7 @@ class ChatFragment :
                 viewBinding.chatFile.root.visibility = View.INVISIBLE
             }
         }
+
         heightProvider!!.setHeightListener {
             if (!this.isAdded) return@setHeightListener
             if (showFileMode && keyBoardHeight != 0F) {
@@ -179,8 +182,11 @@ class ChatFragment :
             }
             chatInputRl.btnSendMsg.setOnClickListener {
                 withViewBinding {
-                    viewModel.sendMsg(chatInputRl.etMsg.text.toString().trim(), userId!!)
-                    viewModel.getC2CHistoryMessageList(userId!!)
+                    viewModel.sendMsg(
+                        chatInputRl.etMsg.text.toString().trim(),
+                        userId!!,
+                        messageList
+                    )
                     if (viewBinding.chatRv.canScrollVertically(-1) || viewBinding.chatRv.canScrollVertically(
                             1
                         )
@@ -278,6 +284,10 @@ class ChatFragment :
             R.id.left_msg_text, R.id.right_msg_text -> {
                 showToast("文本")
             }
+            R.id.iv_send_failed -> {
+                showToast("重发")
+                viewModel.resendMessage(item, userId!!, messageList, position!!)
+            }
             else -> {
                 if (heightProvider!!.isSoftInputVisible) {
                     KeyboardUtils.hideSoftInput(requireView())
@@ -299,7 +309,8 @@ class ChatFragment :
                         messageType = Message.MSG_TYPE_TEXT,
                         messageTime = TimeUtils.date2String(TimeUtils.millis2Date(event.msg.timestamp * 1000)),
                         messageSender = event.msg.sender == AppManager.currentUserID,
-                        showTime = false
+                        showTime = false,
+                        v2TIMMessage = event.msg
                     )
                     messageList.add(0, message)
                     mChatListAdapter.resetItems(messageList)

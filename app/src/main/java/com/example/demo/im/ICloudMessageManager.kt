@@ -4,7 +4,7 @@ import com.tencent.imsdk.v2.*
 
 interface ICloudMessageManager {
 
-    fun createTextMessage(text: String): V2TIMMessage
+   suspend fun createTextMessage(text: String): V2TIMMessage
 
     fun createImageMessage(imagePath: String): V2TIMMessage
 
@@ -23,7 +23,7 @@ interface ICloudMessageManager {
 
     fun createFaceMessage(index: Int, data: Byte): V2TIMMessage
 
-    fun sendMessage(
+    suspend fun sendMessage(
         message: V2TIMMessage,
         receiver: String?,
         groupID: String?,

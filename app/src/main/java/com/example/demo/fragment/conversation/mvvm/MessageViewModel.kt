@@ -9,15 +9,13 @@ import com.example.demo.base.BaseRequestViewModel
 import com.example.demo.chat.bean.Message
 import com.example.demo.fragment.conversation.bean.Conversation
 import com.kehuafu.base.core.ktx.asyncCall
-import com.kehuafu.base.core.ktx.runOnMainThread
 import com.kehuafu.base.core.redux.Action
 import com.kehuafu.base.core.redux.IState
 import com.kehuafu.base.core.redux.Reducer
+import com.tencent.imsdk.message.Message.V2TIM_MSG_STATUS_SEND_FAILED
 import com.tencent.imsdk.v2.V2TIMMessage
+import com.tencent.imsdk.v2.V2TIMMessage.V2TIM_MSG_STATUS_SENDING
 import com.tencent.imsdk.v2.V2TIMSendCallback
-import com.tencent.imsdk.v2.V2TIMValueCallback
-import java.util.*
-import kotlin.concurrent.schedule
 
 
 class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
@@ -37,6 +35,14 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                     is MessageAction.C2CHistoryMessageList -> {
                         state.copy(messageList = action.messageList)
                     }
+                    is MessageAction.MsgSendFailed -> {
+                        state.copy(messageList = action.messageList)
+                    }
+                    is MessageAction.MsgSendSuccess -> {
+                        state.copy(
+                            messageList = action.messageList
+                        )
+                    }
                     else -> {
                         state
                     }
@@ -45,26 +51,108 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
         }
     }
 
-    fun sendMsg(text: String, userId: String) {
-        httpAsyncCall({
+    fun sendMsg(text: String, userId: String, messageList: MutableList<Message>) {
+        asyncCall({
             showToast(it.errorMsg)
         }) {
-            AppManager.iCloudMessageManager.sendMessage(AppManager.iCloudMessageManager.createTextMessage(
+
+            val v2TIMMessage = AppManager.iCloudMessageManager.createTextMessage(
                 text
-            ),
-                userId, "", 2, false, null, callback = object : V2TIMSendCallback<V2TIMMessage> {
+            )
+            Log.e("@@", "createTextMessage--->${v2TIMMessage.msgID}")
+            val result =
+                AppManager.iCloudMessageManager.sendMessage(v2TIMMessage, userId,
+                    "",
+                    2,
+                    false,
+                    null,
+                    callback = object : V2TIMSendCallback<V2TIMMessage> {
+                        override fun onSuccess(p0: V2TIMMessage?) {
+                            Log.e("@@", "onSuccess-->" + p0!!.msgID)
+                            messageList.mapIndexed { index, message ->
+                                if (message.mid == p0.msgID) {
+                                    message.loading = false
+                                }
+                            }
+                            dispatch(MessageAction.MsgSendSuccess(messageList = messageList))
+                        }
+
+                        override fun onError(p0: Int, p1: String?) {
+                            Log.e("@@", "onError-->$p1")
+                            messageList.mapIndexed { index, message ->
+                                if (message.mid == v2TIMMessage.msgID) {
+                                    message.loading = false
+                                    message.sendFailed = true
+                                }
+                            }
+                            dispatch(MessageAction.MsgSendFailed(messageList = messageList))
+                        }
+
+                        override fun onProgress(p0: Int) {
+                            Log.e("@@", "onProgress-->$p0")
+                        }
+                    })
+            Log.e("@@", "sendMessage--->$result")
+            val message = Message(
+                mid = result,
+                uid = userId,
+                loading = true,
+                messageContent = text,
+                messageType = Message.MSG_TYPE_TEXT,
+                messageSender = true,
+                showTime = false,
+                v2TIMMessage = v2TIMMessage
+            )
+            messageList.add(0, message)
+            dispatch(MessageAction.C2CHistoryMessageList(messageList = messageList))
+        }
+    }
+
+    fun resendMessage(
+        message: Message,
+        userId: String,
+        messageList: MutableList<Message>,
+        pos: Int
+    ) {
+        asyncCall({
+            showToast(it.errorMsg)
+        }) {
+            Log.e("@@", "resendMessage--->${message.mid}")
+            AppManager.iCloudMessageManager.sendMessage(message.v2TIMMessage, userId,
+                "",
+                2,
+                false,
+                null,
+                callback = object : V2TIMSendCallback<V2TIMMessage> {
                     override fun onSuccess(p0: V2TIMMessage?) {
-                        Log.e("@@", "onSuccess-->" + p0!!.userID)
+                        Log.e("@@", "onSuccess-->" + p0!!.msgID)
+                        message.loading = false
+                        messageList[pos] = message
+                        MessageAction.MsgSendSuccess(
+                            messageList = messageList
+                        )
                     }
 
                     override fun onError(p0: Int, p1: String?) {
                         Log.e("@@", "onError-->$p1")
+                        message.loading = false
+                        message.sendFailed = true
+                        messageList[pos] = message
+                        MessageAction.MsgSendFailed(
+                            messageList = messageList
+                        )
                     }
 
                     override fun onProgress(p0: Int) {
                         Log.e("@@", "onProgress-->$p0")
                     }
                 })
+            message.loading = true
+            message.sendFailed = false
+            messageList[pos] = message
+            MessageAction.MsgSendSuccess(
+                messageList = messageList
+            )
         }
     }
 
@@ -89,7 +177,10 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                             msg.timestamp * 1000,
                             60 * 5L,
                             TimeConstants.SEC
-                        ) >= 60 * 5L
+                        ) >= 60 * 5L,
+                        loading = msg.status == V2TIM_MSG_STATUS_SENDING,
+                        sendFailed = msg.status == V2TIM_MSG_STATUS_SEND_FAILED,
+                        v2TIMMessage = msg
                     )
                     showTemp = message.showTime!!
                     if (showTemp) {
@@ -98,9 +189,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                     messageList.add(message)
                 }
             }
-            Timer().schedule(200) {
-                dispatch(MessageAction.C2CHistoryMessageList(messageList = messageList))
-            }
+            dispatch(MessageAction.C2CHistoryMessageList(messageList = messageList))
         }
     }
 
@@ -129,14 +218,11 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
         }
     }
 
-    fun sendMsg(text: String, conversationList: MutableList<Conversation>) {
-        conversationList.add(0, Conversation(messageContent = text, messageSender = true))
-        dispatch(MessageAction.Success(conversationList = conversationList))
-    }
-
     sealed class MessageAction : Action {
         class Success(val conversationList: MutableList<Conversation>) : MessageAction()
         class C2CHistoryMessageList(val messageList: MutableList<Message>) : MessageAction()
+        class MsgSendFailed(val messageList: MutableList<Message>) : MessageAction()
+        class MsgSendSuccess(val messageList: MutableList<Message>) : MessageAction()
     }
 
     data class MessageState(
