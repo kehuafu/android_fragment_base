@@ -51,11 +51,13 @@ abstract class BaseActivity<VB : ViewBinding, VM : BaseViewModel<State>, State :
     /**
      * 导航方法，根据路由名跳转
      */
-    abstract fun navigation(
+    open fun navigation(
         name: Int,
         bundle: Bundle? = null,
         navMode: NavMode = NavMode.SWITCH,
-    )
+    ) {
+
+    }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)

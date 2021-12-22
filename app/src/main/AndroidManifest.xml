@@ -27,6 +27,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".chat.ChatActivity"
+            android:exported="true"
+            android:windowSoftInputMode="stateVisible|adjustNothing" />
     </application>
 
 </manifest>

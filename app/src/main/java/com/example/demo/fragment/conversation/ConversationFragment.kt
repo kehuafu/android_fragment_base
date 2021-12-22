@@ -5,6 +5,7 @@ import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.demo.app.AppManager
 import com.example.demo.app.Router
+import com.example.demo.chat.ChatActivity
 import com.example.demo.databinding.ItemTabMainBinding
 import com.example.demo.fragment.conversation.adapter.ConversationListAdapter
 import com.example.demo.common.receiver.LocalEventLifecycleViewModel
@@ -59,9 +60,10 @@ class ConversationFragment :
     }
 
     override fun onItemClick(itemView: View, item: Conversation, position: Int?) {
-        val args = Bundle()
-        args.putString("name", item.name)
-        baseActivity.navigation(Router.CHAT_FRAGMENT, args)
+//        val args = Bundle()
+//        args.putString("name", item.name)
+//        baseActivity.navigation(Router.CHAT_FRAGMENT, args)
+        ChatActivity.showHasResult(item.name!!)
     }
 
     override fun onEventCallback(event: LocalLifecycleEvent) {
