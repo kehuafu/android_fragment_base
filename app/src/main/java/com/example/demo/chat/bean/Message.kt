@@ -3,14 +3,14 @@ package com.example.demo.chat.bean
 import com.kehuafu.base.core.redux.IState
 import com.tencent.imsdk.v2.V2TIMMessage
 
-class Message(
+open class Message(
     val mid: String? = "",
     val uid: String? = "",
     val avatar: String? = "",
     val name: String? = "",
-    val messageContent: String,
+    val messageContent: String? = "",
     val messageType: Int = MSG_TYPE_TEXT,
-    val messageSender: Boolean,
+    val messageSender: Boolean = false,
     val messageTime: String? = "",
     val showTime: Boolean? = true,
     var loading: Boolean = false,

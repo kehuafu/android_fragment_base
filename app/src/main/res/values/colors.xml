@@ -12,6 +12,7 @@
     <color name="tab_default">#333333</color>
     <color name="tab_nav_background">#f5f6f7</color>
     <color name="background">#FFFFFFFF</color>
+    <color name="background_pressed">#FFececec</color>
     <color name="message_space_line">#ffececec</color>
     <color name="text_color">#515151</color>
     <color name="chat_text_color">#333333</color>
@@ -20,4 +21,5 @@
     <color name="chat_link_text_color">#506B83</color>
     <color name="chat_time_color">#e3e3e3</color>
     <color name="conversation_item_unread_color">#DC143C</color>
+    <color name="color_transparent">#00000000</color>
 </resources>

@@ -4,14 +4,12 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.provider.Settings.Global.putString
-import android.util.Log
-import android.util.TypedValue
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.blankj.utilcode.util.ActivityUtils
@@ -20,19 +18,18 @@ import com.blankj.utilcode.util.KeyboardUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.example.demo.R
 import com.example.demo.app.AppManager
+import com.example.demo.chat.adapter.ChatFileTypeAdapter
 import com.example.demo.chat.adapter.ChatListAdapter
 import com.example.demo.databinding.FragmentChatBinding
 import com.example.demo.chat.bean.Message
-import com.example.demo.chat.widget.OverScrollLayout
+import com.example.demo.chat.bean.MessageTheme
 import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.common.receiver.event.LocalLifecycleEvent
 import com.example.demo.fragment.conversation.mvvm.MessageViewModel
 import com.example.demo.utils.HeightProvider
 import com.kehuafu.base.core.container.base.BaseActivity
-import com.kehuafu.base.core.container.base.BaseFragment
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV2
 import com.kehuafu.base.core.container.widget.toast.showToast
-import com.kehuafu.base.core.fragment.constant.NavMode
 import com.kehuafu.base.core.ktx.showHasResult
 import java.util.*
 
@@ -45,6 +42,9 @@ class ChatActivity :
     private var heightProvider: HeightProvider? = null
 
     private var mChatListAdapter = ChatListAdapter()
+
+
+    private var mChatFileTypeAdapter = ChatFileTypeAdapter()
 
     private var userId: String? = ""
 
@@ -245,6 +245,23 @@ class ChatActivity :
             chatRv.layoutManager = LinearLayoutManager(this@ChatActivity)
             (chatRv.layoutManager as LinearLayoutManager).reverseLayout = true//列表翻转
             viewBinding.chatRv.adapter = mChatListAdapter
+
+            mChatFileTypeAdapter.setOnItemClickListener(object :
+                BaseRecyclerViewAdapterV2.OnItemClickListener<MessageTheme> {
+                override fun onItemClick(itemView: View, item: MessageTheme, position: Int?) {
+                    when (itemView.id) {
+                        R.id.iv_type_image -> {
+                            showToast("文件类型-->" + item.title)
+                        }
+                        else -> {
+
+                        }
+                    }
+                }
+            })
+            chatFile.chatFileRv.itemAnimator = null
+            chatFile.chatFileRv.layoutManager = GridLayoutManager(this@ChatActivity, 4)
+            chatFile.chatFileRv.adapter = mChatFileTypeAdapter
             chatRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                     super.onScrollStateChanged(recyclerView, newState)
@@ -259,12 +276,14 @@ class ChatActivity :
     override fun onLoadDataSource() {
         super.onLoadDataSource()
         viewModel.getC2CHistoryMessageList(userId!!)
+        viewModel.initMessageThemeList()
     }
 
     override fun onStateChanged(state: MessageViewModel.MessageState) {
         super.onStateChanged(state)
         messageList = state.messageList
         mChatListAdapter.resetItems(messageList)
+        mChatFileTypeAdapter.resetItems(state.messageTheme)
     }
 
     /**

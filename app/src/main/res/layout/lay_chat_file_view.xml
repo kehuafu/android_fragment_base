@@ -15,7 +15,7 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:gravity="center"
-        android:orientation="horizontal"
+        android:minHeight="300dp"
         android:padding="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -23,8 +23,9 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/chat_file_rv"
             android:layout_width="match_parent"
-            android:layout_height="250dp"
-            android:background="@color/white" />
+            android:layout_height="wrap_content"
+            android:overScrollMode="never"
+            android:scrollbars="none" />
 
     </LinearLayout>
 

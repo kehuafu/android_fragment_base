@@ -3,10 +3,13 @@ package com.example.demo.fragment.conversation.mvvm
 import android.util.Log
 import com.blankj.utilcode.constant.TimeConstants
 import com.blankj.utilcode.util.TimeUtils
+import com.example.demo.R
+import com.example.demo.app.App
 import com.example.demo.app.AppManager
 import com.kehuafu.base.core.container.widget.toast.showToast
 import com.example.demo.base.BaseRequestViewModel
 import com.example.demo.chat.bean.Message
+import com.example.demo.chat.bean.MessageTheme
 import com.example.demo.fragment.conversation.bean.Conversation
 import com.kehuafu.base.core.ktx.asyncCall
 import com.kehuafu.base.core.redux.Action
@@ -21,7 +24,8 @@ import com.tencent.imsdk.v2.V2TIMSendCallback
 class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
     initialState = MessageState(
         conversationList = mutableListOf(),
-        messageList = mutableListOf()
+        messageList = mutableListOf(),
+        messageTheme = mutableListOf()
     ),
     reducers = listOf(reducer())
 ) {
@@ -41,6 +45,11 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                     is MessageAction.MsgSendSuccess -> {
                         state.copy(
                             messageList = action.messageList
+                        )
+                    }
+                    is MessageAction.InitMessageThemeList -> {
+                        state.copy(
+                            messageTheme = action.messageTheme
                         )
                     }
                     else -> {
@@ -218,16 +227,41 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
         }
     }
 
+    fun initMessageThemeList() {
+        asyncCall({
+            showToast(it.errorMsg)
+        }) {
+            val messageTheme = initLocalMessageThemeList()
+            dispatch(MessageAction.InitMessageThemeList(messageTheme = messageTheme))
+        }
+    }
+
+    private fun initLocalMessageThemeList(): MutableList<MessageTheme> {
+        val tmpThemeList = mutableListOf<MessageTheme>()
+        val stringMessageArrays = App.appContext.resources.getStringArray(R.array.chat_file_type)
+        stringMessageArrays.forEachIndexed { index, s ->
+            val datingTheme = MessageTheme(
+                id = index,
+                title = s,
+                photoUrl = null
+            )
+            tmpThemeList.add(datingTheme)
+        }
+        return tmpThemeList
+    }
+
     sealed class MessageAction : Action {
         class Success(val conversationList: MutableList<Conversation>) : MessageAction()
         class C2CHistoryMessageList(val messageList: MutableList<Message>) : MessageAction()
         class MsgSendFailed(val messageList: MutableList<Message>) : MessageAction()
         class MsgSendSuccess(val messageList: MutableList<Message>) : MessageAction()
+        class InitMessageThemeList(val messageTheme: MutableList<MessageTheme>) : MessageAction()
     }
 
     data class MessageState(
         val conversationList: MutableList<Conversation>,
-        val messageList: MutableList<Message>
+        val messageList: MutableList<Message>,
+        val messageTheme: MutableList<MessageTheme>
     ) : IState {
 
     }

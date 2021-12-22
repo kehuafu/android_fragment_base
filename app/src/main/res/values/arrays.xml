@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="chat_file_type">
+        <item>相册</item>
+        <item>拍摄</item>
+        <item>视频通话</item>
+        <item>位置</item>
+        <item>红包</item>
+        <item>转账</item>
+        <item>文件</item>
+        <item>我的收藏</item>
+    </string-array>
+</resources>
