@@ -10,8 +10,8 @@ import java.text.FieldPosition
  *
  *  desc: 列表适配器
  */
-abstract class BaseListAdapterV3<T> :
-    BaseRecyclerViewAdapterV3<ViewBinding, T, BaseListAdapterV3.VH<T>>(), StateListenerV3<T> {
+abstract class BaseListMultipleAdapter<T> :
+    BaseRecyclerViewAdapterV3<ViewBinding, T, BaseListMultipleAdapter.VH<T>>(), StateListenerV3<T> {
 
     private var mStateListener: StateListenerV3<T>? = null
 

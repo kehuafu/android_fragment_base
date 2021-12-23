@@ -26,8 +26,7 @@ import com.blankj.utilcode.util.*
 import com.example.demo.R
 import com.example.demo.app.AppManager
 import com.example.demo.chat.adapter.ChatFileTypeAdapter
-import com.example.demo.chat.adapter.ChatListAdapter
-import com.example.demo.chat.adapter.ChatListAdapterV3
+import com.example.demo.chat.adapter.ChatListMultipleAdapter
 import com.example.demo.databinding.FragmentChatBinding
 import com.example.demo.chat.bean.Message
 import com.example.demo.chat.bean.MessageTheme
@@ -52,7 +51,7 @@ class ChatActivity :
 
     private var heightProvider: HeightProvider? = null
 
-    private var mChatListAdapter = ChatListAdapterV3()
+    private var mChatListAdapter = ChatListMultipleAdapter()
 
 
     private var mChatFileTypeAdapter = ChatFileTypeAdapter()

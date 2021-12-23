@@ -37,6 +37,8 @@
         <activity
             android:name=".chat.ChatActivity"
             android:exported="true"
+            android:hardwareAccelerated="false"
+            android:largeHeap="true"
             android:windowSoftInputMode="stateVisible|adjustNothing" />
     </application>
 

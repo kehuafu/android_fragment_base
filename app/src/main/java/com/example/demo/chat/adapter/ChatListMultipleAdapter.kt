@@ -2,29 +2,19 @@ package com.example.demo.chat.adapter
 
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
-import android.net.Uri
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.view.animation.LinearInterpolator
-import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.viewbinding.ViewBinding
-import com.blankj.utilcode.util.AdaptScreenUtils
-import com.blankj.utilcode.util.LogUtils
 import com.example.demo.R
 import com.example.demo.chat.bean.Message
 import com.example.demo.databinding.LayItemChatImageMsgBinding
 import com.example.demo.databinding.LayItemChatTextMsgBinding
-import com.kehuafu.base.core.container.base.adapter.BaseListAdapter
-import com.kehuafu.base.core.container.base.adapter.BaseListAdapterV3
 import com.kehuafu.base.core.ktx.loadImage
-import com.kehuafu.base.core.ktx.viewBindings
 import com.example.demo.utils.DensityTool
-import com.example.demo.utils.DensityTool.dp2px
-import com.kehuafu.base.core.container.widget.toast.showToast
-import java.io.File
+import com.kehuafu.base.core.container.base.adapter.BaseListMultipleAdapter
 
 
 /**
@@ -34,7 +24,7 @@ import java.io.File
  * 3.初始化->①设置状态监听，②属性委托对应的VB
  * 4.UI状态绑定->当数据的state变化时，对应的UI跟随状态改变
  */
-class ChatListAdapterV3 : BaseListAdapterV3<Message>() {
+class ChatListMultipleAdapter : BaseListMultipleAdapter<Message>() {
 
     private val mChatMsgAdapterTypeDelegate by lazy {
         ChatMsgAdapterTypeDelegate()
