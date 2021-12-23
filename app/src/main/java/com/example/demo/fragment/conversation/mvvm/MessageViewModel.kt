@@ -23,7 +23,6 @@ import com.tencent.imsdk.v2.V2TIMSendCallback
 
 class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
     initialState = MessageState(
-        conversationList = mutableListOf(),
         messageList = mutableListOf(),
         messageTheme = mutableListOf()
     ),
@@ -50,6 +49,11 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                     is MessageAction.InitMessageThemeList -> {
                         state.copy(
                             messageTheme = action.messageTheme
+                        )
+                    }
+                    is MessageAction.NetWorkStatusChanged -> {
+                        state.copy(
+                            conn = action.conn
                         )
                     }
                     else -> {
@@ -250,18 +254,28 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
         return tmpThemeList
     }
 
+    fun netWorkStatusChanged(conn: Boolean) {
+        asyncCall({
+            showToast(it.errorMsg)
+        }) {
+            dispatch(MessageAction.NetWorkStatusChanged(conn = conn))
+        }
+    }
+
     sealed class MessageAction : Action {
         class Success(val conversationList: MutableList<Conversation>) : MessageAction()
         class C2CHistoryMessageList(val messageList: MutableList<Message>) : MessageAction()
         class MsgSendFailed(val messageList: MutableList<Message>) : MessageAction()
         class MsgSendSuccess(val messageList: MutableList<Message>) : MessageAction()
         class InitMessageThemeList(val messageTheme: MutableList<MessageTheme>) : MessageAction()
+        class NetWorkStatusChanged(val conn: Boolean) : MessageAction()
     }
 
     data class MessageState(
-        val conversationList: MutableList<Conversation>,
+        val conversationList: MutableList<Conversation>? = null,
         val messageList: MutableList<Message>,
-        val messageTheme: MutableList<MessageTheme>
+        val messageTheme: MutableList<MessageTheme>,
+        val conn: Boolean = true
     ) : IState {
 
     }

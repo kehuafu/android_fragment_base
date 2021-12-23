@@ -11,4 +11,6 @@ sealed class LocalLifecycleEvent {
 
     class ReceivedConversationChangedEvent(val conversationList: MutableList<V2TIMConversation>) :
         LocalLifecycleEvent()
+
+    class NetWorkIsConnectedEvent(val conn: Boolean) : LocalLifecycleEvent()
 }

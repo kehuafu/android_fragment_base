@@ -1,7 +1,9 @@
 package com.example.demo.fragment.conversation
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.demo.app.AppManager
 import com.example.demo.app.Router
@@ -40,6 +42,7 @@ class ConversationFragment :
         withViewBinding {
             messageList.itemAnimator = null
             messageList.layoutManager = LinearLayoutManager(baseActivity)
+            messageList.adapter = mConversationListAdapter
         }
     }
 
@@ -48,21 +51,13 @@ class ConversationFragment :
         viewModel.getConversationList()
     }
 
-    override fun onResume() {
-        super.onResume()
-        viewModel.getConversationList()
-    }
-
     override fun onStateChanged(state: MessageViewModel.MessageState) {
         super.onStateChanged(state)
-        viewBinding.messageList.adapter = mConversationListAdapter
         mConversationListAdapter.resetItems(state.conversationList)
+        viewBinding.networkError.isVisible = !state.conn
     }
 
     override fun onItemClick(itemView: View, item: Conversation, position: Int?) {
-//        val args = Bundle()
-//        args.putString("name", item.name)
-//        baseActivity.navigation(Router.CHAT_FRAGMENT, args)
         ChatActivity.showHasResult(item.name!!)
     }
 
@@ -70,6 +65,9 @@ class ConversationFragment :
         when (event) {
             is LocalLifecycleEvent.ReceivedConversationChangedEvent -> {
                 viewModel.getConversationList()
+            }
+            is LocalLifecycleEvent.NetWorkIsConnectedEvent -> {
+                viewModel.netWorkStatusChanged(event.conn)
             }
             else -> {
 

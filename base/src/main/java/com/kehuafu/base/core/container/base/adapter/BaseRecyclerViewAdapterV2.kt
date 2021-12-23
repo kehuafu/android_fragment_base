@@ -135,7 +135,8 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
         notifyDataSetChanged()
     }
 
-    fun resetItems(newItems: List<Item>) {
+    fun resetItems(newItems: List<Item>?) {
+        if (newItems.isNullOrEmpty()) return
         clear()
         addAllItem(newItems)
     }

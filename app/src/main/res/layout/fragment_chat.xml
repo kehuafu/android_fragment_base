@@ -18,8 +18,7 @@
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scaleType="fitXY"
-                android:src="@drawable/chat_bg"
+                android:src="@drawable/wx_bg"
                 android:visibility="visible" />
 
         </FrameLayout>
@@ -75,14 +74,6 @@
 
                         </LinearLayout>
 
-                        <!--                        <include-->
-                        <!--                            android:id="@+id/chat_input_rl"-->
-                        <!--                            layout="@layout/lay_chat_input_view"-->
-                        <!--                            android:layout_width="match_parent"-->
-                        <!--                            android:layout_height="wrap_content"-->
-                        <!--                            app:layout_constraintBottom_toBottomOf="parent"-->
-                        <!--                            tools:visibility="visible" />-->
-
                         <!--                        <com.example.demo.chat.widget.ChatInputView-->
                         <!--                            android:id="@+id/chat_input_rl"-->
                         <!--                            android:layout_width="match_parent"-->
@@ -100,7 +91,7 @@
                     layout="@layout/lay_chat_file_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:visibility="visible"
+                    android:visibility="invisible"
                     app:layout_constraintBottom_toBottomOf="parent"
                     tools:visibility="visible" />
 

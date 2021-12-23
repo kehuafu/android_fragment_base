@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
+import com.blankj.utilcode.util.NetworkUtils
 import com.example.demo.R
 import com.example.demo.app.AppManager
 import com.example.demo.common.receiver.event.LocalLifecycleEvent
@@ -24,7 +25,8 @@ import com.kehuafu.base.core.fragment.widget.TabLayout
 import com.tencent.imsdk.v2.*
 import java.lang.IndexOutOfBoundsException
 
-class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>(), V2TIMCallback {
+class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>(), V2TIMCallback,
+    NetworkUtils.OnNetworkStatusChangedListener {
 
     companion object {
         private const val TAG = "MainFragment"
@@ -107,6 +109,15 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>
                 showToast("消息已被撤回！")
             }
         })
+
+        NetworkUtils.registerNetworkStatusChangedListener(this)
+        NetworkUtils.isAvailableAsync {
+            AppManager.localEventLifecycleViewModel.postLifecycleEvent(
+                LocalLifecycleEvent.NetWorkIsConnectedEvent(
+                    conn = it
+                )
+            )
+        }
     }
 
     override fun onDestroy() {
@@ -116,6 +127,7 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>
         AppManager.iCloudConversationManager.removeConversationListener(object :
             V2TIMConversationListener() {})
         AppManager.iCloudImManager.logout(this)
+        NetworkUtils.unregisterNetworkStatusChangedListener(this)
     }
 
     private fun initViewPager() {
@@ -187,5 +199,28 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>
 
     override fun onError(p0: Int, p1: String?) {
         showToast("IM 登录失败！-->$p1")
+    }
+
+    override fun onDisconnected() {
+        showToast("网络不可用")
+        AppManager.localEventLifecycleViewModel.postLifecycleEvent(
+            LocalLifecycleEvent.NetWorkIsConnectedEvent(
+                conn = false
+            )
+        )
+    }
+
+    override fun onConnected(networkType: NetworkUtils.NetworkType?) {
+        showToast("网络已连接")
+        AppManager.iCloudImManager.login(
+            AppManager.currentUserID,
+            GenerateTestUserSig.genTestUserSig(AppManager.currentUserID),
+            this
+        )
+        AppManager.localEventLifecycleViewModel.postLifecycleEvent(
+            LocalLifecycleEvent.NetWorkIsConnectedEvent(
+                conn = true
+            )
+        )
     }
 }
