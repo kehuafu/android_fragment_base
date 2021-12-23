@@ -64,7 +64,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
         }
     }
 
-    fun sendMsg(text: String, userId: String, messageList: MutableList<Message>) {
+    fun sendTextMsg(text: String, userId: String, messageList: MutableList<Message>) {
         asyncCall({
             showToast(it.errorMsg)
         }) {
@@ -73,38 +73,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                 text
             )
             Log.e("@@", "createTextMessage--->${v2TIMMessage.msgID}")
-            val result =
-                AppManager.iCloudMessageManager.sendMessage(v2TIMMessage, userId,
-                    "",
-                    2,
-                    false,
-                    null,
-                    callback = object : V2TIMSendCallback<V2TIMMessage> {
-                        override fun onSuccess(p0: V2TIMMessage?) {
-                            Log.e("@@", "onSuccess-->" + p0!!.msgID)
-                            messageList.mapIndexed { index, message ->
-                                if (message.mid == p0.msgID) {
-                                    message.loading = false
-                                }
-                            }
-                            dispatch(MessageAction.MsgSendSuccess(messageList = messageList))
-                        }
-
-                        override fun onError(p0: Int, p1: String?) {
-                            Log.e("@@", "onError-->$p1")
-                            messageList.mapIndexed { index, message ->
-                                if (message.mid == v2TIMMessage.msgID) {
-                                    message.loading = false
-                                    message.sendFailed = true
-                                }
-                            }
-                            dispatch(MessageAction.MsgSendFailed(messageList = messageList))
-                        }
-
-                        override fun onProgress(p0: Int) {
-                            Log.e("@@", "onProgress-->$p0")
-                        }
-                    })
+            val result = sendMessage(v2TIMMessage, userId, messageList)
             Log.e("@@", "sendMessage--->$result")
             val message = Message(
                 mid = result,
@@ -119,6 +88,44 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
             messageList.add(0, message)
             dispatch(MessageAction.C2CHistoryMessageList(messageList = messageList))
         }
+    }
+
+    private suspend fun sendMessage(
+        v2TIMMessage: V2TIMMessage,
+        userId: String,
+        messageList: MutableList<Message>
+    ): String {
+        return AppManager.iCloudMessageManager.sendMessage(v2TIMMessage, userId,
+            "",
+            2,
+            false,
+            null,
+            callback = object : V2TIMSendCallback<V2TIMMessage> {
+                override fun onSuccess(p0: V2TIMMessage?) {
+                    Log.e("@@", "onSuccess-->" + p0!!.msgID)
+                    messageList.mapIndexed { index, message ->
+                        if (message.mid == p0.msgID) {
+                            message.loading = false
+                        }
+                    }
+                    dispatch(MessageAction.MsgSendSuccess(messageList = messageList))
+                }
+
+                override fun onError(p0: Int, p1: String?) {
+                    Log.e("@@", "onError-->$p1")
+                    messageList.mapIndexed { index, message ->
+                        if (message.mid == v2TIMMessage.msgID) {
+                            message.loading = false
+                            message.sendFailed = true
+                        }
+                    }
+                    dispatch(MessageAction.MsgSendFailed(messageList = messageList))
+                }
+
+                override fun onProgress(p0: Int) {
+                    Log.e("@@", "onProgress-->$p0")
+                }
+            })
     }
 
     fun resendMessage(
@@ -182,8 +189,8 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                         uid = msg.userID,
                         name = msg.nickName,
                         avatar = msg.faceUrl,
-                        messageContent = msg.textElem.text,
-                        messageType = Message.MSG_TYPE_TEXT,
+                        messageContent = Message.messageContent(msg),
+                        messageType = msg.elemType,
                         messageTime = TimeUtils.date2String(TimeUtils.millis2Date(msg.timestamp * 1000)),
                         messageSender = msg.sender == AppManager.currentUserID,
                         showTime = lastTemp - TimeUtils.getMillis(
@@ -219,11 +226,13 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                     uid = "",
                     name = conversation.showName,
                     avatar = "",
-                    messageContent = conversation.lastMessage.textElem.text,
-                    messageType = 0,
+                    messageContent = Conversation.messageContent(conversation.lastMessage),
+                    messageType = conversation.lastMessage.elemType,
                     messageTime = TimeUtils.date2String(TimeUtils.millis2Date(conversation.lastMessage.timestamp * 1000)),
                     messageSender = conversation.userID == AppManager.currentUserID,
-                    messageUnreadCount = conversation.unreadCount
+                    messageUnreadCount = conversation.unreadCount,
+                    messageState = conversation.lastMessage.status,
+                    v2TIMMessage = conversation.lastMessage
                 )
                 conList.add(message)
             }
@@ -259,6 +268,29 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
             showToast(it.errorMsg)
         }) {
             dispatch(MessageAction.NetWorkStatusChanged(conn = conn))
+        }
+    }
+
+    fun sendImageMsg(path: String, userId: String, messageList: MutableList<Message>) {
+        asyncCall({
+            showToast(it.errorMsg)
+        }) {
+            val v2TIMMessage = AppManager.iCloudMessageManager.createImageMessage(path)
+            Log.e("@@@@@@", "createImageMessage--->${v2TIMMessage.imageElem.imageList[2].url}")
+            val result = sendMessage(v2TIMMessage, userId, messageList)
+            Log.e("@@@@@@", "sendMessage--->$result")
+            val message = Message(
+                mid = result,
+                uid = userId,
+                loading = true,
+                messageContent = path,
+                messageType = Message.MSG_TYPE_IMAGE,
+                messageSender = true,
+                showTime = false,
+                v2TIMMessage = v2TIMMessage
+            )
+            messageList.add(0, message)
+            dispatch(MessageAction.C2CHistoryMessageList(messageList = messageList))
         }
     }
 

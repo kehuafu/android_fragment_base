@@ -1,15 +1,7 @@
 package com.example.demo.chat.adapter
 
 import android.annotation.SuppressLint
-import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
-import android.view.animation.LinearInterpolator
-import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
-import com.example.demo.R
-import com.example.demo.databinding.LayItemChatMsgBinding
-import com.example.demo.chat.bean.Message
 import com.example.demo.chat.bean.MessageTheme
 import com.example.demo.databinding.LayItemChatFileItemBinding
 import com.kehuafu.base.core.container.base.adapter.BaseListAdapter

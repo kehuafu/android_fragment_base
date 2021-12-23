@@ -4,7 +4,6 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.TypedValue
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import androidx.core.content.ContextCompat
@@ -19,7 +18,6 @@ import com.example.demo.app.AppManager
 import com.example.demo.chat.adapter.ChatListAdapter
 import com.example.demo.databinding.FragmentChatBinding
 import com.example.demo.chat.bean.Message
-import com.example.demo.chat.widget.OverScrollLayout
 import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.common.receiver.event.LocalLifecycleEvent
 import com.example.demo.fragment.conversation.mvvm.MessageViewModel
@@ -181,7 +179,7 @@ class ChatFragment :
             }
             chatInputRl.btnSendMsg.setOnClickListener {
                 withViewBinding {
-                    viewModel.sendMsg(
+                    viewModel.sendTextMsg(
                         chatInputRl.etMsg.text.toString().trim(),
                         userId!!,
                         messageList

@@ -4,7 +4,7 @@ import com.tencent.imsdk.v2.*
 
 interface ICloudMessageManager {
 
-   suspend fun createTextMessage(text: String): V2TIMMessage
+    suspend fun createTextMessage(text: String): V2TIMMessage
 
     fun createImageMessage(imagePath: String): V2TIMMessage
 

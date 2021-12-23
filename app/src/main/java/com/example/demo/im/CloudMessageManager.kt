@@ -28,7 +28,7 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
     }
 
     override fun createImageMessage(imagePath: String): V2TIMMessage {
-        TODO("Not yet implemented")
+        return V2TIMManager.getMessageManager().createImageMessage(imagePath)
     }
 
     override fun createSoundMessage(soundPath: String, duration: Int): V2TIMMessage {

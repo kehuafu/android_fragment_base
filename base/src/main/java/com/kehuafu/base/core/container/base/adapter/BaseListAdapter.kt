@@ -2,7 +2,6 @@ package com.kehuafu.base.core.container.base.adapter
 
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
-import java.text.FieldPosition
 
 /**
  *  Created by light
