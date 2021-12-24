@@ -1,20 +1,23 @@
 package com.example.demo.chat
 
+import android.Manifest
+import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.content.ContentUris
+import android.app.Activity
+import android.content.ContentValues
 import android.content.Intent
-import android.database.Cursor
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.DocumentsContract
+import android.os.Environment
 import android.provider.MediaStore
-import android.util.Log
 import android.view.View
 import android.view.animation.DecelerateInterpolator
-import androidx.annotation.Nullable
+import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
@@ -34,6 +37,7 @@ import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.common.receiver.event.LocalLifecycleEvent
 import com.example.demo.fragment.conversation.mvvm.MessageViewModel
 import com.example.demo.utils.HeightProvider
+import com.example.demo.utils.UriUtils
 import com.kehuafu.base.core.container.base.BaseActivity
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV2
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV3
@@ -53,7 +57,6 @@ class ChatActivity :
 
     private var mChatListAdapter = ChatListMultipleAdapter()
 
-
     private var mChatFileTypeAdapter = ChatFileTypeAdapter()
 
     private var userId: String? = ""
@@ -68,9 +71,6 @@ class ChatActivity :
 
         const val EXTRAS_TARGET_ID = "com.example.demo.chat.EXTRAS_TARGET_ID"
         const val REQUEST_CODE_CALL = 0x01
-
-        //相册
-        private const val CHOOSE_PHOTO = 100
 
         @JvmStatic
         fun showHasResult(targetId: String) {
@@ -265,11 +265,22 @@ class ChatActivity :
                     when (itemView.id) {
                         R.id.iv_type_image -> {
                             showToast("文件类型-->" + item.title)
-                            PermissionUtils.permission(PermissionConstants.STORAGE)
+                            PermissionUtils.permission(
+                                PermissionConstants.STORAGE,
+                                PermissionConstants.CAMERA,
+                                PermissionConstants.LOCATION
+                            )
                                 .callback(object : PermissionUtils.FullCallback {
                                     override fun onGranted(permissionsGranted: List<String>) {
                                         LogUtils.d(permissionsGranted)
-                                        openAlbum()
+                                        when (item.title) {
+                                            "相册" -> {
+                                                selectAlbums()
+                                            }
+                                            "拍摄" -> {
+                                                openCamera()
+                                            }
+                                        }
                                     }
 
                                     override fun onDenied(
@@ -315,90 +326,119 @@ class ChatActivity :
         mChatFileTypeAdapter.resetItems(state.messageTheme)
     }
 
-    /**
-     * 从相册中选择照片
-     */
-    private fun openAlbum() {
-        val intent = Intent("android.intent.action.GET_CONTENT")
-        intent.type = "image/*"
-        startActivityForResult(intent, CHOOSE_PHOTO)
-    }
+    // 申请相机权限的requestCode
+    private val PERMISSION_CAMERA_REQUEST_CODE = 0x00000012
+    private val PERMISSION_REQUEST = 1001
+    private var RC_CHOOSE_PHOTO: Int = 2
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, @Nullable data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-//        val intent: Intent = Intent(this@ChatActivity, PuzzleMain::class.java)
-        if (requestCode == CHOOSE_PHOTO) {
-            if (requestCode != RESULT_OK) {
-                //判断手机的版本号
-                val path: String = if (Build.VERSION.SDK_INT >= 19) {
-                    //4.4及以上的系统使用的这个方法处理图片
-                    handleImageOnKitKat(data!!)!!
-                } else {
-                    //4.4以下的系统使用的图片处理方法
-                    handleImageBeforeKitKat(data!!)!!
-                }
-                Log.e("@@", "系统相册路径---->$path")
-//                intent.putExtra("mPicPath", path)
-//                startActivity(intent)
-                viewModel.sendImageMsg(path, userId!!, messageList)
+    private var mCameraUrl: Uri? = null
+    private var photoUri: Uri? = null
+
+
+    /**
+     * 调起相机
+     */
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun openCamera() {
+        val captureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        //判断是否有相机
+        //if (captureIntent.resolveActivity(packageManager)!= null){ //Android 11 判断为null
+        if (this.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) { //适配Android11
+            photoUri = createImageUri()
+            mCameraUrl = photoUri
+            if (photoUri != null) {
+                captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+                captureIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                startActivityForResult(captureIntent, PERMISSION_CAMERA_REQUEST_CODE)
             }
         }
     }
 
     /**
-     * 根据不同的版本对data进行不同的处理
+     * 调起系统相册,长按图片实现多选
      */
-    private fun handleImageOnKitKat(data: Intent): String? {
-        var imagePath: String? = null
-        val uri: Uri? = data.data
-        if (DocumentsContract.isDocumentUri(this, uri)) {
-            //如果document类型的Uri，则通过document id处理
-            val docId: String = DocumentsContract.getDocumentId(uri)
-            if ("com.android.providers.media.documents" == uri?.authority) {
-                val id = docId.split(":").toTypedArray()[1] //解析出数字格式的id
-                val selection: String = MediaStore.Images.Media._ID.toString() + "=" + id
-                imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, selection)
-            } else if ("com.android.providers.downloads.documents" == uri?.authority) {
-                val contentUri: Uri = ContentUris.withAppendedId(
-                    Uri.parse(
-                        "content://" +
-                                "downloads//public_downloads"
-                    ), java.lang.Long.valueOf(docId)
+    private fun selectAlbums() {
+        Thread {
+            runOnUiThread {
+                val intent = Intent()
+                intent.type = "image/*"
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                //intent.setAction(Intent.ACTION_GET_CONTENT)  //实现相册多选 该方法获得的uri在转化为真实文件路径时Android 4.4以上版本会有问题
+                intent.action = Intent.ACTION_PICK
+                intent.data =
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI //直接打开系统相册，不设置会有选择相册一步（例：系统相册、QQ浏览器相册）
+                startActivityForResult(
+                    Intent.createChooser(intent, "Select Picture"),
+                    RC_CHOOSE_PHOTO
                 )
-                imagePath = getImagePath(contentUri, null)
             }
-        } else if ("content".equals(uri?.scheme, ignoreCase = true)) {
-            //如果是普通content类型的uri，则使用普通的方法处理
-            imagePath = getImagePath(uri!!, null)
-        } else if ("file".equals(uri?.scheme, ignoreCase = true)) {
-            //如果使用file类型的uri，直接获取图片的路径即可
-            imagePath = uri?.path
-        }
-        return imagePath
+        }.start()
     }
 
     /**
-     * 解析Url，得到路径
+     * 创建图片地址Uri，用于保存拍照后的照片
      */
-    private fun handleImageBeforeKitKat(data: Intent): String? {
-        val uri: Uri? = data.data
-        return getImagePath(uri!!, null)
+    private fun createImageUri(): Uri? {
+        val status = Environment.getExternalStorageState()
+        //判断是否有SD卡，优先使用SD卡存储，当没有SD卡时使用手机储存
+        return if (status.equals(Environment.MEDIA_MOUNTED)) {
+            contentResolver.insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                ContentValues()
+            )
+        } else {
+            contentResolver.insert(
+                MediaStore.Images.Media.INTERNAL_CONTENT_URI,
+                ContentValues()
+            )
+        }
     }
 
-    private fun getImagePath(externalContentUri: Uri, selection: String?): String? {
-        var path: String? = null
-        //通过Uri和selection来获取真实的图片路径
-        val cursor: Cursor? = contentResolver.query(
-            externalContentUri,
-            null, selection, null, null
-        )
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA))
+    /**
+     * 选择从相册中选取图片
+     * 单选
+     */
+    private fun selectAlbum() {
+        val intent = Intent(Intent.ACTION_PICK, null)
+        intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*")
+        startActivityForResult(intent, RC_CHOOSE_PHOTO)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        //拍照的结果
+        if (requestCode == PERMISSION_CAMERA_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                viewModel.sendImageMsg(
+                    UriUtils.getFileAbsolutePath(this, mCameraUrl),
+                    userId!!,
+                    messageList
+                )
             }
-            cursor.close()
         }
-        return path
+        //相册选择的结果
+        else if (requestCode == RC_CHOOSE_PHOTO && data != null) {
+            Thread {
+                runOnUiThread {
+                    val imageNames = data.clipData
+                    if (imageNames != null) {//多选
+                        for (i in 0 until imageNames.itemCount) {
+                            val uri = imageNames.getItemAt(i).uri
+                            viewModel.sendImageMsg(
+                                UriUtils.getFileAbsolutePath(this, uri),
+                                userId!!, messageList
+                            )
+                        }
+                    } else {//单选
+                        viewModel.sendImageMsg(
+                            UriUtils.getFileAbsolutePath(this, data.data!!),
+                            userId!!, messageList
+                        )
+                    }
+                }
+            }.start()
+        }
     }
 
     /**

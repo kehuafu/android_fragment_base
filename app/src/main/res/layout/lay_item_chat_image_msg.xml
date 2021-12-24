@@ -46,10 +46,13 @@
 
         <ImageView
             android:id="@+id/left_msg_iv"
-            android:layout_width="110dp"
-            android:layout_height="220dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="top"
             android:layout_marginStart="6dp"
+            android:adjustViewBounds="true"
+            android:maxWidth="210dp"
+            android:maxHeight="210dp"
             tools:ignore="RtlSymmetry"
             tools:src="@drawable/wx_bg" />
 
@@ -70,6 +73,8 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:gravity="top"
             android:orientation="horizontal">
 
             <ImageView
@@ -96,10 +101,13 @@
 
             <ImageView
                 android:id="@+id/right_msg_iv"
-                android:layout_width="110dp"
-                android:layout_height="220dp"
-                android:layout_gravity="top"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
+                android:adjustViewBounds="true"
+                android:maxWidth="210dp"
+                android:maxHeight="210dp"
+                android:scaleType="fitEnd"
                 tools:ignore="RtlSymmetry"
                 tools:src="@drawable/wx_bg" />
 

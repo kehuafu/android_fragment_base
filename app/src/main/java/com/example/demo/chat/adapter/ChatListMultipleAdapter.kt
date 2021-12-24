@@ -8,6 +8,8 @@ import android.view.animation.AnimationUtils
 import android.view.animation.LinearInterpolator
 import androidx.core.view.isVisible
 import androidx.viewbinding.ViewBinding
+import com.blankj.utilcode.util.AdaptScreenUtils
+import com.blankj.utilcode.util.LogUtils
 import com.example.demo.R
 import com.example.demo.chat.bean.Message
 import com.example.demo.databinding.LayItemChatImageMsgBinding
@@ -97,22 +99,12 @@ class ChatListMultipleAdapter : BaseListMultipleAdapter<Message>() {
         if (item.messageSender) {
             viewBinding.layoutLeftText.visibility = View.GONE
             viewBinding.layoutRightText.visibility = View.VISIBLE
-            if (item.loading || item.sendFailed) {
-                val options = BitmapFactory.Options()
-                options.inJustDecodeBounds = true
-                BitmapFactory.decodeFile(item.messageContent!!, options)
-                DensityTool.setWH(
-                    viewBinding.rightMsgIv,
-                    (options.outWidth / 4.475f).toInt(),
-                    (options.outHeight / 4.475f).toInt()
-                )
-                viewBinding.rightMsgIv.setImageBitmap(BitmapFactory.decodeFile(item.messageContent))
-            } else {
+            if (!item.loading) {
                 val height = item.v2TIMMessage.imageElem.imageList[2].height
                 val width = item.v2TIMMessage.imageElem.imageList[2].width
                 DensityTool.setWH(viewBinding.rightMsgIv, width, height)
-                viewBinding.rightMsgIv.loadImage(item.messageContent!!)
             }
+            viewBinding.rightMsgIv.loadImage(item.messageContent!!)
         } else {
             viewBinding.layoutLeftText.visibility = View.VISIBLE
             viewBinding.layoutRightText.visibility = View.GONE

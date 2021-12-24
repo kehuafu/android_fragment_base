@@ -31,9 +31,7 @@ class ConversationFragment :
             return ConversationFragment()
         }
     }
-
-    private val itemTab by viewBindings<ItemTabMainBinding>()
-
+    
     private var mConversationListAdapter = ConversationListAdapter()
 
     override fun onViewCreated(savedInstanceState: Bundle?) {
