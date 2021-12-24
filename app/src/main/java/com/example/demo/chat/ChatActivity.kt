@@ -1,23 +1,20 @@
 package com.example.demo.chat
 
-import android.Manifest
-import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import android.widget.Toast
+import androidx.activity.result.ActivityResultCallback
 import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
@@ -37,7 +34,7 @@ import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.common.receiver.event.LocalLifecycleEvent
 import com.example.demo.fragment.conversation.mvvm.MessageViewModel
 import com.example.demo.utils.HeightProvider
-import com.example.demo.utils.UriUtils
+import com.example.demo.utils.UriUtil
 import com.kehuafu.base.core.container.base.BaseActivity
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV2
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV3
@@ -45,9 +42,11 @@ import com.kehuafu.base.core.container.widget.toast.showToast
 import com.kehuafu.base.core.ktx.showHasResult
 import com.tencent.imsdk.v2.V2TIMMessage
 import java.util.*
+import androidx.activity.result.contract.ActivityResultContracts.GetContent
+import com.example.demo.utils.TakeCameraUri
 
 
-class ChatActivity :
+open class ChatActivity :
     BaseActivity<FragmentChatBinding, MessageViewModel, MessageViewModel.MessageState>(),
     BaseRecyclerViewAdapterV3.OnItemClickListener<Message>,
     LocalEventLifecycleViewModel.OnLocalEventCallback<LocalLifecycleEvent> {
@@ -275,10 +274,12 @@ class ChatActivity :
                                         LogUtils.d(permissionsGranted)
                                         when (item.title) {
                                             "相册" -> {
-                                                selectAlbums()
+                                                launchAlbum()
+//                                                PictureUtils.instance.selectAlbums()
                                             }
                                             "拍摄" -> {
-                                                openCamera()
+                                                launchCameraUri()
+//                                                PictureUtils.instance.openCamera()
                                             }
                                         }
                                     }
@@ -326,119 +327,36 @@ class ChatActivity :
         mChatFileTypeAdapter.resetItems(state.messageTheme)
     }
 
-    // 申请相机权限的requestCode
-    private val PERMISSION_CAMERA_REQUEST_CODE = 0x00000012
-    private val PERMISSION_REQUEST = 1001
-    private var RC_CHOOSE_PHOTO: Int = 2
-
-    private var mCameraUrl: Uri? = null
-    private var photoUri: Uri? = null
-
-
-    /**
-     * 调起相机
-     */
-    @RequiresApi(Build.VERSION_CODES.KITKAT)
-    private fun openCamera() {
-        val captureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        //判断是否有相机
-        //if (captureIntent.resolveActivity(packageManager)!= null){ //Android 11 判断为null
-        if (this.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) { //适配Android11
-            photoUri = createImageUri()
-            mCameraUrl = photoUri
-            if (photoUri != null) {
-                captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
-                captureIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                startActivityForResult(captureIntent, PERMISSION_CAMERA_REQUEST_CODE)
-            }
-        }
-    }
-
-    /**
-     * 调起系统相册,长按图片实现多选
-     */
-    private fun selectAlbums() {
-        Thread {
-            runOnUiThread {
-                val intent = Intent()
-                intent.type = "image/*"
-                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-                //intent.setAction(Intent.ACTION_GET_CONTENT)  //实现相册多选 该方法获得的uri在转化为真实文件路径时Android 4.4以上版本会有问题
-                intent.action = Intent.ACTION_PICK
-                intent.data =
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI //直接打开系统相册，不设置会有选择相册一步（例：系统相册、QQ浏览器相册）
-                startActivityForResult(
-                    Intent.createChooser(intent, "Select Picture"),
-                    RC_CHOOSE_PHOTO
-                )
-            }
-        }.start()
-    }
-
-    /**
-     * 创建图片地址Uri，用于保存拍照后的照片
-     */
-    private fun createImageUri(): Uri? {
-        val status = Environment.getExternalStorageState()
-        //判断是否有SD卡，优先使用SD卡存储，当没有SD卡时使用手机储存
-        return if (status.equals(Environment.MEDIA_MOUNTED)) {
-            contentResolver.insert(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                ContentValues()
-            )
-        } else {
-            contentResolver.insert(
-                MediaStore.Images.Media.INTERNAL_CONTENT_URI,
-                ContentValues()
+    private val mLauncherCameraUri =
+        registerForActivityResult(TakeCameraUri()) {
+            LogUtils.a("aaaaaaaaaaaa", "mLauncherCameraUri：$it")
+            viewModel.sendImageMsg(
+                UriUtil.getFileAbsolutePath(this, it),
+                userId!!,
+                messageList
             )
         }
+
+    //调用相册选择图片
+    protected fun launchCameraUri() {
+        mLauncherCameraUri.launch(null)
     }
 
-    /**
-     * 选择从相册中选取图片
-     * 单选
-     */
-    private fun selectAlbum() {
-        val intent = Intent(Intent.ACTION_PICK, null)
-        intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*")
-        startActivityForResult(intent, RC_CHOOSE_PHOTO)
+    //选取图片
+    private val mLauncherAlbum = registerForActivityResult(
+        GetContent()
+    ) {
+        LogUtils.a("aaaaaaaaaaaa", "mLauncherAlbum：$it")
+        viewModel.sendImageMsg(  
+            UriUtil.getFileAbsolutePath(this, it),
+            userId!!,
+            messageList
+        )
     }
 
-    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        //拍照的结果
-        if (requestCode == PERMISSION_CAMERA_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                viewModel.sendImageMsg(
-                    UriUtils.getFileAbsolutePath(this, mCameraUrl),
-                    userId!!,
-                    messageList
-                )
-            }
-        }
-        //相册选择的结果
-        else if (requestCode == RC_CHOOSE_PHOTO && data != null) {
-            Thread {
-                runOnUiThread {
-                    val imageNames = data.clipData
-                    if (imageNames != null) {//多选
-                        for (i in 0 until imageNames.itemCount) {
-                            val uri = imageNames.getItemAt(i).uri
-                            viewModel.sendImageMsg(
-                                UriUtils.getFileAbsolutePath(this, uri),
-                                userId!!, messageList
-                            )
-                        }
-                    } else {//单选
-                        viewModel.sendImageMsg(
-                            UriUtils.getFileAbsolutePath(this, data.data!!),
-                            userId!!, messageList
-                        )
-                    }
-                }
-            }.start()
-        }
+    //调用相册选择图片
+    protected fun launchAlbum() {
+        mLauncherAlbum.launch("image/*")
     }
 
     /**
