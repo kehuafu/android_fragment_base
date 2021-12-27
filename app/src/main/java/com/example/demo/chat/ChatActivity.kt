@@ -43,6 +43,7 @@ import com.kehuafu.base.core.ktx.showHasResult
 import com.tencent.imsdk.v2.V2TIMMessage
 import java.util.*
 import androidx.activity.result.contract.ActivityResultContracts.GetContent
+import com.example.demo.utils.AnimatorUtils
 import com.example.demo.utils.TakeCameraUri
 
 
@@ -126,7 +127,8 @@ open class ChatActivity :
                     viewBinding.chatInputRl.root.translationY = -keyBoardHeight
                 } else {
                     viewBinding.chatFile.chatFileLl.minimumHeight = it
-                    startTranslateY(viewBinding.chatInputRl.root, -it.toFloat())
+                    AnimatorUtils.build()
+                        .startTranslateY(viewBinding.chatInputRl.root, -it.toFloat())
                 }
                 viewBinding.chatRv.scrollToPosition(0)
                 if (viewBinding.chatRv.findViewHolderForLayoutPosition(0) != null) {
@@ -275,11 +277,9 @@ open class ChatActivity :
                                         when (item.title) {
                                             "相册" -> {
                                                 launchAlbum()
-//                                                PictureUtils.instance.selectAlbums()
                                             }
                                             "拍摄" -> {
                                                 launchCameraUri()
-//                                                PictureUtils.instance.openCamera()
                                             }
                                         }
                                     }
@@ -329,7 +329,6 @@ open class ChatActivity :
 
     private val mLauncherCameraUri =
         registerForActivityResult(TakeCameraUri()) {
-            LogUtils.a("aaaaaaaaaaaa", "mLauncherCameraUri：$it")
             viewModel.sendImageMsg(
                 UriUtil.getFileAbsolutePath(this, it),
                 userId!!,
@@ -346,8 +345,7 @@ open class ChatActivity :
     private val mLauncherAlbum = registerForActivityResult(
         GetContent()
     ) {
-        LogUtils.a("aaaaaaaaaaaa", "mLauncherAlbum：$it")
-        viewModel.sendImageMsg(  
+        viewModel.sendImageMsg(
             UriUtil.getFileAbsolutePath(this, it),
             userId!!,
             messageList
@@ -357,24 +355,6 @@ open class ChatActivity :
     //调用相册选择图片
     protected fun launchAlbum() {
         mLauncherAlbum.launch("image/*")
-    }
-
-    /**
-     * 软键盘的过渡动画效果
-     */
-    private fun startTranslateY(view: View, destinationY: Float) {
-        val animatorSet = AnimatorSet()
-
-        val currentY: Float = view.translationY
-        val translateYAnimator =
-            ObjectAnimator.ofFloat(view, "translationY", currentY, destinationY)
-
-        val alphaAnimator = ObjectAnimator.ofFloat(view, "alpha", 0f, 1f)
-
-        animatorSet.play(translateYAnimator).after(alphaAnimator)
-        animatorSet.duration = 80
-        animatorSet.interpolator = DecelerateInterpolator()
-        animatorSet.start()
     }
 
 

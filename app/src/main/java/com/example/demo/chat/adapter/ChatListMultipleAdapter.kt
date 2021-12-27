@@ -97,7 +97,6 @@ class ChatListMultipleAdapter : BaseListMultipleAdapter<Message>() {
             mOnItemClickListener?.onItemClick(it, item = item, position)
         }
         if (item.messageSender) {
-            viewBinding.layoutLeftText.visibility = View.GONE
             viewBinding.layoutRightText.visibility = View.VISIBLE
             if (!item.loading) {
                 val height = item.v2TIMMessage.imageElem.imageList[2].height
@@ -107,7 +106,6 @@ class ChatListMultipleAdapter : BaseListMultipleAdapter<Message>() {
             viewBinding.rightMsgIv.loadImage(item.messageContent!!)
         } else {
             viewBinding.layoutLeftText.visibility = View.VISIBLE
-            viewBinding.layoutRightText.visibility = View.GONE
             val height = item.v2TIMMessage.imageElem.imageList[2].height
             val width = item.v2TIMMessage.imageElem.imageList[2].width
             DensityTool.setWH(viewBinding.leftMsgIv, width, height)
@@ -148,12 +146,10 @@ class ChatListMultipleAdapter : BaseListMultipleAdapter<Message>() {
             mOnItemClickListener?.onItemClick(it, item = item, position)
         }
         if (item.messageSender) {
-            viewBinding.layoutLeftText.visibility = View.GONE
             viewBinding.layoutRightText.visibility = View.VISIBLE
             viewBinding.rightMsgText.text = item.messageContent
         } else {
             viewBinding.layoutLeftText.visibility = View.VISIBLE
-            viewBinding.layoutRightText.visibility = View.GONE
             viewBinding.leftMsgText.text = item.messageContent
         }
         viewBinding.tvTime.isVisible = item.showTime!!

@@ -3,11 +3,10 @@ package com.kehuafu.base.core.container.base.adapter
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.*
 import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import androidx.viewbinding.ViewBinding
+import com.blankj.utilcode.util.LogUtils
 import com.kehuafu.base.core.viewbinding.IViewBinding
 
 /**
@@ -27,7 +26,7 @@ abstract class BaseRecyclerViewAdapterV3<VB : ViewBinding, Item, VH : BaseRecycl
         const val EMPTY_TYPE = -0x01
     }
 
-    val mItems: MutableList<Item> = mutableListOf()
+    var mItems: MutableList<Item> = mutableListOf()
 
     protected var mOnItemClickListener: OnItemClickListener<Item>? = null
 
@@ -45,11 +44,10 @@ abstract class BaseRecyclerViewAdapterV3<VB : ViewBinding, Item, VH : BaseRecycl
 
     fun setShowEmptyView(showEmptyView: Boolean) {
         this.mShowEmptyView = showEmptyView
-        clear()
     }
 
     override fun getItemCount(): Int {
-        return if (mShowEmptyView && mItems.isEmpty()) 1 else mItems.size
+        return if (mShowEmptyView && mItems.isEmpty()) 0 else mItems.size
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -109,14 +107,32 @@ abstract class BaseRecyclerViewAdapterV3<VB : ViewBinding, Item, VH : BaseRecycl
         return mItems.size
     }
 
-    fun addAllItem(newItems: List<Item>) {
-        val position = mItems.size
-        mItems.addAll(newItems)
-        if (getRealItemCount() <= 0) {
-            setShowEmptyView(mShowEmptyView)
-        } else {
-            notifyItemRangeInserted(position, newItems.size)
-        }
+    private fun diffAllItem(newItems: MutableList<Item>) {
+        mItems = mutableListOf()
+        val diffResult = DiffUtil.calculateDiff(RvDiffItemCallback(mItems, newItems), false)
+        mItems = newItems
+        diffResult.dispatchUpdatesTo(object : ListUpdateCallback {
+            override fun onChanged(position: Int, count: Int, payload: Any?) {
+                notifyItemRangeChanged(position, count, payload)
+                LogUtils.a("diffAllItem", "notifyItemRangeChanged--->", position)
+            }
+
+            override fun onMoved(fromPosition: Int, toPosition: Int) {
+                notifyItemMoved(fromPosition, toPosition)
+                LogUtils.a("diffAllItem", "onMoved--->${fromPosition}", toPosition)
+            }
+
+            override fun onInserted(position: Int, count: Int) {
+                notifyItemRangeInserted(position, count)
+                LogUtils.a("diffAllItem", "onInserted--->", position, count)
+            }
+
+            override fun onRemoved(position: Int, count: Int) {
+                notifyItemRangeRemoved(position, count)
+                LogUtils.a("diffAllItem", "onRemoved--->", position)
+            }
+
+        })
     }
 
     fun removeItem(position: Int) {
@@ -130,15 +146,9 @@ abstract class BaseRecyclerViewAdapterV3<VB : ViewBinding, Item, VH : BaseRecycl
         notifyItemChanged(position)
     }
 
-    fun clear() {
-        mItems.clear()
-        notifyDataSetChanged()
-    }
-
-    fun resetItems(newItems: List<Item>?) {
+    fun resetItems(newItems: MutableList<Item>?) {
         if (newItems.isNullOrEmpty()) return
-        clear()
-        addAllItem(newItems)
+        diffAllItem(newItems)
     }
 
     interface OnItemClickListener<Item> {
@@ -152,6 +162,27 @@ abstract class BaseRecyclerViewAdapterV3<VB : ViewBinding, Item, VH : BaseRecycl
     interface OnCreateEmptyViewHolderCallback {
         fun onCreateEmptyViewHolder(parent: ViewGroup): BaseViewHolder<*>
         fun onBindEmptyViewHolder(holder: BaseViewHolder<*>, position: Int)
+    }
+
+    class RvDiffItemCallback<Item>(val old: MutableList<Item>, val new: MutableList<Item>) :
+        DiffUtil.Callback() {
+        override fun getOldListSize(): Int {
+            return old.size
+        }
+
+        override fun getNewListSize(): Int {
+            return new.size
+        }
+
+        //判断id是否相同，由于是 string，没有id，所以就直接比较了
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return old[oldItemPosition]?.equals(new[newItemPosition])!!
+        }
+
+        //判断内容是否相同
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return old[oldItemPosition]?.equals(new[newItemPosition])!!
+        }
     }
 
     abstract class BaseViewHolder<Item>(override val viewBinding: ViewBinding) :
