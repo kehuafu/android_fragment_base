@@ -3,11 +3,10 @@ package com.kehuafu.base.core.container.base.adapter
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.*
 import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import androidx.viewbinding.ViewBinding
+import com.blankj.utilcode.util.LogUtils
 import com.kehuafu.base.core.viewbinding.IViewBinding
 
 /**
@@ -24,10 +23,10 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
     companion object {
         private val TAG = BaseRecyclerViewAdapterV2::class.java.simpleName
 
-        const val EMPTY_TYPE = 0x01
+        const val EMPTY_TYPE = -0x01
     }
 
-    val mItems: MutableList<Item> = mutableListOf()
+    var mItems: MutableList<Item> = mutableListOf()
 
     protected var mOnItemClickListener: OnItemClickListener<Item>? = null
 
@@ -45,11 +44,10 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
 
     fun setShowEmptyView(showEmptyView: Boolean) {
         this.mShowEmptyView = showEmptyView
-        clear()
     }
 
     override fun getItemCount(): Int {
-        return if (mShowEmptyView && mItems.isEmpty()) 1 else mItems.size
+        return if (mShowEmptyView && mItems.isEmpty()) 0 else mItems.size
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -109,15 +107,6 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
         return mItems.size
     }
 
-    fun addAllItem(newItems: List<Item>) {
-        val position = mItems.size
-        mItems.addAll(newItems)
-        if (getRealItemCount() <= 0) {
-            setShowEmptyView(mShowEmptyView)
-        } else {
-            notifyItemRangeInserted(position, newItems.size)
-        }
-    }
 
     fun removeItem(position: Int) {
         if (position == -1 || position > mItems.size) return
@@ -130,15 +119,42 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
         notifyItemChanged(position)
     }
 
-    fun clear() {
-        mItems.clear()
-        notifyDataSetChanged()
+    fun resetItems(newItems: MutableList<Item>?) {
+        if (newItems.isNullOrEmpty()) return
+        diffAllItem(newItems)
     }
 
-    fun resetItems(newItems: List<Item>?) {
-        if (newItems.isNullOrEmpty()) return
-        clear()
-        addAllItem(newItems)
+    private fun diffAllItem(newItems: MutableList<Item>) {
+        mItems = mutableListOf()
+        val diffResult = DiffUtil.calculateDiff(
+            BaseRecyclerViewAdapterV3.RvDiffItemCallback(
+                mItems,
+                newItems
+            ), false
+        )
+        mItems = newItems
+        diffResult.dispatchUpdatesTo(object : ListUpdateCallback {
+            override fun onChanged(position: Int, count: Int, payload: Any?) {
+                notifyItemRangeChanged(position, count, payload)
+                LogUtils.a("diffAllItem", "notifyItemRangeChanged--->", position)
+            }
+
+            override fun onMoved(fromPosition: Int, toPosition: Int) {
+                notifyItemMoved(fromPosition, toPosition)
+                LogUtils.a("diffAllItem", "onMoved--->${fromPosition}", toPosition)
+            }
+
+            override fun onInserted(position: Int, count: Int) {
+                notifyItemRangeInserted(position, count)
+                LogUtils.a("diffAllItem", "onInserted--->", position, count)
+            }
+
+            override fun onRemoved(position: Int, count: Int) {
+                notifyItemRangeRemoved(position, count)
+                LogUtils.a("diffAllItem", "onRemoved--->", position)
+            }
+
+        })
     }
 
     interface OnItemClickListener<Item> {

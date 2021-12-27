@@ -38,6 +38,5 @@ class ConversationListAdapter : BaseListAdapter<Conversation, LayItemConversatio
         viewBinding.tvContent.text = item.messageContent
         viewBinding.tvUnreadCount.text = item.messageUnreadCount.toString()
         viewBinding.tvUnreadCount.isVisible = item.messageUnreadCount != 0
-
     }
 }

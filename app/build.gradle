@@ -71,4 +71,6 @@ dependencies {
 
     //腾讯云即时通信 IM
     api 'com.tencent.imsdk:imsdk-plus:5.8.1696'
+
+    implementation 'com.tencent.wstt.gt:gt-sdk:3.1.0'
 }

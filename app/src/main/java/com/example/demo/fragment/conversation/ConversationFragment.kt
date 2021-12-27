@@ -1,14 +1,12 @@
 package com.example.demo.fragment.conversation
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.blankj.utilcode.util.LogUtils
 import com.example.demo.app.AppManager
-import com.example.demo.app.Router
 import com.example.demo.chat.ChatActivity
-import com.example.demo.databinding.ItemTabMainBinding
 import com.example.demo.fragment.conversation.adapter.ConversationListAdapter
 import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.common.receiver.event.LocalLifecycleEvent
@@ -17,7 +15,6 @@ import com.example.demo.fragment.conversation.bean.Conversation
 import com.example.demo.fragment.conversation.mvvm.MessageViewModel
 import com.kehuafu.base.core.container.base.BaseFragment
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV2
-import com.kehuafu.base.core.ktx.viewBindings
 
 
 class ConversationFragment :
@@ -31,7 +28,7 @@ class ConversationFragment :
             return ConversationFragment()
         }
     }
-    
+
     private var mConversationListAdapter = ConversationListAdapter()
 
     override fun onViewCreated(savedInstanceState: Bundle?) {

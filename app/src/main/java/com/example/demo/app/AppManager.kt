@@ -7,6 +7,7 @@ import com.example.demo.BuildConfig
 import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.im.*
 import com.kehuafu.base.core.container.widget.toast.setup
+import com.tencent.wstt.gt.controller.GTRController
 
 /**
  *
@@ -49,5 +50,6 @@ object AppManager {
         setup(context)
         Utils.init(context as Application)
         iCloudImManager.initSDK(context, BuildConfig.CLOUD_IM_APP_KEY)
+//        GTRController.init(context)
     }
 }

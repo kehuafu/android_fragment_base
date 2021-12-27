@@ -304,7 +304,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
     }
 
     data class MessageState(
-        val conversationList: MutableList<Conversation>? = null,
+        val conversationList: MutableList<Conversation> = mutableListOf(),
         val messageList: MutableList<Message>,
         val messageTheme: MutableList<MessageTheme>,
         val conn: Boolean = true
