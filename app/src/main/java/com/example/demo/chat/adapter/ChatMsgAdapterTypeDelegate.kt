@@ -6,6 +6,7 @@ import com.example.demo.chat.bean.Message
 import com.example.demo.databinding.LayItemChatEmptyMsgBinding
 import com.example.demo.databinding.LayItemChatImageMsgBinding
 import com.example.demo.databinding.LayItemChatTextMsgBinding
+import com.example.demo.databinding.LayItemChatVideoMsgBinding
 import com.kehuafu.base.core.ktx.viewBindings
 
 class ChatMsgAdapterTypeDelegate {
@@ -58,6 +59,10 @@ class ChatMsgAdapterTypeDelegate {
             }
             MSG_TYPE_IMAGE -> {
                 val viewBinding by parent.viewBindings<LayItemChatImageMsgBinding>(parent)
+                viewBinding
+            }
+            MSG_TYPE_VIDEO -> {
+                val viewBinding by parent.viewBindings<LayItemChatVideoMsgBinding>(parent)
                 viewBinding
             }
             else -> {

@@ -64,17 +64,9 @@ abstract class BaseRecyclerViewAdapterV3<VB : ViewBinding, Item, VH : BaseRecycl
     abstract fun onCreateVH(parent: ViewGroup, viewType: Int): VH
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        when (holder.itemViewType) {
-            EMPTY_TYPE -> {
-                mOnCreateEmptyViewHolderCallback?.onBindEmptyViewHolder(holder, position)
-            }
-            else -> {
-                if (mItems.isEmpty()) return
-                val item = mItems[position]
-                holder.setOnItemClickListener(mOnItemClickListener)
-                holder.setState(item)
-            }
-        }
+        if (mItems.isEmpty()) return
+        val item = mItems[position]
+        holder.setState(item)
     }
 
     override fun getItemViewType(position: Int): Int {

@@ -294,6 +294,37 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
         }
     }
 
+    fun sendVideoMsg(
+        path: String,
+        snapshotPath: String,
+        duration: Int,
+        userId: String,
+        messageList: MutableList<Message>
+    ) {
+        asyncCall({
+            showToast(it.errorMsg)
+        }) {
+            Log.e("@@@@@@", "sendVideoMsg--->${path}")
+            val v2TIMMessage = AppManager.iCloudMessageManager.createVideoMessage(
+                path, path.substringAfterLast("."), duration, snapshotPath
+            )
+            val result = sendMessage(v2TIMMessage, userId, messageList)
+            Log.e("@@@@@@", "sendMessage--->$result")
+            val message = Message(
+                mid = result,
+                uid = userId,
+                loading = true,
+                messageContent = snapshotPath,
+                messageType = Message.MSG_TYPE_VIDEO,
+                messageSender = true,
+                showTime = false,
+                v2TIMMessage = v2TIMMessage
+            )
+            messageList.add(0, message)
+            dispatch(MessageAction.C2CHistoryMessageList(messageList = messageList))
+        }
+    }
+
     sealed class MessageAction : Action {
         class Success(val conversationList: MutableList<Conversation>) : MessageAction()
         class C2CHistoryMessageList(val messageList: MutableList<Message>) : MessageAction()

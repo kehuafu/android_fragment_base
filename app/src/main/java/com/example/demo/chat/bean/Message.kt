@@ -1,5 +1,6 @@
 package com.example.demo.chat.bean
 
+import com.blankj.utilcode.util.LogUtils
 import com.kehuafu.base.core.redux.IState
 import com.tencent.imsdk.v2.V2TIMMessage
 
@@ -51,7 +52,7 @@ open class Message(
                     "[语音]"
                 }
                 MSG_TYPE_VIDEO -> {
-                    "[视频]"
+                    v2TIMMessage.videoElem.snapshotPath
                 }
                 MSG_TYPE_FACE -> {
                     "[动画表情]"
@@ -64,5 +65,38 @@ open class Message(
                 }
             }
         }
+    }
+
+    fun secToTime(seconds: Int): String {
+        val hour = seconds / 3600
+        val minute = (seconds - hour * 3600) / 60
+        val second = seconds - hour * 3600 - minute * 60
+        val sb = StringBuffer()
+        if (hour > 0) {
+            if (hour <= 9) {
+                sb.append("0")
+            }
+            sb.append("$hour:")
+        }
+        if (minute > 0) {
+            if (minute <= 9) {
+                sb.append("0$minute:")
+            } else {
+                sb.append("$minute:")
+            }
+        } else {
+            sb.append("00:")
+        }
+        if (second > 0) {
+            if (second <= 9) {
+                sb.append("0$second")
+            } else {
+                sb.append("$second")
+            }
+        }
+        if (second == 0) {
+            sb.append("00:00")
+        }
+        return sb.toString()
     }
 }

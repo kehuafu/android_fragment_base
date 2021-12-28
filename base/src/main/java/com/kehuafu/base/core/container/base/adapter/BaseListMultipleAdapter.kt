@@ -20,6 +20,7 @@ abstract class BaseListMultipleAdapter<T> :
     }
 
     override fun onCreateVH(parent: ViewGroup, viewType: Int): VH<T> {
+        mOnItemClickListener?.let { setOnItemClickListener(it) }
         return VH(init(parent, viewType), mStateListener)
     }
 

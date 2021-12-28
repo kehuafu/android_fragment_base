@@ -35,13 +35,20 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
         TODO("Not yet implemented")
     }
 
-    override fun createVideoMessage(
+    override suspend fun createVideoMessage(
         videoFilePath: String,
         type: String,
         duration: Int,
         snapshotPath: String
     ): V2TIMMessage {
-        TODO("Not yet implemented")
+        return suspendCancellableCoroutine { continuation ->
+            continuation.resume(
+                V2TIMManager.getMessageManager()
+                    .createVideoMessage(videoFilePath, type, duration, snapshotPath)
+            )
+        }
+
+
     }
 
     override fun createFileMessage(filePath: String, fileName: String): V2TIMMessage {

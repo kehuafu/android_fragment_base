@@ -1,20 +1,12 @@
 package com.example.demo.chat
 
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.os.Build
+import android.graphics.Bitmap
+import android.media.MediaMetadataRetriever
 import android.os.Bundle
-import android.provider.MediaStore
+import android.os.Environment
 import android.view.View
-import android.view.animation.DecelerateInterpolator
-import android.widget.Toast
-import androidx.activity.result.ActivityResultCallback
-import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
@@ -43,8 +35,13 @@ import com.kehuafu.base.core.ktx.showHasResult
 import com.tencent.imsdk.v2.V2TIMMessage
 import java.util.*
 import androidx.activity.result.contract.ActivityResultContracts.GetContent
+import androidx.recyclerview.widget.StaggeredGridLayoutManager.GAP_HANDLING_NONE
 import com.example.demo.utils.AnimatorUtils
 import com.example.demo.utils.TakeCameraUri
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.lang.Exception
 
 
 open class ChatActivity :
@@ -281,6 +278,9 @@ open class ChatActivity :
                                             "拍摄" -> {
                                                 launchCameraUri()
                                             }
+                                            "文件" -> {
+                                                launchVideoPick()
+                                            }
                                         }
                                     }
 
@@ -323,7 +323,10 @@ open class ChatActivity :
     override fun onStateChanged(state: MessageViewModel.MessageState) {
         super.onStateChanged(state)
         messageList = state.messageList
-        mChatListAdapter.resetItems(messageList)
+        if (messageList.size != 0) {
+            LogUtils.a("aaaaaaaa", "onStateChanged", messageList.size)
+            mChatListAdapter.resetItems(messageList)
+        }
         mChatFileTypeAdapter.resetItems(state.messageTheme)
     }
 
@@ -355,6 +358,91 @@ open class ChatActivity :
     //调用相册选择图片
     protected fun launchAlbum() {
         mLauncherAlbum.launch("image/*")
+    }
+
+    private val mActLauncherAlbum = registerForActivityResult(
+        GetContent()
+    ) {
+        //UriUtil.getFileAbsolutePath(this, it),
+        val bitmap = voidToFirstBitmap(UriUtil.getFileAbsolutePath(this, it))
+        val firstUrl = bitmapToStringPath(this, bitmap!!)
+        val duration = getLocalVideoDuration(UriUtil.getFileAbsolutePath(this, it))
+        viewModel.sendVideoMsg(
+            UriUtil.getFileAbsolutePath(this, it),
+            firstUrl!!,
+            duration,
+            userId!!,
+            messageList
+        )
+    }
+
+    /**
+     * 获取视频首帧图并转化为bitmap
+     * @param videoUrl
+     * @return
+     */
+    private fun voidToFirstBitmap(videoUrl: String): Bitmap? {
+        val metadataRetriever = MediaMetadataRetriever()
+        metadataRetriever.setDataSource(videoUrl)
+        return metadataRetriever.frameAtTime
+    }
+
+    /**
+     * 将bitmap转化成本地图片路径
+     * @param context
+     * @param bitmap
+     * @return
+     */
+    private fun bitmapToStringPath(context: Context, bitmap: Bitmap): String? {
+        val filePic: File
+        val savePath: String = PathUtils.getExternalAppCachePath()
+        try {
+            filePic = File(savePath + UUID.randomUUID().toString() + ".jpg")
+            if (!filePic.exists()) {
+                filePic.parentFile.mkdirs()
+                filePic.createNewFile()
+            }
+            val fos = FileOutputStream(filePic)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            fos.flush()
+            fos.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            return null
+        }
+        return filePic.absolutePath
+    }
+
+    /**
+     * get Local video duration
+     *
+     * @return
+     */
+    open fun getLocalVideoDuration(videoPath: String?): Int {
+        //除以 1000 返回是秒
+        val duration: Int
+        try {
+            val mmr = MediaMetadataRetriever()
+            mmr.setDataSource(videoPath)
+            duration = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)!!
+                .toInt() / 1000
+
+            //时长(毫秒)
+            //String duration = mmr.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION);
+            //宽
+            val width = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
+            //高
+            val height = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return 0
+        }
+        return duration
+    }
+
+    //选取视频文件（和选取相册类似）
+    private fun launchVideoPick() {
+        mActLauncherAlbum.launch("video/*")
     }
 
 

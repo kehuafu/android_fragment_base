@@ -10,7 +10,7 @@ interface ICloudMessageManager {
 
     fun createSoundMessage(soundPath: String, duration: Int): V2TIMMessage
 
-    fun createVideoMessage(
+    suspend fun createVideoMessage(
         videoFilePath: String,
         type: String,
         duration: Int,
