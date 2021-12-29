@@ -3,6 +3,7 @@ package com.kehuafu.base.core.container.base.adapter
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.get
 import androidx.recyclerview.widget.*
 import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import androidx.viewbinding.ViewBinding
@@ -52,7 +53,7 @@ abstract class BaseRecyclerViewAdapterV3<VB : ViewBinding, Item, VH : BaseRecycl
 
     @Suppress("UNCHECKED_CAST")
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        Log.d(TAG, "onCreateViewHolder: ")
+        Log.e("TAG", "onCreateViewHolder: $viewType")
         return if (viewType == EMPTY_TYPE) {
             mOnCreateEmptyViewHolderCallback?.onCreateEmptyViewHolder(parent) as? VH
                 ?: throw IllegalArgumentException(" Unrealized Empty ViewHolder")
@@ -66,33 +67,8 @@ abstract class BaseRecyclerViewAdapterV3<VB : ViewBinding, Item, VH : BaseRecycl
     override fun onBindViewHolder(holder: VH, position: Int) {
         if (mItems.isEmpty()) return
         val item = mItems[position]
-        holder.setState(item)
-    }
-
-    override fun getItemViewType(position: Int): Int {
-//        return if (getRealItemCount() == 0) {
-//            EMPTY_TYPE
-//        } else {
-//            super.getItemViewType(position)
-//        }
-        return super.getItemViewType(position)
-    }
-
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        super.onAttachedToRecyclerView(recyclerView)
-        when (val manager = recyclerView.layoutManager) {
-            is GridLayoutManager -> {
-                val gridManager = manager
-                gridManager.spanSizeLookup = object : SpanSizeLookup() {
-                    override fun getSpanSize(position: Int): Int {
-                        return if (getItemViewType(position) == EMPTY_TYPE) gridManager.spanCount else 1
-                    }
-                }
-            }
-            is StaggeredGridLayoutManager -> {
-                //val p = manager.lay as StaggeredGridLayoutManager.LayoutParams
-            }
-        }
+        Log.e("TAG", "onBindViewHolder: $holder")
+        holder.setState(item, position)
     }
 
     fun getRealItemCount(): Int {
@@ -100,7 +76,9 @@ abstract class BaseRecyclerViewAdapterV3<VB : ViewBinding, Item, VH : BaseRecycl
     }
 
     private fun diffAllItem(newItems: MutableList<Item>) {
-        mItems = mutableListOf()
+//        mItems.addAll(newItems)
+//        notifyItemRangeInserted(0, newItems.size)
+//        mItems = mutableListOf()
         val diffResult = DiffUtil.calculateDiff(RvDiffItemCallback(mItems, newItems), false)
         mItems = newItems
         diffResult.dispatchUpdatesTo(object : ListUpdateCallback {
@@ -168,12 +146,12 @@ abstract class BaseRecyclerViewAdapterV3<VB : ViewBinding, Item, VH : BaseRecycl
 
         //判断id是否相同，由于是 string，没有id，所以就直接比较了
         override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return old[oldItemPosition]?.equals(new[newItemPosition])!!
+            return old[oldItemPosition] == new[newItemPosition]
         }
 
         //判断内容是否相同
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return old[oldItemPosition]?.equals(new[newItemPosition])!!
+            return old[oldItemPosition] == new[newItemPosition]
         }
     }
 
@@ -187,10 +165,10 @@ abstract class BaseRecyclerViewAdapterV3<VB : ViewBinding, Item, VH : BaseRecycl
             this.mOnItemClickListener = onItemClickListener
         }
 
-        open fun setState(item: Item) {
+        open fun setState(item: Item, position: Int) {
             this.mItem = item
             itemView.setOnClickListener { itemView ->
-                mOnItemClickListener?.onItemClick(itemView, item = item, position = adapterPosition)
+                mOnItemClickListener?.onItemClick(itemView, item = item, position = position)
             }
             if (mOnItemClickListener is OnItemLongClickListener) {
                 itemView.setOnLongClickListener {

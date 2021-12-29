@@ -1,4 +1,4 @@
-package com.example.demo.fragment.conversation.mvvm
+package com.example.demo.chat.mvvm
 
 import android.util.Log
 import com.blankj.utilcode.constant.TimeConstants
@@ -32,12 +32,6 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
         private fun reducer(): Reducer<MessageState> {
             return { state, action ->
                 when (action) {
-                    is MessageAction.Success -> {
-                        state.copy(
-                            conversationList = action.conversationList,
-                            currentAction = action
-                        )
-                    }
                     is MessageAction.C2CHistoryMessageList -> {
                         state.copy(messageList = action.messageList, currentAction = action)
                     }
@@ -53,12 +47,6 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                     is MessageAction.InitMessageThemeList -> {
                         state.copy(
                             messageTheme = action.messageTheme,
-                            currentAction = action
-                        )
-                    }
-                    is MessageAction.NetWorkStatusChanged -> {
-                        state.copy(
-                            netConnected = action.conn,
                             currentAction = action
                         )
                     }
@@ -219,33 +207,6 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
         }
     }
 
-    fun getConversationList() {
-        httpAsyncCall({
-            showToast(it.errorMsg)
-        }) {
-            val conList = mutableListOf<Conversation>()
-            val conversationList =
-                AppManager.iCloudConversationManager.getConversationList(0, 100, null)
-            for (conversation in conversationList) {
-                val message = Conversation(
-                    mid = conversation.conversationID,
-                    uid = "",
-                    name = conversation.showName,
-                    avatar = "",
-                    messageContent = Conversation.messageContent(conversation.lastMessage),
-                    messageType = conversation.lastMessage.elemType,
-                    messageTime = TimeUtils.date2String(TimeUtils.millis2Date(conversation.lastMessage.timestamp * 1000)),
-                    messageSender = conversation.userID == AppManager.currentUserID,
-                    messageUnreadCount = conversation.unreadCount,
-                    messageState = conversation.lastMessage.status,
-                    v2TIMMessage = conversation.lastMessage
-                )
-                conList.add(message)
-            }
-            dispatch(MessageAction.Success(conversationList = conList))
-        }
-    }
-
     fun initMessageThemeList() {
         asyncCall({
             showToast(it.errorMsg)
@@ -267,14 +228,6 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
             tmpThemeList.add(datingTheme)
         }
         return tmpThemeList
-    }
-
-    fun netWorkStatusChanged(conn: Boolean) {
-        asyncCall({
-            showToast(it.errorMsg)
-        }) {
-            dispatch(MessageAction.NetWorkStatusChanged(conn = conn))
-        }
     }
 
     fun sendImageMsg(path: String, userId: String, messageList: MutableList<Message>) {
@@ -332,19 +285,15 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
     }
 
     sealed class MessageAction : Action {
-        class Success(val conversationList: MutableList<Conversation>) : MessageAction()
         class C2CHistoryMessageList(val messageList: MutableList<Message>) : MessageAction()
         class MsgSendFailed(val messageList: MutableList<Message>) : MessageAction()
         class MsgSendSuccess(val messageList: MutableList<Message>) : MessageAction()
         class InitMessageThemeList(val messageTheme: MutableList<MessageTheme>) : MessageAction()
-        class NetWorkStatusChanged(val conn: Boolean) : MessageAction()
     }
 
     data class MessageState(
-        val conversationList: MutableList<Conversation> = mutableListOf(),
         val messageList: MutableList<Message>,
         val messageTheme: MutableList<MessageTheme>,
-        val netConnected: Boolean = true,
         val currentAction: Action? = null
     ) : IState
 }

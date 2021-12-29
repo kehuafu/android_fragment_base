@@ -24,7 +24,7 @@ import com.example.demo.chat.bean.Message
 import com.example.demo.chat.bean.MessageTheme
 import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.common.receiver.event.LocalLifecycleEvent
-import com.example.demo.fragment.conversation.mvvm.MessageViewModel
+import com.example.demo.fragment.conversation.mvvm.ConversationViewModel
 import com.example.demo.utils.HeightProvider
 import com.example.demo.utils.UriUtil
 import com.kehuafu.base.core.container.base.BaseActivity
@@ -35,9 +35,9 @@ import com.kehuafu.base.core.ktx.showHasResult
 import com.tencent.imsdk.v2.V2TIMMessage
 import java.util.*
 import androidx.activity.result.contract.ActivityResultContracts.GetContent
+import com.example.demo.chat.mvvm.MessageViewModel
 import com.example.demo.utils.AnimatorUtils
 import com.example.demo.utils.TakeCameraUri
-import com.kehuafu.base.core.redux.IState
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -46,7 +46,7 @@ import java.lang.Exception
 
 open class ChatActivity :
     BaseActivity<FragmentChatBinding, MessageViewModel, MessageViewModel.MessageState>(),
-    BaseRecyclerViewAdapterV3.OnItemClickListener<Message>,
+    BaseRecyclerViewAdapterV2.OnItemClickListener<Message>,
     LocalEventLifecycleViewModel.OnLocalEventCallback<LocalLifecycleEvent> {
 
 
@@ -254,8 +254,8 @@ open class ChatActivity :
             mChatListAdapter.setOnItemClickListener(this@ChatActivity)
             chatRv.itemAnimator = null
             chatRv.layoutManager = LinearLayoutManager(this@ChatActivity)
-            (chatRv.layoutManager as LinearLayoutManager).reverseLayout = true//列表翻转
-            viewBinding.chatRv.adapter = mChatListAdapter
+            (chatRv.layoutManager as LinearLayoutManager).reverseLayout = true
+            chatRv.adapter = mChatListAdapter
 
             mChatFileTypeAdapter.setOnItemClickListener(object :
                 BaseRecyclerViewAdapterV2.OnItemClickListener<MessageTheme> {
@@ -303,14 +303,14 @@ open class ChatActivity :
             chatFile.chatFileRv.itemAnimator = null
             chatFile.chatFileRv.layoutManager = GridLayoutManager(this@ChatActivity, 4)
             chatFile.chatFileRv.adapter = mChatFileTypeAdapter
-            chatRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                    super.onScrollStateChanged(recyclerView, newState)
-                    if (heightProvider!!.isSoftInputVisible) {
-                        KeyboardUtils.hideSoftInput(this@ChatActivity)
-                    }
-                }
-            })
+//            chatRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+//                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+//                    super.onScrollStateChanged(recyclerView, newState)
+//                    if (heightProvider!!.isSoftInputVisible) {
+//                        KeyboardUtils.hideSoftInput(this@ChatActivity)
+//                    }
+//                }
+//            })
         }
     }
 
@@ -324,9 +324,11 @@ open class ChatActivity :
         super.onStateChanged(state)
         when (state.currentAction) {
             is MessageViewModel.MessageAction.InitMessageThemeList -> {
+                Log.e("TAG", "InitMessageThemeList: " + state.messageTheme.size)
                 mChatFileTypeAdapter.resetItems(state.messageTheme)
             }
             is MessageViewModel.MessageAction.C2CHistoryMessageList -> {
+                Log.e("TAG", "C2CHistoryMessageList: " + state.messageList.size)
                 messageList = state.messageList
                 mChatListAdapter.resetItems(messageList)
             }

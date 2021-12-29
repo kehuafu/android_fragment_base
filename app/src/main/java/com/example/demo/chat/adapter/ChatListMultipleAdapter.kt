@@ -2,7 +2,6 @@ package com.example.demo.chat.adapter
 
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -10,8 +9,6 @@ import android.view.animation.AnimationUtils
 import android.view.animation.LinearInterpolator
 import androidx.core.view.isVisible
 import androidx.viewbinding.ViewBinding
-import com.blankj.utilcode.util.AdaptScreenUtils
-import com.blankj.utilcode.util.LogUtils
 import com.example.demo.R
 import com.example.demo.chat.bean.Message
 import com.example.demo.databinding.LayItemChatImageMsgBinding
@@ -30,22 +27,10 @@ import com.tencent.imsdk.v2.V2TIMValueCallback
  * 3.初始化->①设置状态监听，②属性委托对应的VB
  * 4.UI状态绑定->当数据的state变化时，对应的UI跟随状态改变
  */
-class ChatListMultipleAdapter : BaseListMultipleAdapter<Message>() {
+class ChatListMultipleAdapter : BaseListMultipleAdapter<Message, ViewBinding>() {
 
     private val mChatMsgAdapterTypeDelegate by lazy {
         ChatMsgAdapterTypeDelegate()
-    }
-
-    /**
-     * 确定Item类型
-     */
-    override fun getItemViewType(position: Int): Int {
-//        LogUtils.a("aaaaaaaa", "getItemViewTypes", position, mItems[position].messageContent)
-        return if (mItems.isEmpty()) {
-            super.getItemViewType(position)
-        } else {
-            mChatMsgAdapterTypeDelegate.getItemViewType(mItems[position])
-        }
     }
 
     /**
@@ -53,7 +38,7 @@ class ChatListMultipleAdapter : BaseListMultipleAdapter<Message>() {
      */
     override fun init(parent: ViewGroup, viewType: Int): ViewBinding {
         setStateListener(this)
-        return mChatMsgAdapterTypeDelegate.onCreateViewHolder(parent, viewType)
+        return mChatMsgAdapterTypeDelegate.onCreateViewHolder(parent, viewType, mItems)
     }
 
     /**
@@ -105,7 +90,7 @@ class ChatListMultipleAdapter : BaseListMultipleAdapter<Message>() {
         if (item.messageSender) {
             viewBinding.layoutRightText.visibility = View.VISIBLE
             viewBinding.rightVideoDuration.text =
-            item.secToTime(item.v2TIMMessage.videoElem.duration)
+                item.secToTime(item.v2TIMMessage.videoElem.duration)
             val height =
                 item.v2TIMMessage.videoElem.snapshotHeight / 8 * 2.5
             val width = item.v2TIMMessage.videoElem.snapshotWidth / 8 * 2.5

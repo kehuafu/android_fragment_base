@@ -11,13 +11,13 @@ import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.common.receiver.event.LocalLifecycleEvent
 import com.example.demo.databinding.FragmentConversationBinding
 import com.example.demo.fragment.conversation.bean.Conversation
-import com.example.demo.fragment.conversation.mvvm.MessageViewModel
+import com.example.demo.fragment.conversation.mvvm.ConversationViewModel
 import com.kehuafu.base.core.container.base.BaseFragment
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV2
 
 
 class ConversationFragment :
-    BaseFragment<FragmentConversationBinding, MessageViewModel, MessageViewModel.MessageState>(),
+    BaseFragment<FragmentConversationBinding, ConversationViewModel, ConversationViewModel.ConversationState>(),
     BaseRecyclerViewAdapterV2.OnItemClickListener<Conversation>,
     LocalEventLifecycleViewModel.OnLocalEventCallback<LocalLifecycleEvent> {
 
@@ -45,9 +45,12 @@ class ConversationFragment :
         viewModel.getConversationList()
     }
 
-    override fun onStateChanged(state: MessageViewModel.MessageState) {
+    override fun onStateChanged(state: ConversationViewModel.ConversationState) {
         super.onStateChanged(state)
-        mConversationListAdapter.resetItems(state.conversationList)
+        mConversationListAdapter.resetItems(
+            state.conversationList + state.conversationList + state.conversationList
+                    + state.conversationList + state.conversationList
+        )
         viewBinding.networkError.isVisible = !state.netConnected
     }
 

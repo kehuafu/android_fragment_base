@@ -112,7 +112,7 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
         return suspendCancellableCoroutine { continuation ->
             V2TIMManager.getMessageManager().getC2CHistoryMessageList(
                 userID,
-                20,
+                50,
                 null,
                 object : V2TIMValueCallback<List<V2TIMMessage>> {
                     override fun onSuccess(p0: List<V2TIMMessage>?) {

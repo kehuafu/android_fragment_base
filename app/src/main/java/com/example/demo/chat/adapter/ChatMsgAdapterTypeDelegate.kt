@@ -1,6 +1,9 @@
 package com.example.demo.chat.adapter
 
+import android.util.Log
+import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
 import com.example.demo.chat.bean.Message
 import com.example.demo.databinding.LayItemChatEmptyMsgBinding
@@ -22,37 +25,12 @@ class ChatMsgAdapterTypeDelegate {
         private const val MSG_UNKNOWN_IN_MSG = -1 //未知消息
     }
 
-    fun getItemViewType(item: Message): Int {
-        return when (item.messageType) {
-            Message.MSG_TYPE_TEXT -> {
-                MSG_TYPE_TEXT
-            }
-            Message.MSG_TYPE_IMAGE -> {
-                MSG_TYPE_IMAGE
-            }
-            Message.MSG_TYPE_SOUND -> {
-                MSG_TYPE_SOUND
-            }
-            Message.MSG_TYPE_VIDEO -> {
-                MSG_TYPE_VIDEO
-            }
-            Message.MSG_TYPE_FILE -> {
-                MSG_TYPE_FILE
-            }
-            Message.MSG_TYPE_LOCATION -> {
-                MSG_TYPE_LOCATION
-            }
-            Message.MSG_TYPE_FACE -> {
-                MSG_TYPE_FACE
-            }
-            else -> {
-                MSG_UNKNOWN_IN_MSG
-            }
-        }
-    }
-
-    fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewBinding {
-        return when (viewType) {
+    fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+        items: MutableList<Message>
+    ): ViewBinding {
+        return when (items[viewType].messageType) {
             MSG_TYPE_TEXT -> {
                 val viewBinding by parent.viewBindings<LayItemChatTextMsgBinding>(parent)
                 viewBinding

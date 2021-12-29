@@ -1,5 +1,6 @@
 package com.kehuafu.base.core.container.base.adapter
 
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.*
@@ -50,6 +51,7 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
 
     @Suppress("UNCHECKED_CAST")
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+        Log.e("TAG", "onCreateViewHolder: $viewType")
         return if (viewType == EMPTY_TYPE) {
             mOnCreateEmptyViewHolderCallback?.onCreateEmptyViewHolder(parent) as? VH
                 ?: throw IllegalArgumentException(" Unrealized Empty ViewHolder")
@@ -61,6 +63,7 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
     abstract fun onCreateVH(parent: ViewGroup, viewType: Int): VH
 
     override fun onBindViewHolder(holder: VH, position: Int) {
+        Log.e("TAG", "onBindViewHolder: $holder")
         when (holder.itemViewType) {
             EMPTY_TYPE -> {
                 mOnCreateEmptyViewHolderCallback?.onBindEmptyViewHolder(holder, position)
@@ -98,9 +101,9 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
         notifyItemChanged(position)
     }
 
-    fun resetItems(newItems: MutableList<Item>?) {
+    fun resetItems(newItems: List<Item>?) {
         if (newItems.isNullOrEmpty()) return
-        diffAllItem(newItems)
+        diffAllItem(newItems as MutableList<Item>)
     }
 
     private fun diffAllItem(newItems: MutableList<Item>) {
