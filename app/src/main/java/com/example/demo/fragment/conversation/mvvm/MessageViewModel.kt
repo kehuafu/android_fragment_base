@@ -33,27 +33,33 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
             return { state, action ->
                 when (action) {
                     is MessageAction.Success -> {
-                        state.copy(conversationList = action.conversationList)
+                        state.copy(
+                            conversationList = action.conversationList,
+                            currentAction = action
+                        )
                     }
                     is MessageAction.C2CHistoryMessageList -> {
-                        state.copy(messageList = action.messageList)
+                        state.copy(messageList = action.messageList, currentAction = action)
                     }
                     is MessageAction.MsgSendFailed -> {
-                        state.copy(messageList = action.messageList)
+                        state.copy(messageList = action.messageList, currentAction = action)
                     }
                     is MessageAction.MsgSendSuccess -> {
                         state.copy(
-                            messageList = action.messageList
+                            messageList = action.messageList,
+                            currentAction = action
                         )
                     }
                     is MessageAction.InitMessageThemeList -> {
                         state.copy(
-                            messageTheme = action.messageTheme
+                            messageTheme = action.messageTheme,
+                            currentAction = action
                         )
                     }
                     is MessageAction.NetWorkStatusChanged -> {
                         state.copy(
-                            conn = action.conn
+                            netConnected = action.conn,
+                            currentAction = action
                         )
                     }
                     else -> {
@@ -338,8 +344,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
         val conversationList: MutableList<Conversation> = mutableListOf(),
         val messageList: MutableList<Message>,
         val messageTheme: MutableList<MessageTheme>,
-        val conn: Boolean = true
-    ) : IState {
-
-    }
+        val netConnected: Boolean = true,
+        val currentAction: Action? = null
+    ) : IState
 }

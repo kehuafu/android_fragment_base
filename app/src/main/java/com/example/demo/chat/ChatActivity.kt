@@ -5,7 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.os.Bundle
-import android.os.Environment
+import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -35,9 +35,9 @@ import com.kehuafu.base.core.ktx.showHasResult
 import com.tencent.imsdk.v2.V2TIMMessage
 import java.util.*
 import androidx.activity.result.contract.ActivityResultContracts.GetContent
-import androidx.recyclerview.widget.StaggeredGridLayoutManager.GAP_HANDLING_NONE
 import com.example.demo.utils.AnimatorUtils
 import com.example.demo.utils.TakeCameraUri
+import com.kehuafu.base.core.redux.IState
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -322,12 +322,23 @@ open class ChatActivity :
 
     override fun onStateChanged(state: MessageViewModel.MessageState) {
         super.onStateChanged(state)
-        messageList = state.messageList
-        if (messageList.size != 0) {
-            LogUtils.a("aaaaaaaa", "onStateChanged", messageList.size)
-            mChatListAdapter.resetItems(messageList)
+        when (state.currentAction) {
+            is MessageViewModel.MessageAction.InitMessageThemeList -> {
+                mChatFileTypeAdapter.resetItems(state.messageTheme)
+            }
+            is MessageViewModel.MessageAction.C2CHistoryMessageList -> {
+                messageList = state.messageList
+                mChatListAdapter.resetItems(messageList)
+            }
+            is MessageViewModel.MessageAction.MsgSendSuccess -> {
+                messageList = state.messageList
+                mChatListAdapter.resetItems(messageList)
+            }
+            is MessageViewModel.MessageAction.MsgSendFailed -> {
+                messageList = state.messageList
+                mChatListAdapter.resetItems(messageList)
+            }
         }
-        mChatFileTypeAdapter.resetItems(state.messageTheme)
     }
 
     private val mLauncherCameraUri =

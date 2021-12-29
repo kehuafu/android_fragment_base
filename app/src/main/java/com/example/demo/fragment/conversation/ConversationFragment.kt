@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.blankj.utilcode.util.LogUtils
 import com.example.demo.app.AppManager
 import com.example.demo.chat.ChatActivity
 import com.example.demo.fragment.conversation.adapter.ConversationListAdapter
@@ -49,7 +48,7 @@ class ConversationFragment :
     override fun onStateChanged(state: MessageViewModel.MessageState) {
         super.onStateChanged(state)
         mConversationListAdapter.resetItems(state.conversationList)
-        viewBinding.networkError.isVisible = !state.conn
+        viewBinding.networkError.isVisible = !state.netConnected
     }
 
     override fun onItemClick(itemView: View, item: Conversation, position: Int?) {

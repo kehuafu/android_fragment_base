@@ -40,7 +40,7 @@ class ChatListMultipleAdapter : BaseListMultipleAdapter<Message>() {
      * 确定Item类型
      */
     override fun getItemViewType(position: Int): Int {
-        LogUtils.a("aaaaaaaa", "getItemViewTypes", position, mItems[position].messageContent)
+//        LogUtils.a("aaaaaaaa", "getItemViewTypes", position, mItems[position].messageContent)
         return if (mItems.isEmpty()) {
             super.getItemViewType(position)
         } else {

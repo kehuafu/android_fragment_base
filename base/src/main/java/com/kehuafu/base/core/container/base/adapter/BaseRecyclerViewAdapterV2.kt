@@ -1,10 +1,8 @@
 package com.kehuafu.base.core.container.base.adapter
 
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.*
-import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import androidx.viewbinding.ViewBinding
 import com.blankj.utilcode.util.LogUtils
 import com.kehuafu.base.core.viewbinding.IViewBinding
@@ -52,7 +50,6 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
 
     @Suppress("UNCHECKED_CAST")
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        Log.d(TAG, "onCreateViewHolder: ")
         return if (viewType == EMPTY_TYPE) {
             mOnCreateEmptyViewHolderCallback?.onCreateEmptyViewHolder(parent) as? VH
                 ?: throw IllegalArgumentException(" Unrealized Empty ViewHolder")
@@ -78,29 +75,11 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
     }
 
     override fun getItemViewType(position: Int): Int {
-//        return if (getRealItemCount() == 0) {
-//            EMPTY_TYPE
-//        } else {
-//            super.getItemViewType(position)
-//        }
-        return super.getItemViewType(position)
+        return position
     }
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
-        when (val manager = recyclerView.layoutManager) {
-            is GridLayoutManager -> {
-                val gridManager = manager
-                gridManager.spanSizeLookup = object : SpanSizeLookup() {
-                    override fun getSpanSize(position: Int): Int {
-                        return if (getItemViewType(position) == EMPTY_TYPE) gridManager.spanCount else 1
-                    }
-                }
-            }
-            is StaggeredGridLayoutManager -> {
-                //val p = manager.lay as StaggeredGridLayoutManager.LayoutParams
-            }
-        }
     }
 
     fun getRealItemCount(): Int {
