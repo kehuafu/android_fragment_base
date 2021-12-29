@@ -1,6 +1,5 @@
 package com.example.demo.chat
 
-import android.Manifest.permission.RECORD_AUDIO
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
@@ -13,7 +12,6 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.blankj.utilcode.constant.PermissionConstants
 import com.blankj.utilcode.util.*
 import com.example.demo.R
@@ -25,28 +23,25 @@ import com.example.demo.chat.bean.Message
 import com.example.demo.chat.bean.MessageTheme
 import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.common.receiver.event.LocalLifecycleEvent
-import com.example.demo.fragment.conversation.mvvm.ConversationViewModel
 import com.example.demo.utils.HeightProvider
 import com.example.demo.utils.UriUtil
-import com.kehuafu.base.core.container.base.BaseActivity
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV2
-import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV3
 import com.kehuafu.base.core.container.widget.toast.showToast
-import com.kehuafu.base.core.ktx.showHasResult
 import com.tencent.imsdk.v2.V2TIMMessage
 import java.util.*
 import androidx.activity.result.contract.ActivityResultContracts.GetContent
 import com.example.demo.chat.mvvm.MessageViewModel
 import com.example.demo.utils.AnimatorUtils
 import com.example.demo.utils.TakeCameraUri
+import com.kehuafu.base.core.container.base.BaseFragment
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.lang.Exception
 
 
-open class ChatActivity :
-    BaseActivity<FragmentChatBinding, MessageViewModel, MessageViewModel.MessageState>(),
+open class ChatFragment :
+    BaseFragment<FragmentChatBinding, MessageViewModel, MessageViewModel.MessageState>(),
     BaseRecyclerViewAdapterV2.OnItemClickListener<Message>,
     LocalEventLifecycleViewModel.OnLocalEventCallback<LocalLifecycleEvent> {
 
@@ -68,42 +63,29 @@ open class ChatActivity :
     companion object {
 
         const val EXTRAS_TARGET_ID = "com.example.demo.chat.EXTRAS_TARGET_ID"
-        const val REQUEST_CODE_CALL = 0x01
-
-        @JvmStatic
-        fun showHasResult(targetId: String) {
-            ActivityUtils.getTopActivity()
-                ?.showHasResult(ChatActivity::class.java, REQUEST_CODE_CALL) {
-                    putString(EXTRAS_TARGET_ID, targetId)
-                }
-        }
     }
 
     override fun onInflateArgs(arguments: Bundle) {
         super.onInflateArgs(arguments)
         userId = arguments.getString(EXTRAS_TARGET_ID, "")
-    }
-
-    override fun onBackPressed() {
-        finish()
+        Log.e("TAG", "onInflateArgs: $userId")
     }
 
     @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onViewCreated(savedInstanceState: Bundle?) {
-        BarUtils.setStatusBarLightMode(this, true)
         AppManager.localEventLifecycleViewModel.register(this, this)
-        heightProvider = HeightProvider(this).init()
+        heightProvider = HeightProvider(requireActivity()).init()
         viewBinding.nav.backIv.setOnClickListener {
             showFileMode = false
             keyBoardHeight = 0F
-            finish()
+            baseActivity.onBackPressed()
         }
 
         viewBinding.frameLayout.setOnClickListener {
             showFileMode = false
             keyBoardHeight = 0F
             if (heightProvider!!.isSoftInputVisible) {
-                KeyboardUtils.hideSoftInput(this)
+                KeyboardUtils.hideSoftInput(requireActivity())
             } else {
                 viewBinding.chatInputRl.root.translationY = 0F
                 viewBinding.chatFile.root.visibility = View.INVISIBLE
@@ -153,7 +135,7 @@ open class ChatActivity :
                 if (showFileMode) {
                     viewBinding.chatFile.root.visibility = View.VISIBLE
                     if (heightProvider!!.isSoftInputVisible) {
-                        KeyboardUtils.hideSoftInput(this@ChatActivity)
+                        KeyboardUtils.hideSoftInput(requireActivity())
                         chatInputRl.etMsg.isVisible = true
                         chatInputRl.tvVoice.isVisible = false
                     } else if (keyBoardHeight == 0F) {
@@ -171,31 +153,8 @@ open class ChatActivity :
                         }
                     }
                 } else {
-                    KeyboardUtils.showSoftInput(this@ChatActivity)
+                    KeyboardUtils.showSoftInput(requireActivity())
                 }
-            }
-            chatInputRl.tvVoice.setOnClickListener {
-                showToast("按住说话")
-                PermissionUtils.permission(
-                    PermissionConstants.MICROPHONE,
-                    PermissionConstants.STORAGE
-                )
-                    .callback(object : PermissionUtils.FullCallback {
-                        override fun onGranted(permissionsGranted: List<String>) {
-                            LogUtils.d(permissionsGranted)
-                            showToast("同意授权")
-                        }
-
-                        override fun onDenied(
-                            permissionsDeniedForever: List<String>,
-                            permissionsDenied: List<String>
-                        ) {
-                            LogUtils.d(permissionsDeniedForever, permissionsDenied)
-                            showToast("拒绝授权")
-                        }
-                    })
-                    .theme { activity -> ScreenUtils.setFullScreen(activity) }
-                    .request()
             }
             chatInputRl.ivVoice.setOnClickListener {
                 showFileMode = false
@@ -203,7 +162,7 @@ open class ChatActivity :
                 if (chatInputRl.etMsg.isVisible) {
                     showToast("切换语音模式")
                     if (heightProvider!!.isSoftInputVisible) {
-                        KeyboardUtils.hideSoftInput(this@ChatActivity)
+                        KeyboardUtils.hideSoftInput(requireActivity())
                     } else {
                         viewBinding.chatFile.root.visibility = View.INVISIBLE
                         viewBinding.chatInputRl.root.translationY = -keyBoardHeight
@@ -212,19 +171,19 @@ open class ChatActivity :
                     chatInputRl.ivVoice.setPadding(6, 6, 6, 6)
                     chatInputRl.ivVoice.setImageDrawable(
                         ContextCompat.getDrawable(
-                            this@ChatActivity,
+                            requireActivity(),
                             R.drawable.keyboard
                         )
                     )
                 } else {
                     showToast("切换文本模式")
                     if (!heightProvider!!.isSoftInputVisible) {
-                        KeyboardUtils.showSoftInput(this@ChatActivity)
+                        KeyboardUtils.showSoftInput(requireActivity())
                     }
                     chatInputRl.ivVoice.setPadding(0, 0, 0, 0)
                     chatInputRl.ivVoice.setImageDrawable(
                         ContextCompat.getDrawable(
-                            this@ChatActivity,
+                            requireActivity(),
                             R.drawable.voice_icon
                         )
                     )
@@ -237,7 +196,7 @@ open class ChatActivity :
                 showToast("显示我的表情包")
                 chatInputRl.ivExpression.setImageDrawable(
                     ContextCompat.getDrawable(
-                        this@ChatActivity,
+                        requireActivity(),
                         R.drawable.keyboard
                     )
                 )
@@ -275,9 +234,9 @@ open class ChatActivity :
                 showFileMode = false
                 keyBoardHeight = 0F
             }
-            mChatListAdapter.setOnItemClickListener(this@ChatActivity)
+            mChatListAdapter.setOnItemClickListener(this@ChatFragment)
             chatRv.itemAnimator = null
-            chatRv.layoutManager = LinearLayoutManager(this@ChatActivity)
+            chatRv.layoutManager = LinearLayoutManager(requireActivity())
             (chatRv.layoutManager as LinearLayoutManager).reverseLayout = true
             chatRv.adapter = mChatListAdapter
 
@@ -325,7 +284,7 @@ open class ChatActivity :
                 }
             })
             chatFile.chatFileRv.itemAnimator = null
-            chatFile.chatFileRv.layoutManager = GridLayoutManager(this@ChatActivity, 4)
+            chatFile.chatFileRv.layoutManager = GridLayoutManager(requireActivity(), 4)
             chatFile.chatFileRv.adapter = mChatFileTypeAdapter
 //            chatRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 //                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -340,7 +299,7 @@ open class ChatActivity :
 
     override fun onLoadDataSource() {
         super.onLoadDataSource()
-        viewModel.getC2CHistoryMessageList(userId!!, true)
+//        viewModel.getC2CHistoryMessageList(userId!!, true)
         viewModel.initMessageThemeList()
     }
 
@@ -370,7 +329,7 @@ open class ChatActivity :
     private val mLauncherCameraUri =
         registerForActivityResult(TakeCameraUri()) {
             viewModel.sendImageMsg(
-                UriUtil.getFileAbsolutePath(this, it),
+                UriUtil.getFileAbsolutePath(requireContext(), it),
                 userId!!,
                 messageList
             )
@@ -386,7 +345,7 @@ open class ChatActivity :
         GetContent()
     ) {
         viewModel.sendImageMsg(
-            UriUtil.getFileAbsolutePath(this, it),
+            UriUtil.getFileAbsolutePath(requireContext(), it),
             userId!!,
             messageList
         )
@@ -401,11 +360,11 @@ open class ChatActivity :
         GetContent()
     ) {
         //UriUtil.getFileAbsolutePath(this, it),
-        val bitmap = voidToFirstBitmap(UriUtil.getFileAbsolutePath(this, it))
-        val firstUrl = bitmapToStringPath(this, bitmap!!)
-        val duration = getLocalVideoDuration(UriUtil.getFileAbsolutePath(this, it))
+        val bitmap = voidToFirstBitmap(UriUtil.getFileAbsolutePath(requireContext(), it))
+        val firstUrl = bitmapToStringPath(requireContext(), bitmap!!)
+        val duration = getLocalVideoDuration(UriUtil.getFileAbsolutePath(requireContext(), it))
         viewModel.sendVideoMsg(
-            UriUtil.getFileAbsolutePath(this, it),
+            UriUtil.getFileAbsolutePath(requireContext(), it),
             firstUrl!!,
             duration,
             userId!!,
@@ -486,7 +445,7 @@ open class ChatActivity :
     override fun onPause() {
         super.onPause()
         if (heightProvider!!.isSoftInputVisible) {
-            KeyboardUtils.hideSoftInput(this@ChatActivity)
+            KeyboardUtils.hideSoftInput(requireActivity())
         }
     }
 
@@ -514,7 +473,7 @@ open class ChatActivity :
             }
             else -> {
                 if (heightProvider!!.isSoftInputVisible) {
-                    KeyboardUtils.hideSoftInput(this@ChatActivity)
+                    KeyboardUtils.hideSoftInput(requireActivity())
                 }
             }
         }

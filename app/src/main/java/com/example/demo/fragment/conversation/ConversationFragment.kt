@@ -1,11 +1,14 @@
 package com.example.demo.fragment.conversation
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.demo.app.AppManager
+import com.example.demo.app.Router
 import com.example.demo.chat.ChatActivity
+import com.example.demo.chat.ChatFragment
 import com.example.demo.fragment.conversation.adapter.ConversationListAdapter
 import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.common.receiver.event.LocalLifecycleEvent
@@ -47,15 +50,16 @@ class ConversationFragment :
 
     override fun onStateChanged(state: ConversationViewModel.ConversationState) {
         super.onStateChanged(state)
-        mConversationListAdapter.resetItems(
-            state.conversationList + state.conversationList + state.conversationList
-                    + state.conversationList + state.conversationList
-        )
+        mConversationListAdapter.resetItems(state.conversationList)
         viewBinding.networkError.isVisible = !state.netConnected
     }
 
     override fun onItemClick(itemView: View, item: Conversation, position: Int?) {
         ChatActivity.showHasResult(item.name!!)
+//        val args = Bundle()
+//        args.putString(ChatFragment.EXTRAS_TARGET_ID, item.name)
+//        Log.e("TAG", "onInflateArgs: ${item.name}")
+//        baseActivity.navigation(Router.CHAT_FRAGMENT,args)
     }
 
     override fun onEventCallback(event: LocalLifecycleEvent) {

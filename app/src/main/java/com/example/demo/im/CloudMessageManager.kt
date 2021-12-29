@@ -1,6 +1,7 @@
 package com.example.demo.im
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import com.example.demo.app.App
 import com.kehuafu.base.core.network.error.ErrorResponse
@@ -27,12 +28,17 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
         }
     }
 
-    override fun createImageMessage(imagePath: String): V2TIMMessage {
+    override suspend fun createImageMessage(imagePath: String): V2TIMMessage {
         return V2TIMManager.getMessageManager().createImageMessage(imagePath)
     }
 
-    override fun createSoundMessage(soundPath: String, duration: Int): V2TIMMessage {
-        TODO("Not yet implemented")
+    override suspend fun createSoundMessage(soundPath: String, duration: Int): V2TIMMessage {
+        return suspendCancellableCoroutine { continuation ->
+            continuation.resume(
+                V2TIMManager.getMessageManager()
+                    .createSoundMessage(soundPath, duration)
+            )
+        }
     }
 
     override suspend fun createVideoMessage(
@@ -47,15 +53,13 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
                     .createVideoMessage(videoFilePath, type, duration, snapshotPath)
             )
         }
-
-
     }
 
-    override fun createFileMessage(filePath: String, fileName: String): V2TIMMessage {
+    override suspend fun createFileMessage(filePath: String, fileName: String): V2TIMMessage {
         TODO("Not yet implemented")
     }
 
-    override fun createLocationMessage(
+    override suspend fun createLocationMessage(
         desc: String,
         longitude: Double,
         latitude: Double
@@ -63,7 +67,7 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
         TODO("Not yet implemented")
     }
 
-    override fun createFaceMessage(index: Int, data: Byte): V2TIMMessage {
+    override suspend fun createFaceMessage(index: Int, data: Byte): V2TIMMessage {
         TODO("Not yet implemented")
     }
 
@@ -108,11 +112,43 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
         V2TIMManager.getMessageManager().removeAdvancedMsgListener(listener)
     }
 
-    override suspend fun getC2CHistoryMessageList(userID: String): List<V2TIMMessage>? {
+    override suspend fun getC2CHistoryMessageList(
+        userID: String,
+        firstPull: Boolean?
+    ): List<V2TIMMessage>? {
         return suspendCancellableCoroutine { continuation ->
+            val options = V2TIMMessageListGetOption()
+            options.getType = V2TIMMessageListGetOption.V2TIM_GET_LOCAL_OLDER_MSG
+            options.userID = userID
+            options.count = 50
+            if (firstPull == true) {
+                V2TIMManager.getMessageManager()
+                    .getHistoryMessageList(
+                        options,
+                        object : V2TIMValueCallback<List<V2TIMMessage>> {
+                            override fun onSuccess(p0: List<V2TIMMessage>?) {
+                                continuation.resume(p0!!)
+                                Log.d(TAG, "onSuccess: " + p0!!.size)
+                            }
+
+                            override fun onError(p0: Int, p1: String?) {
+                                Log.d(TAG, "onSuccess: $p1")
+                                continuation.resumeWithException(
+                                    CloudException(
+                                        ErrorResponse.createError(
+                                            error = p1!!,
+                                            code = p0
+                                        )
+                                    )
+                                )
+                            }
+
+                        })
+                return@suspendCancellableCoroutine
+            }
             V2TIMManager.getMessageManager().getC2CHistoryMessageList(
                 userID,
-                50,
+                20,
                 null,
                 object : V2TIMValueCallback<List<V2TIMMessage>> {
                     override fun onSuccess(p0: List<V2TIMMessage>?) {

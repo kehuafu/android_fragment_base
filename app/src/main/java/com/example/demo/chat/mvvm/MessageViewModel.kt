@@ -170,10 +170,10 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
         }
     }
 
-    fun getC2CHistoryMessageList(uid: String) {
+    fun getC2CHistoryMessageList(uid: String, firstPull: Boolean) {
         asyncCall {
             val messageList = mutableListOf<Message>()
-            val messages = AppManager.iCloudMessageManager.getC2CHistoryMessageList(uid)
+            val messages = AppManager.iCloudMessageManager.getC2CHistoryMessageList(uid, firstPull)
             if (messages != null) {
                 var lastTemp = TimeUtils.getNowMills()
                 var showTemp: Boolean
@@ -274,6 +274,33 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                 uid = userId,
                 loading = true,
                 messageContent = snapshotPath,
+                messageType = Message.MSG_TYPE_VIDEO,
+                messageSender = true,
+                showTime = false,
+                v2TIMMessage = v2TIMMessage
+            )
+            messageList.add(0, message)
+            dispatch(MessageAction.C2CHistoryMessageList(messageList = messageList))
+        }
+    }
+
+    fun sendSoundMsg(
+        path: String, duration: Int, userId: String, messageList: MutableList<Message>
+    ) {
+        asyncCall({
+            showToast(it.errorMsg)
+        }) {
+            Log.e("@@@@@@", "sendSoundMsg--->${path}")
+            val v2TIMMessage = AppManager.iCloudMessageManager.createSoundMessage(
+                path, duration
+            )
+            val result = sendMessage(v2TIMMessage, userId, messageList)
+            Log.e("@@@@@@", "sendMessage--->$result")
+            val message = Message(
+                mid = result,
+                uid = userId,
+                loading = true,
+                messageContent = duration.toString(),
                 messageType = Message.MSG_TYPE_VIDEO,
                 messageSender = true,
                 showTime = false,
