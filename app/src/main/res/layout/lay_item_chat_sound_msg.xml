@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -12,6 +12,7 @@
         android:id="@+id/tv_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_marginBottom="10dp"
         android:background="@drawable/chat_time_bg_radius_4"
         android:padding="3dp"
@@ -24,88 +25,85 @@
         tools:text="09:30"
         tools:visibility="visible" />
 
-    <LinearLayout
-        android:id="@+id/layout_left_text"
-        android:layout_width="wrap_content"
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="top"
         android:orientation="horizontal"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/layout_right_text"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_time"
         tools:visibility="visible">
 
-        <ImageView
-            android:id="@+id/left_message_avatar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="4dp"
-            android:src="@drawable/left_chat_icon" />
-
         <LinearLayout
+            android:id="@+id/layout_left_sound"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible">
 
-            <View
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/shape_left_triangle" />
+            <ImageView
+                android:id="@+id/left_message_avatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/left_chat_icon" />
 
-            <FrameLayout
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/shape_radius_4"
-                android:minWidth="80dp">
+                android:orientation="horizontal">
 
-                <ImageView
-                    android:id="@+id/left_sound_iv"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginEnd="4dp"
-                    android:rotation="180"
-                    android:src="@drawable/sound_anim_bg" />
+                <View
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/shape_left_triangle" />
 
-                <TextView
-                    android:id="@+id/left_msg_text"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:autoLink="all"
-                    android:padding="10dp"
-                    android:textColor="@color/chat_text_color"
-                    android:textColorLink="@color/chat_link_text_color"
-                    android:textSize="16sp"
-                    tools:ignore="HardcodedText"
-                    tools:text="4‘’" />
+                    android:background="@drawable/shape_radius_4"
+                    android:minWidth="90dp">
 
-            </FrameLayout>
+                    <ImageView
+                        android:id="@+id/left_sound_iv"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="4dp"
+                        android:rotation="180"
+                        android:src="@drawable/sound_anim_bg" />
 
+                    <TextView
+                        android:id="@+id/left_msg_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:autoLink="all"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:textColor="@color/chat_text_color"
+                        android:textColorLink="@color/chat_link_text_color"
+                        android:textSize="14sp"
+                        tools:ignore="HardcodedText"
+                        tools:text="4‘’" />
+
+                </LinearLayout>
+
+
+            </LinearLayout>
 
         </LinearLayout>
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/layout_right_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="top"
-        android:orientation="horizontal"
-        android:visibility="gone"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layout_left_text"
-        tools:visibility="visible">
-
-
         <LinearLayout
+            android:id="@+id/layout_right_sound"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
                 android:id="@+id/iv_send_failed"
@@ -128,35 +126,37 @@
                 android:visibility="gone"
                 tools:visibility="visible" />
 
-            <FrameLayout
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/chat_msg_bg_radius_4"
-                android:minWidth="80dp">
+                android:gravity="end"
+                android:minWidth="90dp">
 
                 <TextView
                     android:id="@+id/right_msg_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_marginEnd="2dp"
                     android:autoLink="all"
-                    android:gravity="top"
-                    android:padding="10dp"
+                    android:gravity="end"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
                     android:textColor="@color/chat_text_color"
                     android:textColorLink="@color/chat_link_text_color"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     tools:ignore="HardcodedText"
                     tools:text="4‘’" />
 
                 <ImageView
                     android:id="@+id/right_sound_iv"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:layout_gravity="center_vertical|end"
                     android:layout_marginEnd="4dp"
                     android:src="@drawable/sound_anim_bg" />
-            </FrameLayout>
+
+            </LinearLayout>
 
 
             <View
@@ -165,16 +165,17 @@
                 android:layout_marginTop="12dp"
                 android:background="@drawable/shape_right_triangle" />
 
+            <ImageView
+                android:id="@+id/right_message_avatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/right_chat_icon" />
+
         </LinearLayout>
 
-        <ImageView
-            android:id="@+id/right_message_avatar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="10dp"
-            android:src="@drawable/right_chat_icon" />
 
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
 

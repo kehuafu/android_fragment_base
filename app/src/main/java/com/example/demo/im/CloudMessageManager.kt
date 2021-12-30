@@ -120,7 +120,7 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
             val options = V2TIMMessageListGetOption()
             options.getType = V2TIMMessageListGetOption.V2TIM_GET_LOCAL_OLDER_MSG
             options.userID = userID
-            options.count = 50
+            options.count = 20
             if (firstPull == true) {
                 V2TIMManager.getMessageManager()
                     .getHistoryMessageList(

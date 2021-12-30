@@ -2,14 +2,8 @@ package com.example.demo.chat.adapter
 
 import android.view.ViewGroup
 import com.example.demo.chat.bean.Message
-import com.example.demo.chat.viewholder.ChatEmptyMsgVH
-import com.example.demo.chat.viewholder.ImageMsgVH
-import com.example.demo.chat.viewholder.TextMsgVH
-import com.example.demo.chat.viewholder.VideoMsgVH
-import com.example.demo.databinding.LayItemChatEmptyMsgBinding
-import com.example.demo.databinding.LayItemChatImageMsgBinding
-import com.example.demo.databinding.LayItemChatTextMsgBinding
-import com.example.demo.databinding.LayItemChatVideoMsgBinding
+import com.example.demo.chat.viewholder.*
+import com.example.demo.databinding.*
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
 import com.kehuafu.base.core.ktx.viewBindings
 
@@ -61,8 +55,8 @@ class ChatMsgAdapterTypeDelegate {
     ): BaseRecyclerViewAdapterV4.BaseViewHolder<Message> {
         return when (viewType) {
             MSG_TYPE_TEXT -> {
-                val viewBinding by parent.viewBindings<LayItemChatTextMsgBinding>(parent)
-                TextMsgVH(viewBinding)
+                val viewBinding by parent.viewBindings<LayItemChatSoundMsgBinding>(parent)
+                SoundMsgVH(viewBinding)
             }
             MSG_TYPE_IMAGE -> {
                 val viewBinding by parent.viewBindings<LayItemChatImageMsgBinding>(parent)

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -12,6 +12,7 @@
         android:id="@+id/tv_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_marginBottom="10dp"
         android:background="@drawable/chat_time_bg_radius_4"
         android:padding="3dp"
@@ -24,16 +25,13 @@
         tools:text="09:30"
         tools:visibility="visible" />
 
-    <LinearLayout
-        android:id="@+id/layout_left_text"
-        android:layout_width="wrap_content"
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="top"
         android:orientation="horizontal"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/layout_right_text"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_time"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layout_left_text"
         tools:visibility="visible">
 
         <ImageView
@@ -42,40 +40,22 @@
             android:layout_height="40dp"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="4dp"
-            android:src="@drawable/left_chat_icon" />
-
-        <ImageView
-            android:id="@+id/left_msg_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:layout_marginStart="6dp"
-            android:adjustViewBounds="true"
-            android:maxWidth="210dp"
-            android:maxHeight="210dp"
-            tools:ignore="RtlSymmetry"
-            tools:src="@drawable/wx_bg" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/layout_right_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="top"
-        android:orientation="horizontal"
-        android:visibility="gone"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layout_left_text"
-        tools:visibility="visible">
-
+            android:src="@drawable/left_chat_icon"
+            android:visibility="gone"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible" />
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:id="@+id/ll_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:gravity="top"
-            android:orientation="horizontal">
+            android:gravity="end"
+            android:orientation="horizontal"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintLeft_toRightOf="@+id/left_message_avatar"
+            app:layout_constraintRight_toLeftOf="@+id/right_message_avatar"
+            app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
                 android:id="@+id/iv_send_failed"
@@ -92,24 +72,49 @@
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_gravity="center"
-                android:layout_marginEnd="4dp"
                 android:padding="6dp"
                 android:src="@drawable/send_loading"
                 android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@+id/msg_vv"
+                app:layout_constraintLeft_toLeftOf="@+id/msg_vv"
+                app:layout_constraintRight_toRightOf="@+id/msg_vv"
+                app:layout_constraintTop_toTopOf="@+id/msg_vv"
                 tools:visibility="visible" />
 
-
-            <ImageView
-                android:id="@+id/right_msg_iv"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="6dp"
-                android:adjustViewBounds="true"
-                android:maxWidth="210dp"
-                android:maxHeight="210dp"
-                android:scaleType="fitEnd"
-                tools:ignore="RtlSymmetry"
-                tools:src="@drawable/wx_bg" />
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="6dp">
+
+                <ImageView
+                    android:id="@+id/msg_vv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:maxWidth="210dp"
+                    android:maxHeight="210dp"
+                    android:scaleType="fitXY"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="RtlSymmetry"
+                    tools:src="@drawable/wx_bg" />
+
+                <TextView
+                    android:id="@+id/right_video_duration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="4dp"
+                    android:textColor="@color/background"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    tools:ignore="RtlSymmetry"
+                    tools:text="0:08"
+                    tools:visibility="visible" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </LinearLayout>
 
@@ -119,8 +124,10 @@
             android:layout_height="40dp"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="10dp"
-            android:src="@drawable/right_chat_icon" />
+            android:src="@drawable/right_chat_icon"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
 

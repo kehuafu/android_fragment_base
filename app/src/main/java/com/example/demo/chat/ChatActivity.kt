@@ -32,6 +32,7 @@ import com.kehuafu.base.core.ktx.showHasResult
 import com.tencent.imsdk.v2.V2TIMMessage
 import java.util.*
 import androidx.activity.result.contract.ActivityResultContracts.GetContent
+import androidx.recyclerview.widget.RecyclerView
 import com.example.demo.chat.mvvm.MessageViewModel
 import com.example.demo.utils.AnimatorUtils
 import com.example.demo.utils.TakeCameraUri
@@ -277,7 +278,7 @@ open class ChatActivity :
             chatRv.layoutManager = LinearLayoutManager(this@ChatActivity)
             (chatRv.layoutManager as LinearLayoutManager).reverseLayout = true
             chatRv.adapter = mChatListAdapter
-//            chatRv.setItemViewCacheSize(6)
+            chatRv.setItemViewCacheSize(10)
 
             mChatFileTypeAdapter.setOnItemClickListener(object :
                 BaseRecyclerViewAdapterV2.OnItemClickListener<MessageTheme> {
@@ -325,14 +326,14 @@ open class ChatActivity :
             chatFile.chatFileRv.itemAnimator = null
             chatFile.chatFileRv.layoutManager = GridLayoutManager(this@ChatActivity, 4)
             chatFile.chatFileRv.adapter = mChatFileTypeAdapter
-//            chatRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-//                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-//                    super.onScrollStateChanged(recyclerView, newState)
-//                    if (heightProvider!!.isSoftInputVisible) {
-//                        KeyboardUtils.hideSoftInput(this@ChatActivity)
-//                    }
-//                }
-//            })
+            chatRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    super.onScrollStateChanged(recyclerView, newState)
+                    if (heightProvider!!.isSoftInputVisible) {
+                        KeyboardUtils.hideSoftInput(this@ChatActivity)
+                    }
+                }
+            })
         }
     }
 
