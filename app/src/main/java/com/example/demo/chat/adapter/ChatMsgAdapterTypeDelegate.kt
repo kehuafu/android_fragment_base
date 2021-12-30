@@ -1,15 +1,16 @@
 package com.example.demo.chat.adapter
 
-import android.util.Log
-import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import androidx.viewbinding.ViewBinding
 import com.example.demo.chat.bean.Message
+import com.example.demo.chat.viewholder.ChatEmptyMsgVH
+import com.example.demo.chat.viewholder.ImageMsgVH
+import com.example.demo.chat.viewholder.TextMsgVH
+import com.example.demo.chat.viewholder.VideoMsgVH
 import com.example.demo.databinding.LayItemChatEmptyMsgBinding
 import com.example.demo.databinding.LayItemChatImageMsgBinding
 import com.example.demo.databinding.LayItemChatTextMsgBinding
 import com.example.demo.databinding.LayItemChatVideoMsgBinding
+import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
 import com.kehuafu.base.core.ktx.viewBindings
 
 class ChatMsgAdapterTypeDelegate {
@@ -25,27 +26,55 @@ class ChatMsgAdapterTypeDelegate {
         private const val MSG_UNKNOWN_IN_MSG = -1 //未知消息
     }
 
+    fun getItemViewType(item: Message): Int {
+        return when (item.messageType) {
+            Message.MSG_TYPE_TEXT -> {
+                MSG_TYPE_TEXT
+            }
+            Message.MSG_TYPE_IMAGE -> {
+                MSG_TYPE_IMAGE
+            }
+            Message.MSG_TYPE_SOUND -> {
+                MSG_TYPE_SOUND
+            }
+            Message.MSG_TYPE_VIDEO -> {
+                MSG_TYPE_VIDEO
+            }
+            Message.MSG_TYPE_FILE -> {
+                MSG_TYPE_FILE
+            }
+            Message.MSG_TYPE_LOCATION -> {
+                MSG_TYPE_LOCATION
+            }
+            Message.MSG_TYPE_FACE -> {
+                MSG_TYPE_FACE
+            }
+            else -> {
+                MSG_UNKNOWN_IN_MSG
+            }
+        }
+    }
+
     fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
-        items: MutableList<Message>
-    ): ViewBinding {
-        return when (items[viewType].messageType) {
+    ): BaseRecyclerViewAdapterV4.BaseViewHolder<Message> {
+        return when (viewType) {
             MSG_TYPE_TEXT -> {
                 val viewBinding by parent.viewBindings<LayItemChatTextMsgBinding>(parent)
-                viewBinding
+                TextMsgVH(viewBinding)
             }
             MSG_TYPE_IMAGE -> {
                 val viewBinding by parent.viewBindings<LayItemChatImageMsgBinding>(parent)
-                viewBinding
+                ImageMsgVH(viewBinding)
             }
             MSG_TYPE_VIDEO -> {
                 val viewBinding by parent.viewBindings<LayItemChatVideoMsgBinding>(parent)
-                viewBinding
+                VideoMsgVH(viewBinding)
             }
             else -> {
                 val viewBinding by parent.viewBindings<LayItemChatEmptyMsgBinding>(parent)
-                viewBinding
+                ChatEmptyMsgVH(viewBinding)
             }
         }
     }

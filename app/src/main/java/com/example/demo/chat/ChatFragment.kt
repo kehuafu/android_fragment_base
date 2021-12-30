@@ -34,6 +34,7 @@ import com.example.demo.chat.mvvm.MessageViewModel
 import com.example.demo.utils.AnimatorUtils
 import com.example.demo.utils.TakeCameraUri
 import com.kehuafu.base.core.container.base.BaseFragment
+import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -42,7 +43,7 @@ import java.lang.Exception
 
 open class ChatFragment :
     BaseFragment<FragmentChatBinding, MessageViewModel, MessageViewModel.MessageState>(),
-    BaseRecyclerViewAdapterV2.OnItemClickListener<Message>,
+    BaseRecyclerViewAdapterV4.OnItemClickListener<Message>,
     LocalEventLifecycleViewModel.OnLocalEventCallback<LocalLifecycleEvent> {
 
 

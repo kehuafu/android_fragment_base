@@ -16,11 +16,11 @@ import com.kehuafu.base.core.viewbinding.IViewBinding
  * desc:
  *
  */
-abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecyclerViewAdapterV2.BaseViewHolder<Item, VB>> :
+abstract class BaseRecyclerViewAdapterV4<Item, VH : BaseRecyclerViewAdapterV4.BaseViewHolder<Item>> :
     RecyclerView.Adapter<VH>() {
 
     companion object {
-        private val TAG = BaseRecyclerViewAdapterV2::class.java.simpleName
+        private val TAG = BaseRecyclerViewAdapterV4::class.java.simpleName
 
         const val EMPTY_TYPE = -0x01
     }
@@ -72,19 +72,15 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
                 if (mItems.isEmpty()) return
                 val item = mItems[position]
                 holder.setOnItemClickListener(mOnItemClickListener)
-                holder.setState(item)
+                holder.setState(item, position)
             }
         }
     }
 
-//    override fun getItemViewType(position: Int): Int {
-//        return position
-//    }
 
     fun getRealItemCount(): Int {
         return mItems.size
     }
-
 
     fun removeItem(position: Int) {
         if (position == -1 || position > mItems.size) return
@@ -144,11 +140,11 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
     }
 
     interface OnCreateEmptyViewHolderCallback {
-        fun onCreateEmptyViewHolder(parent: ViewGroup): BaseViewHolder<*, *>
-        fun onBindEmptyViewHolder(holder: BaseViewHolder<*, *>, position: Int)
+        fun onCreateEmptyViewHolder(parent: ViewGroup): BaseViewHolder<*>
+        fun onBindEmptyViewHolder(holder: BaseViewHolder<*>, position: Int)
     }
 
-    abstract class BaseViewHolder<Item, VB : ViewBinding>(override val viewBinding: VB) :
+    abstract class BaseViewHolder<Item>(override val viewBinding: ViewBinding) :
         RecyclerView.ViewHolder(viewBinding.root), IViewBinding {
 
         protected var mOnItemClickListener: OnItemClickListener<Item>? = null
@@ -158,17 +154,17 @@ abstract class BaseRecyclerViewAdapterV2<VB : ViewBinding, Item, VH : BaseRecycl
             this.mOnItemClickListener = onItemClickListener
         }
 
-        open fun setState(item: Item) {
+        open fun setState(item: Item, position: Int) {
             this.mItem = item
             itemView.setOnClickListener { itemView ->
-                mOnItemClickListener?.onItemClick(itemView, item = item, position = adapterPosition)
+                mOnItemClickListener?.onItemClick(itemView, item = item, position = position)
             }
             if (mOnItemClickListener is OnItemLongClickListener) {
                 itemView.setOnLongClickListener {
                     (mOnItemClickListener as? OnItemLongClickListener)?.onItemLongClick(
                         itemView,
                         item = item,
-                        position = adapterPosition
+                        position = position
                     )
                     return@setOnLongClickListener true
                 }

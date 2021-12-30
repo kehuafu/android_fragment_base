@@ -1,6 +1,5 @@
 package com.example.demo.chat
 
-import android.Manifest.permission.RECORD_AUDIO
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
@@ -13,7 +12,6 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.blankj.utilcode.constant.PermissionConstants
 import com.blankj.utilcode.util.*
 import com.example.demo.R
@@ -25,12 +23,10 @@ import com.example.demo.chat.bean.Message
 import com.example.demo.chat.bean.MessageTheme
 import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.common.receiver.event.LocalLifecycleEvent
-import com.example.demo.fragment.conversation.mvvm.ConversationViewModel
 import com.example.demo.utils.HeightProvider
 import com.example.demo.utils.UriUtil
 import com.kehuafu.base.core.container.base.BaseActivity
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV2
-import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV3
 import com.kehuafu.base.core.container.widget.toast.showToast
 import com.kehuafu.base.core.ktx.showHasResult
 import com.tencent.imsdk.v2.V2TIMMessage
@@ -39,6 +35,7 @@ import androidx.activity.result.contract.ActivityResultContracts.GetContent
 import com.example.demo.chat.mvvm.MessageViewModel
 import com.example.demo.utils.AnimatorUtils
 import com.example.demo.utils.TakeCameraUri
+import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -47,7 +44,7 @@ import java.lang.Exception
 
 open class ChatActivity :
     BaseActivity<FragmentChatBinding, MessageViewModel, MessageViewModel.MessageState>(),
-    BaseRecyclerViewAdapterV2.OnItemClickListener<Message>,
+    BaseRecyclerViewAdapterV4.OnItemClickListener<Message>,
     LocalEventLifecycleViewModel.OnLocalEventCallback<LocalLifecycleEvent> {
 
 
@@ -280,6 +277,7 @@ open class ChatActivity :
             chatRv.layoutManager = LinearLayoutManager(this@ChatActivity)
             (chatRv.layoutManager as LinearLayoutManager).reverseLayout = true
             chatRv.adapter = mChatListAdapter
+//            chatRv.setItemViewCacheSize(6)
 
             mChatFileTypeAdapter.setOnItemClickListener(object :
                 BaseRecyclerViewAdapterV2.OnItemClickListener<MessageTheme> {
