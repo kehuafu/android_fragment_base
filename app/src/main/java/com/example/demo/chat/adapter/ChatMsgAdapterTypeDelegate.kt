@@ -55,8 +55,8 @@ class ChatMsgAdapterTypeDelegate {
     ): BaseRecyclerViewAdapterV4.BaseViewHolder<Message> {
         return when (viewType) {
             MSG_TYPE_TEXT -> {
-                val viewBinding by parent.viewBindings<LayItemChatSoundMsgBinding>(parent)
-                SoundMsgVH(viewBinding)
+                val viewBinding by parent.viewBindings<LayItemChatTextMsgBinding>(parent)
+                TextMsgVH(viewBinding)
             }
             MSG_TYPE_IMAGE -> {
                 val viewBinding by parent.viewBindings<LayItemChatImageMsgBinding>(parent)
@@ -65,6 +65,10 @@ class ChatMsgAdapterTypeDelegate {
             MSG_TYPE_VIDEO -> {
                 val viewBinding by parent.viewBindings<LayItemChatVideoMsgBinding>(parent)
                 VideoMsgVH(viewBinding)
+            }
+            MSG_TYPE_SOUND -> {
+                val viewBinding by parent.viewBindings<LayItemChatSoundMsgBinding>(parent)
+                SoundMsgVH(viewBinding)
             }
             else -> {
                 val viewBinding by parent.viewBindings<LayItemChatEmptyMsgBinding>(parent)

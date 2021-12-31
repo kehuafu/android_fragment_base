@@ -30,15 +30,19 @@ import com.kehuafu.base.core.container.widget.toast.showToast
 import com.tencent.imsdk.v2.V2TIMMessage
 import java.util.*
 import androidx.activity.result.contract.ActivityResultContracts.GetContent
+import androidx.recyclerview.widget.RecyclerView
 import com.example.demo.chat.mvvm.MessageViewModel
 import com.example.demo.utils.AnimatorUtils
 import com.example.demo.utils.TakeCameraUri
 import com.kehuafu.base.core.container.base.BaseFragment
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
+import com.kehuafu.base.core.ktx.runOnMainThread
+import com.kehuafu.base.core.ktx.runOnWorkThread
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.lang.Exception
+import kotlin.concurrent.schedule
 
 
 open class ChatFragment :
@@ -287,21 +291,21 @@ open class ChatFragment :
             chatFile.chatFileRv.itemAnimator = null
             chatFile.chatFileRv.layoutManager = GridLayoutManager(requireActivity(), 4)
             chatFile.chatFileRv.adapter = mChatFileTypeAdapter
-//            chatRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-//                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-//                    super.onScrollStateChanged(recyclerView, newState)
-//                    if (heightProvider!!.isSoftInputVisible) {
-//                        KeyboardUtils.hideSoftInput(this@ChatActivity)
-//                    }
-//                }
-//            })
+            chatRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    super.onScrollStateChanged(recyclerView, newState)
+                    if (heightProvider!!.isSoftInputVisible) {
+                        KeyboardUtils.hideSoftInput(requireActivity())
+                    }
+                }
+            })
         }
     }
 
     override fun onLoadDataSource() {
         super.onLoadDataSource()
-//        viewModel.getC2CHistoryMessageList(userId!!, true)
         viewModel.initMessageThemeList()
+        viewModel.getC2CHistoryMessageList(userId!!, true)
     }
 
     override fun onStateChanged(state: MessageViewModel.MessageState) {
@@ -314,7 +318,11 @@ open class ChatFragment :
             is MessageViewModel.MessageAction.C2CHistoryMessageList -> {
                 Log.e("TAG", "C2CHistoryMessageList: " + state.messageList.size)
                 messageList = state.messageList
-                mChatListAdapter.resetItems(messageList)
+                Timer().schedule(200) {
+                    runOnMainThread({
+                        mChatListAdapter.resetItems(messageList)
+                    })
+                }
             }
             is MessageViewModel.MessageAction.MsgSendSuccess -> {
                 messageList = state.messageList

@@ -96,7 +96,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
             null,
             callback = object : V2TIMSendCallback<V2TIMMessage> {
                 override fun onSuccess(p0: V2TIMMessage?) {
-                    Log.e("@@", "onSuccess-->" + p0!!.msgID)
+                    Log.e("@@", "sendMessage:onSuccess-->" + p0!!.msgID)
                     messageList.mapIndexed { index, message ->
                         if (message.mid == p0.msgID) {
                             message.loading = false
@@ -106,7 +106,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                 }
 
                 override fun onError(p0: Int, p1: String?) {
-                    Log.e("@@", "onError-->$p1")
+                    Log.e("@@", "sendMessage:onError-->$p1")
                     messageList.mapIndexed { index, message ->
                         if (message.mid == v2TIMMessage.msgID) {
                             message.loading = false
@@ -171,7 +171,11 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
     }
 
     fun getC2CHistoryMessageList(uid: String, firstPull: Boolean) {
-        asyncCall {
+        httpAsyncCall({
+            showToast(it.errorMsg)
+        }) {
+            val start = System.currentTimeMillis()
+            Log.e("@@@", "start--->$start")
             val messageList = mutableListOf<Message>()
             val messages = AppManager.iCloudMessageManager.getC2CHistoryMessageList(uid, firstPull)
             if (messages != null) {
@@ -204,6 +208,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                 }
             }
             dispatch(MessageAction.C2CHistoryMessageList(messageList = messageList))
+            Log.e("@@@", "end:耗时--->" + (System.currentTimeMillis() - start))
         }
     }
 
@@ -291,6 +296,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
             showToast(it.errorMsg)
         }) {
             Log.e("@@@@@@", "sendSoundMsg--->${path}")
+            Log.e("@@", "sendSoundMsg-->${duration}")
             val v2TIMMessage = AppManager.iCloudMessageManager.createSoundMessage(
                 path, duration
             )
@@ -301,7 +307,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                 uid = userId,
                 loading = true,
                 messageContent = duration.toString(),
-                messageType = Message.MSG_TYPE_VIDEO,
+                messageType = Message.MSG_TYPE_SOUND,
                 messageSender = true,
                 showTime = false,
                 v2TIMMessage = v2TIMMessage

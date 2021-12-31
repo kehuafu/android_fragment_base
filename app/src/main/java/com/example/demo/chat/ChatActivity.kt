@@ -6,7 +6,11 @@ import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
+import android.view.WindowManager
+import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
@@ -23,8 +27,6 @@ import com.example.demo.chat.bean.Message
 import com.example.demo.chat.bean.MessageTheme
 import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.common.receiver.event.LocalLifecycleEvent
-import com.example.demo.utils.HeightProvider
-import com.example.demo.utils.UriUtil
 import com.kehuafu.base.core.container.base.BaseActivity
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV2
 import com.kehuafu.base.core.container.widget.toast.showToast
@@ -33,14 +35,16 @@ import com.tencent.imsdk.v2.V2TIMMessage
 import java.util.*
 import androidx.activity.result.contract.ActivityResultContracts.GetContent
 import androidx.recyclerview.widget.RecyclerView
+import com.blankj.utilcode.constant.TimeConstants
 import com.example.demo.chat.mvvm.MessageViewModel
-import com.example.demo.utils.AnimatorUtils
-import com.example.demo.utils.TakeCameraUri
+import com.example.demo.chat.viewholder.SoundMsgVH
+import com.example.demo.utils.*
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.lang.Exception
+import java.text.SimpleDateFormat
 
 
 open class ChatActivity :
@@ -62,6 +66,14 @@ open class ChatActivity :
     private var messageList: MutableList<Message> = mutableListOf()
 
     private var showFileMode = false
+
+    private lateinit var lp: WindowManager.LayoutParams
+
+    private lateinit var mPop: PopupWindow
+
+    private lateinit var mAudioRecodeUtils: AudioRecodeUtils
+
+    private lateinit var rl: RelativeLayout
 
     companion object {
 
@@ -172,33 +184,53 @@ open class ChatActivity :
                     KeyboardUtils.showSoftInput(this@ChatActivity)
                 }
             }
-            chatInputRl.tvVoice.setOnClickListener {
-                showToast("按住说话")
-                PermissionUtils.permission(
-                    PermissionConstants.MICROPHONE,
-                    PermissionConstants.STORAGE
-                )
-                    .callback(object : PermissionUtils.FullCallback {
-                        override fun onGranted(permissionsGranted: List<String>) {
-                            LogUtils.d(permissionsGranted)
-                            showToast("同意授权")
-                        }
+            chatInputRl.tvVoice.setOnTouchListener(View.OnTouchListener { v, event ->
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        lp.alpha = 0.4f
+                        window.attributes = lp
+                        mPop.width = LinearLayout.LayoutParams.MATCH_PARENT
+                        mPop.height = LinearLayout.LayoutParams.MATCH_PARENT
+                        mPop.showAtLocation(rl, Gravity.CENTER, 0, 0)
+                        mAudioRecodeUtils.startRecord()
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        //恢复背景色
+                        lp.alpha = 1f
+                        window.attributes = lp
+                        mAudioRecodeUtils.stopRecord() //结束录音（保存录音文件）
+                        mPop.dismiss()
+                    }
+                }
+                true
+            })
 
-                        override fun onDenied(
-                            permissionsDeniedForever: List<String>,
-                            permissionsDenied: List<String>
-                        ) {
-                            LogUtils.d(permissionsDeniedForever, permissionsDenied)
-                            showToast("拒绝授权")
-                        }
-                    })
-                    .theme { activity -> ScreenUtils.setFullScreen(activity) }
-                    .request()
-            }
             chatInputRl.ivVoice.setOnClickListener {
+
                 showFileMode = false
                 keyBoardHeight = 0F
                 if (chatInputRl.etMsg.isVisible) {
+                    PermissionUtils.permission(
+                        PermissionConstants.MICROPHONE,
+                        PermissionConstants.STORAGE
+                    )
+                        .callback(object : PermissionUtils.FullCallback {
+                            override fun onGranted(permissionsGranted: List<String>) {
+                                LogUtils.d(permissionsGranted)
+                                showToast("同意授权")
+                            }
+
+                            override fun onDenied(
+                                permissionsDeniedForever: List<String>,
+                                permissionsDenied: List<String>
+                            ) {
+                                LogUtils.d(permissionsDeniedForever, permissionsDenied)
+                                showToast("拒绝授权")
+                                return
+                            }
+                        })
+                        .theme { activity -> ScreenUtils.setFullScreen(activity) }
+                        .request()
                     showToast("切换语音模式")
                     if (heightProvider!!.isSoftInputVisible) {
                         KeyboardUtils.hideSoftInput(this@ChatActivity)
@@ -335,6 +367,63 @@ open class ChatActivity :
                 }
             })
         }
+        initAudio()
+    }
+
+    private var ltime: Long = 0
+
+    /**
+     * 时间戳转换为字符串分秒
+     * @param time:时间戳
+     * @return
+     */
+    open fun getDateCoverString(time: Long): String? {
+        val d = Date(time)
+        val sf = SimpleDateFormat("mm:ss")
+        return sf.format(d)
+    }
+
+    //录音功能 初始化
+    private fun initAudio() {
+        rl = View.inflate(this, R.layout.popup_window, null) as RelativeLayout
+        //设置空白的背景色
+        lp = window.attributes
+        mPop = PopupWindow(rl)
+        val micImage = rl.findViewById<ImageView>(R.id.iv_pro)
+        val recordingTime = rl.findViewById<TextView>(R.id.recording_time)
+        mAudioRecodeUtils = AudioRecodeUtils()
+        mAudioRecodeUtils.setOnAudioStatusUpdateListener(object :
+            AudioRecodeUtils.OnAudioStatusUpdateListener {
+            override fun onUpdate(db: Double, time: Long) {
+                //根据分贝值来设置录音时话筒图标的上下波动
+                ltime = time
+                micImage.drawable.level = (3000 + 6000 * db / 100).toInt()
+                recordingTime.text = getDateCoverString(time)
+            }
+
+            override fun onStop(filePath: String) {
+                if (ltime < 1500) { //判断，如果录音时间小于1.5秒，则删除文件提示，过短
+                    val file = File(filePath)
+                    if (file.exists()) { //判断文件是否存在，如果存在删除文件
+                        file.delete() //删除文件
+                        showToast("录音时间过短")
+                    }
+                } else {
+                    try {
+                        recordingTime.text = "00:00"
+                        viewModel.sendSoundMsg(
+                            filePath,
+                            (ltime / 1000).toInt(),
+                            userId!!,
+                            messageList
+                        )
+                        ltime = 0
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        })
     }
 
     override fun onLoadDataSource() {
@@ -497,6 +586,7 @@ open class ChatActivity :
     override fun onDestroy() {
         super.onDestroy()
         AppManager.localEventLifecycleViewModel.unRegister(this)
+        MediaPlayerManager.getInstance().release()
     }
 
     override fun onItemClick(itemView: View, item: Message, position: Int?) {
@@ -504,7 +594,7 @@ open class ChatActivity :
             R.id.left_message_avatar, R.id.right_message_avatar -> {
                 showToast("头像")
             }
-            R.id.left_msg_text, R.id.right_msg_text -> {
+            R.id.left_message_ll, R.id.right_message_ll -> {
                 showToast("文本")
             }
             R.id.iv_send_failed -> {

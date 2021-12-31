@@ -66,7 +66,6 @@ class VideoMsgVH(override val viewBinding: LayItemChatVideoMsgBinding) :
                 }
             }
             viewBinding.msgVv.loadImage(item.messageContent)
-            viewBinding.rightIvSendSuccess.isVisible = !item.loading
         } else {
             viewBinding.llContent.gravity = Gravity.START
             viewBinding.leftMessageAvatar.visibility = View.VISIBLE
@@ -88,6 +87,7 @@ class VideoMsgVH(override val viewBinding: LayItemChatVideoMsgBinding) :
         }
         viewBinding.tvTime.isVisible = item.showTime!!
         viewBinding.tvTime.text = item.messageTime
+        viewBinding.rightIvSendSuccess.isVisible = !item.loading
         if (item.loading) {
             viewBinding.ivSendLoading.visibility = View.VISIBLE
             val mOperatingAnimCenter =

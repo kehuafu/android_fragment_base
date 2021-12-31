@@ -1,5 +1,6 @@
 package com.example.demo.chat.bean
 
+import android.util.Log
 import com.blankj.utilcode.util.LogUtils
 import com.kehuafu.base.core.redux.IState
 import com.tencent.imsdk.v2.V2TIMMessage
@@ -49,7 +50,8 @@ open class Message(
                     }
                 }
                 MSG_TYPE_SOUND -> {
-                    "[语音]"
+                    Log.e("@@", "messageContent-->${v2TIMMessage.soundElem.duration}")
+                    v2TIMMessage.soundElem.duration.toString()
                 }
                 MSG_TYPE_VIDEO -> {
                     v2TIMMessage.videoElem.snapshotPath

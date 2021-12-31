@@ -2,6 +2,7 @@ package com.example.demo.chat.viewholder
 
 import android.annotation.SuppressLint
 import android.graphics.drawable.AnimationDrawable
+import android.util.Log
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.view.animation.LinearInterpolator
@@ -9,7 +10,10 @@ import androidx.core.view.isVisible
 import com.example.demo.R
 import com.example.demo.chat.bean.Message
 import com.example.demo.databinding.LayItemChatSoundMsgBinding
+import com.example.demo.utils.AudioRecodeUtils
+import com.example.demo.utils.MediaPlayerManager
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
+import com.tencent.imsdk.v2.V2TIMValueCallback
 
 class SoundMsgVH(override val viewBinding: LayItemChatSoundMsgBinding) :
     BaseRecyclerViewAdapterV4.BaseViewHolder<Message>(
@@ -20,33 +24,25 @@ class SoundMsgVH(override val viewBinding: LayItemChatSoundMsgBinding) :
         setStateToSoundMsg(viewBinding, item, position = position)
     }
 
+    private lateinit var audioRecodeUtils: AudioRecodeUtils
+
     @SuppressLint("SetTextI18n")
     private fun setStateToSoundMsg(
         viewBinding: LayItemChatSoundMsgBinding,
         item: Message,
         position: Int
     ) {
-        viewBinding.leftMessageAvatar.setOnClickListener {
-            mOnItemClickListener?.onItemClick(it, item = item, position)
-        }
-        viewBinding.rightMessageAvatar.setOnClickListener {
-            mOnItemClickListener?.onItemClick(it, item = item, position)
-        }
-        viewBinding.ivSendFailed.setOnClickListener {
-            mOnItemClickListener?.onItemClick(it, item = item, position)
-        }
+        val anim: AnimationDrawable
         if (item.messageSender) {
             viewBinding.layoutLeftSound.visibility = View.GONE
             viewBinding.layoutRightSound.visibility = View.VISIBLE
             viewBinding.rightMsgText.text = item.messageContent + "''"
-            val anim = viewBinding.rightSoundIv.drawable as AnimationDrawable
-            anim.start()
+            anim = viewBinding.rightSoundIv.drawable as AnimationDrawable
         } else {
             viewBinding.layoutLeftSound.visibility = View.VISIBLE
             viewBinding.layoutRightSound.visibility = View.GONE
             viewBinding.leftMsgText.text = item.messageContent + "''"
-            val anim = viewBinding.leftSoundIv.drawable as AnimationDrawable
-//            anim.start()
+            anim = viewBinding.leftSoundIv.drawable as AnimationDrawable
         }
         viewBinding.tvTime.isVisible = item.showTime!!
         viewBinding.tvTime.text = item.messageTime
@@ -61,5 +57,62 @@ class SoundMsgVH(override val viewBinding: LayItemChatSoundMsgBinding) :
             viewBinding.ivSendLoading.clearAnimation()
         }
         viewBinding.ivSendFailed.isVisible = item.sendFailed
+        viewBinding.leftMessageAvatar.setOnClickListener {
+            mOnItemClickListener?.onItemClick(it, item = item, position)
+        }
+        viewBinding.rightMessageAvatar.setOnClickListener {
+            mOnItemClickListener?.onItemClick(it, item = item, position)
+        }
+        viewBinding.ivSendFailed.setOnClickListener {
+            mOnItemClickListener?.onItemClick(it, item = item, position)
+        }
+        viewBinding.leftMessageLl.setOnClickListener {
+            item.v2TIMMessage.soundElem.getUrl(object : V2TIMValueCallback<String> {
+                override fun onSuccess(p0: String?) {
+                    audioRecodeUtils.playRecord(p0, anim)
+
+                }
+
+                override fun onError(p0: Int, p1: String?) {
+                    Log.e("TAG", "setStateToSoundMsg: $p1")
+                }
+            })
+        }
+        viewBinding.rightMessageLl.setOnClickListener {
+            if (item.v2TIMMessage.soundElem.path.isEmpty()) {
+                item.v2TIMMessage.soundElem.getUrl(object : V2TIMValueCallback<String> {
+                    override fun onSuccess(p0: String?) {
+                        audioRecodeUtils.playRecord(p0, anim)
+                    }
+
+                    override fun onError(p0: Int, p1: String?) {
+                        Log.e("TAG", "setStateToSoundMsg: $p1")
+                    }
+                })
+                return@setOnClickListener
+            }
+            audioRecodeUtils.playRecord(item.v2TIMMessage.soundElem.path, anim)
+        }
+        audioRecodeUtils = AudioRecodeUtils()
+        audioRecodeUtils.setOnAudioPlayStatusListener { playState, anim ->
+            when (playState) {
+                MediaPlayerManager.PLAY_STATE_PLAYING -> {
+                    anim.start()
+                }
+                MediaPlayerManager.PLAY_STATE_FINISHED -> {
+                    if (anim.isRunning) {
+                        anim.stop()
+                        anim.selectDrawable(0)
+                    }
+                }
+                MediaPlayerManager.PLAY_STATE_STOP -> {
+                    if (anim.isRunning) {
+                        anim.stop()
+                        anim.selectDrawable(0)
+                    }
+                    Log.e("sss---->", "停止$anim")
+                }
+            }
+        }
     }
 }

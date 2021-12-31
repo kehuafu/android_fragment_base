@@ -51,6 +51,7 @@
                 android:src="@drawable/left_chat_icon" />
 
             <LinearLayout
+                android:id="@+id/left_message_ll"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
@@ -127,6 +128,7 @@
                 tools:visibility="visible" />
 
             <LinearLayout
+                android:id="@+id/right_message_ll"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/chat_msg_bg_radius_4"
