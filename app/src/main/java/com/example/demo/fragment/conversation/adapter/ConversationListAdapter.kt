@@ -7,6 +7,7 @@ import com.example.demo.databinding.LayItemConversationBinding
 import com.example.demo.fragment.conversation.bean.Conversation
 import com.kehuafu.base.core.container.base.adapter.BaseListAdapter
 import com.kehuafu.base.core.ktx.loadImage
+import com.kehuafu.base.core.ktx.loadRoundImage
 import com.kehuafu.base.core.ktx.viewBindings
 
 /**
@@ -40,6 +41,6 @@ class ConversationListAdapter : BaseListAdapter<Conversation, LayItemConversatio
         viewBinding.tvContent.text = item.messageContent
         viewBinding.tvUnreadCount.text = item.messageUnreadCount.toString()
         viewBinding.tvUnreadCount.isVisible = item.messageUnreadCount != 0
-        viewBinding.messageAvatar.loadImage(item.avatar, R.mipmap.logo)
+        viewBinding.messageAvatar.loadRoundImage(item.avatar, 10f)
     }
 }

@@ -46,7 +46,11 @@ open class Message(
                     return if (v2TIMMessage.status == V2TIM_MSG_STATUS_SEND_FAILED) {
                         v2TIMMessage.imageElem.path
                     } else {
-                        v2TIMMessage.imageElem.imageList[2].url
+                        if (v2TIMMessage.imageElem.path.isNotEmpty()) {
+                            v2TIMMessage.imageElem.path
+                        } else {
+                            v2TIMMessage.imageElem.imageList[2].url
+                        }
                     }
                 }
                 MSG_TYPE_SOUND -> {
@@ -101,4 +105,14 @@ open class Message(
         }
         return sb.toString()
     }
+
+    fun isVideo(): Boolean {
+        return messageType == MSG_TYPE_VIDEO
+    }
+
+    fun isImage(): Boolean {
+        return messageType == MSG_TYPE_IMAGE
+    }
+
+
 }

@@ -38,8 +38,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.demo.app.Router
 import com.example.demo.chat.mvvm.MessageViewModel
 import com.example.demo.utils.*
+import com.example.demo.video.ImageFragment
+import com.example.demo.video.ImagePreviewActivity
 import com.example.demo.video.VideoPlayActivity
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
+import com.kehuafu.base.core.ktx.toJsonTxt
 import com.tencent.imsdk.v2.V2TIMValueCallback
 import java.io.File
 import java.io.FileOutputStream
@@ -602,22 +605,35 @@ open class ChatActivity :
                 viewModel.resendMessage(item, userId!!, messageList, position!!)
             }
             R.id.msg_vv -> {
-                if (item.messageType != Message.MSG_TYPE_VIDEO) return
-                showToast("播放视频")
-                if (item.v2TIMMessage.videoElem.videoPath.isNotEmpty()) {
-                    VideoPlayActivity.showHasResult(item.v2TIMMessage.videoElem.videoPath)
-                    return
-                }
-                item.v2TIMMessage.videoElem.getVideoUrl(object :
-                    V2TIMValueCallback<String> {
-                    override fun onSuccess(p0: String?) {
-                        VideoPlayActivity.showHasResult(p0!!)
+                when (item.messageType) {
+                    Message.MSG_TYPE_IMAGE -> {
+                        showToast("预览图片")
+                        val msg = messageList.filter {
+                            it.messageType == Message.MSG_TYPE_IMAGE || it.messageType == Message.MSG_TYPE_VIDEO
+                        }
+                        ImagePreviewActivity.showHasResult(
+                            msg.toJsonTxt(),
+                            msg.indexOf(item)
+                        )
                     }
+                    Message.MSG_TYPE_VIDEO -> {
+                        showToast("播放视频")
+                        if (item.v2TIMMessage.videoElem.videoPath.isNotEmpty()) {
+                            VideoPlayActivity.showHasResult(item.v2TIMMessage.videoElem.videoPath)
+                            return
+                        }
+                        item.v2TIMMessage.videoElem.getVideoUrl(object :
+                            V2TIMValueCallback<String> {
+                            override fun onSuccess(p0: String?) {
+                                VideoPlayActivity.showHasResult(p0!!)
+                            }
 
-                    override fun onError(p0: Int, p1: String?) {
-                        showToast(p1!!)
+                            override fun onError(p0: Int, p1: String?) {
+                                showToast(p1!!)
+                            }
+                        })
                     }
-                })
+                }
             }
             else -> {
                 if (heightProvider!!.isSoftInputVisible) {

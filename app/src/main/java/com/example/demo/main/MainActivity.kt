@@ -9,7 +9,6 @@ import com.example.demo.app.Router
 import com.example.demo.databinding.ActivityMainBinding
 import com.example.demo.main.mvvm.MainState
 import com.example.demo.main.mvvm.MainViewModel
-import com.example.demo.video.VideoPlayActivity
 import com.kehuafu.base.core.container.base.BaseActivity
 import com.kehuafu.base.core.fragment.RouterController
 import com.kehuafu.base.core.fragment.constant.NavMode

@@ -13,6 +13,7 @@ import com.example.demo.databinding.LayItemChatTextMsgBinding
 import com.example.demo.utils.DensityTool
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
 import com.kehuafu.base.core.ktx.loadImage
+import com.kehuafu.base.core.ktx.loadRoundImage
 
 class ImageMsgVH(override val viewBinding: LayItemChatImageMsgBinding) :
     BaseRecyclerViewAdapterV4.BaseViewHolder<Message>(
@@ -58,7 +59,7 @@ class ImageMsgVH(override val viewBinding: LayItemChatImageMsgBinding) :
             val width = item.v2TIMMessage.imageElem.imageList[2].width
             DensityTool.setWH(viewBinding.msgVv, width, height)
         }
-        viewBinding.msgVv.loadImage(item.messageContent!!)
+        viewBinding.msgVv.loadRoundImage(item.messageContent!!, 10F)
         viewBinding.tvTime.isVisible = item.showTime!!
         viewBinding.tvTime.text = item.messageTime
         if (item.loading) {

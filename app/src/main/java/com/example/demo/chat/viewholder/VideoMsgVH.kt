@@ -16,6 +16,7 @@ import com.example.demo.databinding.LayItemChatVideoMsgBinding
 import com.example.demo.utils.DensityTool
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
 import com.kehuafu.base.core.ktx.loadImage
+import com.kehuafu.base.core.ktx.loadRoundImage
 import com.tencent.imsdk.v2.V2TIMValueCallback
 
 class VideoMsgVH(override val viewBinding: LayItemChatVideoMsgBinding) :
@@ -65,7 +66,7 @@ class VideoMsgVH(override val viewBinding: LayItemChatVideoMsgBinding) :
                     DensityTool.setWH(viewBinding.msgVv, imageWidth, imageHeight)
                 }
             }
-            viewBinding.msgVv.loadImage(item.messageContent)
+            viewBinding.msgVv.loadRoundImage(item.messageContent, 10f)
         } else {
             viewBinding.llContent.gravity = Gravity.START
             viewBinding.leftMessageAvatar.visibility = View.VISIBLE
@@ -77,7 +78,7 @@ class VideoMsgVH(override val viewBinding: LayItemChatVideoMsgBinding) :
             item.v2TIMMessage.videoElem.getSnapshotUrl(object : V2TIMValueCallback<String> {
                 override fun onSuccess(p0: String?) {
                     Log.e("@@@@@@", "loadImage-onSuccess-->${p0}")
-                    viewBinding.msgVv.loadImage(p0)
+                    viewBinding.msgVv.loadRoundImage(p0, 10f)
                 }
 
                 override fun onError(p0: Int, p1: String?) {

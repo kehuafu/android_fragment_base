@@ -18,8 +18,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.blankj.utilcode.util.LogUtils;
 import com.blankj.utilcode.util.PathUtils;
+import com.example.demo.app.App;
 
-public class AudioRecodeUtils extends AppCompatActivity {
+public class AudioRecodeUtils {
 
     //文件路径
     private String filePath;
@@ -151,7 +152,7 @@ public class AudioRecodeUtils extends AppCompatActivity {
                 }
             }
         }
-        player = mediaPlayerManager.getMediaPlayer(this);
+        player = mediaPlayerManager.getMediaPlayer(App.getAppContext());
         if (player != null) {
             try {
                 player.reset();
