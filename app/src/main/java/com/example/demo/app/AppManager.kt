@@ -42,6 +42,10 @@ object AppManager {
         CloudGroupManager.create()
     }
 
+    val iCloudUserManager: ICloudUserManager by lazy {
+        CloudUserManager.create()
+    }
+
     val localEventLifecycleViewModel by lazy {
         LocalEventLifecycleViewModel(App.appContext as Application)
     }

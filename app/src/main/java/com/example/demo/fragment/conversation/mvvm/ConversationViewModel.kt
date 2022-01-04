@@ -1,24 +1,15 @@
 package com.example.demo.fragment.conversation.mvvm
 
-import android.util.Log
-import com.blankj.utilcode.constant.TimeConstants
 import com.blankj.utilcode.util.TimeUtils
-import com.example.demo.R
-import com.example.demo.app.App
 import com.example.demo.app.AppManager
 import com.kehuafu.base.core.container.widget.toast.showToast
 import com.example.demo.base.BaseRequestViewModel
-import com.example.demo.chat.bean.Message
-import com.example.demo.chat.bean.MessageTheme
 import com.example.demo.fragment.conversation.bean.Conversation
+import com.example.demo.fragment.mine.mvvm.MineViewModel
 import com.kehuafu.base.core.ktx.asyncCall
 import com.kehuafu.base.core.redux.Action
 import com.kehuafu.base.core.redux.IState
 import com.kehuafu.base.core.redux.Reducer
-import com.tencent.imsdk.message.Message.V2TIM_MSG_STATUS_SEND_FAILED
-import com.tencent.imsdk.v2.V2TIMMessage
-import com.tencent.imsdk.v2.V2TIMMessage.V2TIM_MSG_STATUS_SENDING
-import com.tencent.imsdk.v2.V2TIMSendCallback
 
 
 class ConversationViewModel : BaseRequestViewModel<ConversationViewModel.ConversationState>(
@@ -57,9 +48,9 @@ class ConversationViewModel : BaseRequestViewModel<ConversationViewModel.Convers
             for (conversation in conversationList) {
                 val message = Conversation(
                     mid = conversation.conversationID,
-                    uid = "",
+                    uid = conversation.userID,
                     name = conversation.showName,
-                    avatar = "",
+                    avatar = conversation.faceUrl,
                     messageContent = Conversation.messageContent(conversation.lastMessage),
                     messageType = conversation.lastMessage.elemType,
                     messageTime = TimeUtils.date2String(TimeUtils.millis2Date(conversation.lastMessage.timestamp * 1000)),

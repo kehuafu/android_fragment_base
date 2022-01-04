@@ -464,7 +464,7 @@ open class ChatActivity :
             )
         }
 
-    //调用相册选择图片
+    //调用相机
     protected fun launchCameraUri() {
         mLauncherCameraUri.launch(null)
     }

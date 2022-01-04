@@ -194,7 +194,7 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>
     }
 
     override fun onSuccess() {
-        showToast("IM 登录成功！")
+//        showToast("IM 登录成功！")
     }
 
     override fun onError(p0: Int, p1: String?) {

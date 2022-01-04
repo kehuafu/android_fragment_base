@@ -1,20 +1,18 @@
 package com.example.demo.fragment.conversation
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.demo.app.AppManager
-import com.example.demo.app.Router
 import com.example.demo.chat.ChatActivity
-import com.example.demo.chat.ChatFragment
 import com.example.demo.fragment.conversation.adapter.ConversationListAdapter
 import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.common.receiver.event.LocalLifecycleEvent
 import com.example.demo.databinding.FragmentConversationBinding
 import com.example.demo.fragment.conversation.bean.Conversation
 import com.example.demo.fragment.conversation.mvvm.ConversationViewModel
+import com.example.demo.fragment.mine.mvvm.MineViewModel
 import com.kehuafu.base.core.container.base.BaseFragment
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV2
 
@@ -55,10 +53,10 @@ class ConversationFragment :
     }
 
     override fun onItemClick(itemView: View, item: Conversation, position: Int?) {
-        ChatActivity.showHasResult(item.name!!)
+        ChatActivity.showHasResult(item.uid!!)
 //        val args = Bundle()
 //        args.putString(ChatFragment.EXTRAS_TARGET_ID, item.name)
-//        Log.e("TAG", "onInflateArgs: ${item.name}")
+//        Log.e("TAG", "onInflateArgs: ${item.uid}")
 //        baseActivity.navigation(Router.CHAT_FRAGMENT,args)
     }
 
