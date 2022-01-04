@@ -40,6 +40,11 @@
             android:exported="true"
             android:windowSoftInputMode="stateVisible|adjustNothing" />
 
+        <activity
+            android:name=".video.VideoPlayActivity"
+            android:exported="true"
+            android:windowSoftInputMode="stateVisible|adjustNothing" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

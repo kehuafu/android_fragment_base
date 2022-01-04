@@ -35,11 +35,12 @@ import com.tencent.imsdk.v2.V2TIMMessage
 import java.util.*
 import androidx.activity.result.contract.ActivityResultContracts.GetContent
 import androidx.recyclerview.widget.RecyclerView
-import com.blankj.utilcode.constant.TimeConstants
+import com.example.demo.app.Router
 import com.example.demo.chat.mvvm.MessageViewModel
-import com.example.demo.chat.viewholder.SoundMsgVH
 import com.example.demo.utils.*
+import com.example.demo.video.VideoPlayActivity
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
+import com.tencent.imsdk.v2.V2TIMValueCallback
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -78,12 +79,11 @@ open class ChatActivity :
     companion object {
 
         const val EXTRAS_TARGET_ID = "com.example.demo.chat.EXTRAS_TARGET_ID"
-        const val REQUEST_CODE_CALL = 0x01
 
         @JvmStatic
         fun showHasResult(targetId: String) {
             ActivityUtils.getTopActivity()
-                ?.showHasResult(ChatActivity::class.java, REQUEST_CODE_CALL) {
+                ?.showHasResult(ChatActivity::class.java) {
                     putString(EXTRAS_TARGET_ID, targetId)
                 }
         }
@@ -601,12 +601,34 @@ open class ChatActivity :
                 showToast("重发")
                 viewModel.resendMessage(item, userId!!, messageList, position!!)
             }
+            R.id.msg_vv -> {
+                if (item.messageType != Message.MSG_TYPE_VIDEO) return
+                showToast("播放视频")
+                if (item.v2TIMMessage.videoElem.videoPath.isNotEmpty()) {
+                    VideoPlayActivity.showHasResult(item.v2TIMMessage.videoElem.videoPath)
+                    return
+                }
+                item.v2TIMMessage.videoElem.getVideoUrl(object :
+                    V2TIMValueCallback<String> {
+                    override fun onSuccess(p0: String?) {
+                        VideoPlayActivity.showHasResult(p0!!)
+                    }
+
+                    override fun onError(p0: Int, p1: String?) {
+                        showToast(p1!!)
+                    }
+                })
+            }
             else -> {
                 if (heightProvider!!.isSoftInputVisible) {
                     KeyboardUtils.hideSoftInput(this@ChatActivity)
                 }
             }
         }
+    }
+
+    override fun frameLayoutId(): Int {
+        return viewBinding.frameLayout.id
     }
 
     override fun onEventCallback(event: LocalLifecycleEvent) {

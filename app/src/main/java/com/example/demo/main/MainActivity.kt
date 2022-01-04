@@ -6,10 +6,10 @@ import androidx.core.content.ContextCompat
 import com.blankj.utilcode.util.BarUtils
 import com.example.demo.R
 import com.example.demo.app.Router
-import com.example.demo.chat.ChatFragment
 import com.example.demo.databinding.ActivityMainBinding
 import com.example.demo.main.mvvm.MainState
 import com.example.demo.main.mvvm.MainViewModel
+import com.example.demo.video.VideoPlayActivity
 import com.kehuafu.base.core.container.base.BaseActivity
 import com.kehuafu.base.core.fragment.RouterController
 import com.kehuafu.base.core.fragment.constant.NavMode
@@ -33,9 +33,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel, MainState>
         when (name) {
             Router.MAIN_FRAGMENT -> {
                 RouterController.switcher(MainFragment::class.java, bundle, navMode, false)
-            }
-            Router.CHAT_FRAGMENT -> {
-                RouterController.switcher(ChatFragment::class.java, bundle, navMode)
             }
         }
     }

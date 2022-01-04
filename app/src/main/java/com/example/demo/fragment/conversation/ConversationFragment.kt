@@ -12,7 +12,6 @@ import com.example.demo.common.receiver.event.LocalLifecycleEvent
 import com.example.demo.databinding.FragmentConversationBinding
 import com.example.demo.fragment.conversation.bean.Conversation
 import com.example.demo.fragment.conversation.mvvm.ConversationViewModel
-import com.example.demo.fragment.mine.mvvm.MineViewModel
 import com.kehuafu.base.core.container.base.BaseFragment
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV2
 
