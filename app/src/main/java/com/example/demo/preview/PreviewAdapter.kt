@@ -27,7 +27,7 @@ class PreviewAdapter(fragmentManager: FragmentManager) :
         mediaData.takeIf {
             it.isImage()
         }?.let {
-            return ImageFragment.newInstance(it.messageContent!!)
+            return ImageFragment.newInstance(it.imageUlr)
         }
         return Fragment()
     }

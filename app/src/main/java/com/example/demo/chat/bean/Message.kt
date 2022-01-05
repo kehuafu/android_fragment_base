@@ -14,6 +14,7 @@ open class Message(
     val name: String? = "",
     val messageContent: String? = "",
     val videoUrl: String = "",
+    val imageUlr: String = "",
     val messageType: Int = MSG_TYPE_TEXT,
     val messageSender: Boolean = false,
     val messageTime: String? = "",
@@ -49,11 +50,7 @@ open class Message(
                     return if (v2TIMMessage.status == V2TIM_MSG_STATUS_SEND_FAILED) {
                         v2TIMMessage.imageElem.path
                     } else {
-                        if (v2TIMMessage.imageElem.path.isNotEmpty()) {
-                            v2TIMMessage.imageElem.path
-                        } else {
-                            v2TIMMessage.imageElem.imageList[2].url
-                        }
+                        v2TIMMessage.imageElem.imageList[2].url
                     }
                 }
                 MSG_TYPE_SOUND -> {
@@ -83,6 +80,15 @@ open class Message(
                 } else {
                     AppManager.iCloudMessageManager.getVideoUrl(v2TIMMessage)!!
                 }
+            } else {
+                ""
+            }
+        }
+
+        @JvmStatic
+        fun getImageUrl(v2TIMMessage: V2TIMMessage): String {
+            return if (v2TIMMessage.elemType == MSG_TYPE_IMAGE) {
+                v2TIMMessage.imageElem.imageList[0].url
             } else {
                 ""
             }

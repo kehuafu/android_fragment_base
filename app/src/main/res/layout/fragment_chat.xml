@@ -29,9 +29,7 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:focusable="true"
-                android:focusableInTouchMode="true">
+                android:layout_height="match_parent">
 
                 <include
                     android:id="@+id/nav"
@@ -43,8 +41,9 @@
                     android:id="@+id/ns_view"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
+                    android:layout_marginBottom="60dp"
                     android:fillViewport="true"
-                    app:layout_constraintBottom_toTopOf="@+id/chat_input_rl"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/nav"
                     app:layout_constraintVertical_weight="1">
 
@@ -58,6 +57,7 @@
                             android:layout_height="0dp"
                             android:gravity="top"
                             android:orientation="vertical"
+                            android:translationY="0dp"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintVertical_bias="0.0"
@@ -74,36 +74,41 @@
 
                         </LinearLayout>
 
-                        <!--                        <com.example.demo.chat.widget.ChatInputView-->
-                        <!--                            android:id="@+id/chat_input_rl"-->
-                        <!--                            android:layout_width="match_parent"-->
-                        <!--                            android:layout_height="wrap_content"-->
-                        <!--                            app:layout_constraintBottom_toBottomOf="parent"-->
-                        <!--                            app:layout_constraintTop_toBottomOf="@+id/frame_layout" />-->
-
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
                 </androidx.core.widget.NestedScrollView>
 
-                <include
-                    android:id="@+id/chat_file"
-                    layout="@layout/lay_chat_file_view"
+                <LinearLayout
+                    android:id="@+id/chat_input_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:visibility="invisible"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    tools:visibility="visible" />
+                    android:orientation="vertical"
+                    android:translationY="300dp"
+                    app:layout_constraintBottom_toBottomOf="parent">
 
-                <include
-                    android:id="@+id/chat_input_rl"
-                    layout="@layout/lay_chat_input_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/ns_view"
-                    tools:visibility="visible" />
+<!--                    <com.example.demo.chat.widget.ChatInputView-->
+                    <!--                        android:id="@+id/chat_input_rl"-->
+                    <!--                        android:layout_width="match_parent"-->
+                    <!--                        android:layout_height="wrap_content"-->
+                    <!--                        app:layout_constraintBottom_toBottomOf="parent" />-->
 
+                    <include
+                        android:id="@+id/chat_input_rl"
+                        layout="@layout/lay_chat_input_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        tools:visibility="visible" />
+
+                    <include
+                        android:id="@+id/chat_file"
+                        layout="@layout/lay_chat_file_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        tools:visibility="visible" />
+
+                </LinearLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </FrameLayout>

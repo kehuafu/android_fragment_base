@@ -189,6 +189,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                         avatar = msg.faceUrl,
                         messageContent = Message.messageContent(msg),
                         videoUrl = Message.getVideoUrl(msg),
+                        imageUlr = Message.getImageUrl(msg),
                         messageType = msg.elemType,
                         messageTime = TimeUtils.date2String(TimeUtils.millis2Date(msg.timestamp * 1000)),
                         messageSender = msg.sender == AppManager.currentUserID,

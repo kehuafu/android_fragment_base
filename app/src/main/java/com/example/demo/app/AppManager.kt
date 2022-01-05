@@ -20,8 +20,7 @@ object AppManager {
     private val TAG = AppManager::class.java.simpleName
 
     const val currentUserID = "android"
-    var keyboardHeight = 0F
-
+    
     val apiService: PurpleAPI by lazy {
         NetManager().apiService
     }

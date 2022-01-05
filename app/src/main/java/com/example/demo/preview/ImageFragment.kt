@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.example.demo.utils.ImageResizeUtil
+import com.kehuafu.base.core.ktx.loadImage
 
 class ImageFragment : Fragment() {
     private var mFilePath: String? = null
@@ -39,25 +40,8 @@ class ImageFragment : Fragment() {
         val margin: Int =
             TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, resources.displayMetrics)
                 .toInt()
-
         imageView.setPadding(margin, 0, margin, 0)
-
-        mFilePath?.let {
-            //这里对预览的图片宽高进行处理：以屏幕宽度为准进行图片裁剪
-            val options = BitmapFactory.Options()
-            options.inJustDecodeBounds = true
-            BitmapFactory.decodeFile(mFilePath, options)
-
-            val screenW = resources.displayMetrics.widthPixels
-            val screenH = resources.displayMetrics.heightPixels
-
-            val resizeW = if (options.outWidth > screenW) screenW else options.outWidth
-            val resizeH = if (options.outHeight > screenH) screenH else options.outHeight
-
-            mFilePath?.let {
-                imageView.setImageBitmap(ImageResizeUtil.resize(it, resizeW, resizeH))
-            }
-        }
+        imageView.loadImage(mFilePath)
         return imageView
     }
 }

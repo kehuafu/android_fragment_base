@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
+import com.kehuafu.base.R
 
 /**
  *
@@ -46,6 +47,10 @@ fun <ActivityContainer : Activity> Activity.showHasResult(
         intent.putExtras(bundle)
     }
     startActivityForResult(intent, requestCode)
+//    overridePendingTransition(
+//        R.anim.zoom_enter,
+//        R.anim.zoom_exit
+//    )
 }
 
 fun <ActivityContainer : Activity> Fragment.show(

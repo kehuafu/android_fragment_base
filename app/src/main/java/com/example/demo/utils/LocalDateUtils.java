@@ -1,9 +1,11 @@
 package com.example.demo.utils;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,6 +15,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -174,6 +177,18 @@ public class LocalDateUtils {
      */
     public static String getDayOfWeekStr() {
         return format(LocalDate.now(), "E");
+    }
+
+    /**
+     * 时间戳转换为字符串分秒
+     *
+     * @param time:时间戳
+     * @return
+     */
+    public static String getDateCoverString(long time) {
+        Date d = new Date(time);
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat sf = new SimpleDateFormat("mm:ss");
+        return sf.format(d);
     }
 
     /**

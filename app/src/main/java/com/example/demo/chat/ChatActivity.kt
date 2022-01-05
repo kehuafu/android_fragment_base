@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
@@ -34,17 +35,18 @@ import com.kehuafu.base.core.ktx.showHasResult
 import com.tencent.imsdk.v2.V2TIMMessage
 import java.util.*
 import androidx.activity.result.contract.ActivityResultContracts.GetContent
+import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.example.demo.chat.mvvm.MessageViewModel
+import com.example.demo.databinding.LayChatInputViewBinding
 import com.example.demo.utils.*
 import com.example.demo.preview.PreviewActivity
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
+import com.kehuafu.base.core.ktx.dp2px
 import com.kehuafu.base.core.ktx.toJsonTxt
+import com.kehuafu.base.core.ktx.viewBindings
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import java.lang.Exception
-import java.text.SimpleDateFormat
 
 
 open class ChatActivity :
@@ -61,11 +63,9 @@ open class ChatActivity :
 
     private var userId: String? = ""
 
-    private var keyBoardHeight = 0f
-
     private var messageList: MutableList<Message> = mutableListOf()
 
-    private var showFileMode = false
+    private var showKeyBoardMode = KEY_BOARD_MODE_SOUND
 
     private lateinit var lp: WindowManager.LayoutParams
 
@@ -78,6 +78,11 @@ open class ChatActivity :
     companion object {
 
         const val EXTRAS_TARGET_ID = "com.example.demo.chat.EXTRAS_TARGET_ID"
+        private const val TAG = "ChatActivity"
+        private const val KEY_BOARD_MODE_SOUND = 0x01
+        private const val KEY_BOARD_MODE_TEXT = 0x02
+        private const val KEY_BOARD_MODE_EXPRESSION = 0x03
+        private const val KEY_BOARD_MODE_FILE = 0x04
 
         @JvmStatic
         fun showHasResult(targetId: String) {
@@ -103,84 +108,59 @@ open class ChatActivity :
         AppManager.localEventLifecycleViewModel.register(this, this)
         heightProvider = HeightProvider(this).init()
         viewBinding.nav.backIv.setOnClickListener {
-            showFileMode = false
-            keyBoardHeight = 0F
             finish()
         }
 
-        viewBinding.frameLayout.setOnClickListener {
-            showFileMode = false
-            keyBoardHeight = 0F
-            if (heightProvider!!.isSoftInputVisible) {
-                KeyboardUtils.hideSoftInput(this)
-            } else {
-                viewBinding.chatInputRl.root.translationY = 0F
-                viewBinding.chatFile.root.visibility = View.INVISIBLE
-            }
-        }
-
         heightProvider!!.setHeightListener {
-            if (showFileMode && keyBoardHeight != 0F) {
-                viewBinding.chatInputRl.root.translationY = -keyBoardHeight
-                viewBinding.chatFile.chatFileLl.minimumHeight = keyBoardHeight.toInt()
-                viewBinding.frameLayout.translationY = viewBinding.chatInputRl.root.translationY
-                return@setHeightListener
-            }
             if (it.toFloat() > 0f) {
-                AppManager.keyboardHeight = it.toFloat()
-                keyBoardHeight = it.toFloat()
                 viewBinding.chatRv.stopScroll()
-                if (!showFileMode && keyBoardHeight != 0F) {
-                    viewBinding.chatInputRl.root.translationY = -keyBoardHeight
-                } else {
-                    viewBinding.chatFile.chatFileLl.minimumHeight = it
-                    AnimatorUtils.build()
-                        .startTranslateY(viewBinding.chatInputRl.root, -it.toFloat())
-                }
+//                AnimatorUtils.build()
+//                    .startTranslateY(viewBinding.chatInputLl, (-it + dp2px(300f)))
+                viewBinding.chatInputLl.translationY = (-it + dp2px(300f))
+                viewBinding.frameLayout.translationY = -it.toFloat()
                 viewBinding.chatRv.scrollToPosition(0)
-                if (viewBinding.chatRv.findViewHolderForLayoutPosition(0) != null) {
-                    viewBinding.frameLayout.translationY = viewBinding.chatInputRl.root.translationY
-                    viewBinding.chatInputRl.etMsg.requestFocus()
-                } else {
-                    viewBinding.frameLayout.translationY = -it.toFloat()
-                }
+                viewBinding.chatInputRl.etMsg.requestFocus()
                 return@setHeightListener
             }
-            viewBinding.chatFile.root.visibility = View.INVISIBLE
-            viewBinding.chatInputRl.root.translationY = -it.toFloat()
-            viewBinding.frameLayout.translationY = -it.toFloat()
+            if (showKeyBoardMode == KEY_BOARD_MODE_FILE) {
+                return@setHeightListener
+            } else if (showKeyBoardMode == KEY_BOARD_MODE_TEXT) {
+                viewBinding.chatInputLl.translationY = (-it + dp2px(300f))
+                viewBinding.frameLayout.translationY = -it.toFloat()
+                return@setHeightListener
+            }
+            viewBinding.chatInputLl.translationY = -it + dp2px(300f)
+            viewBinding.frameLayout.translationY = it.toFloat()
         }
 
         withViewBinding {
             nav.titleTv.text = "$userId"
-            chatInputRl.root.setOnTouchListener { v, event ->
-                true
-            }
             chatInputRl.ivNavMore.setOnClickListener {
-                showFileMode = !showFileMode
-                showToast("切换文件模式$showFileMode")
-                if (showFileMode) {
-                    viewBinding.chatFile.root.visibility = View.VISIBLE
+                if (showKeyBoardMode == KEY_BOARD_MODE_FILE) {
+                    showKeyBoardMode = KEY_BOARD_MODE_TEXT
+                    KeyboardUtils.showSoftInput(this@ChatActivity)
+                    viewBinding.chatInputRl.etMsg.requestFocus()
+                } else {
+                    showKeyBoardMode = KEY_BOARD_MODE_FILE
+                    viewBinding.chatInputRl.etMsg.clearFocus()
+                    chatInputRl.etMsg.isVisible = true
+                    chatInputRl.tvVoice.isVisible = false
+                    chatInputRl.ivVoice.setPadding(0, 0, 0, 0)
+                    chatInputRl.ivVoice.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            this@ChatActivity,
+                            R.drawable.voice_icon
+                        )
+                    )
                     if (heightProvider!!.isSoftInputVisible) {
                         KeyboardUtils.hideSoftInput(this@ChatActivity)
-                        chatInputRl.etMsg.isVisible = true
-                        chatInputRl.tvVoice.isVisible = false
-                    } else if (keyBoardHeight == 0F) {
-                        if (AppManager.keyboardHeight != 0F) {
-                            viewBinding.chatFile.chatFileLl.minimumHeight =
-                                AppManager.keyboardHeight.toInt()
-                            viewBinding.chatInputRl.root.translationY = -AppManager.keyboardHeight
-                            viewBinding.frameLayout.translationY =
-                                viewBinding.chatInputRl.root.translationY
-                        } else {
-                            viewBinding.chatInputRl.root.translationY =
-                                -viewBinding.chatFile.root.height.toFloat()
-                            viewBinding.frameLayout.translationY =
-                                viewBinding.chatInputRl.root.translationY
-                        }
+                        return@setOnClickListener
                     }
-                } else {
-                    KeyboardUtils.showSoftInput(this@ChatActivity)
+                    viewBinding.chatRv.stopScroll()
+                    AnimatorUtils.build()
+                        .startTranslateY(viewBinding.chatInputLl, dp2px(0f))
+                    viewBinding.frameLayout.translationY = -dp2px(300f)
+                    viewBinding.chatRv.scrollToPosition(0)
                 }
             }
             chatInputRl.tvVoice.setOnTouchListener(View.OnTouchListener { v, event ->
@@ -203,11 +183,7 @@ open class ChatActivity :
                 }
                 true
             })
-
             chatInputRl.ivVoice.setOnClickListener {
-
-                showFileMode = false
-                keyBoardHeight = 0F
                 if (chatInputRl.etMsg.isVisible) {
                     PermissionUtils.permission(
                         PermissionConstants.MICROPHONE,
@@ -231,12 +207,9 @@ open class ChatActivity :
                         .theme { activity -> ScreenUtils.setFullScreen(activity) }
                         .request()
                     showToast("切换语音模式")
+                    showKeyBoardMode = KEY_BOARD_MODE_SOUND
                     if (heightProvider!!.isSoftInputVisible) {
                         KeyboardUtils.hideSoftInput(this@ChatActivity)
-                    } else {
-                        viewBinding.chatFile.root.visibility = View.INVISIBLE
-                        viewBinding.chatInputRl.root.translationY = -keyBoardHeight
-                        viewBinding.frameLayout.translationY = -keyBoardHeight
                     }
                     chatInputRl.ivVoice.setPadding(6, 6, 6, 6)
                     chatInputRl.ivVoice.setImageDrawable(
@@ -247,6 +220,7 @@ open class ChatActivity :
                     )
                 } else {
                     showToast("切换文本模式")
+                    showKeyBoardMode = KEY_BOARD_MODE_TEXT
                     if (!heightProvider!!.isSoftInputVisible) {
                         KeyboardUtils.showSoftInput(this@ChatActivity)
                     }
@@ -262,8 +236,8 @@ open class ChatActivity :
                 chatInputRl.tvVoice.isVisible = !chatInputRl.etMsg.isVisible
             }
             chatInputRl.ivExpression.setOnClickListener {
-                showFileMode = false
                 showToast("显示我的表情包")
+                showKeyBoardMode = KEY_BOARD_MODE_EXPRESSION
                 chatInputRl.ivExpression.setImageDrawable(
                     ContextCompat.getDrawable(
                         this@ChatActivity,
@@ -278,15 +252,6 @@ open class ChatActivity :
                         userId!!,
                         messageList
                     )
-                    if (viewBinding.chatRv.canScrollVertically(-1) || viewBinding.chatRv.canScrollVertically(
-                            1
-                        )
-                    ) {
-                        viewBinding.frameLayout.translationY = -keyBoardHeight
-                    } else if (viewBinding.chatRv.findViewHolderForLayoutPosition(0) != null) {
-                        viewBinding.frameLayout.translationY =
-                            -viewBinding.chatInputRl.root.translationY
-                    }
                     viewBinding.chatRv.scrollToPosition(0)
                     chatInputRl.etMsg.text.clear()
                 }
@@ -301,15 +266,14 @@ open class ChatActivity :
                 }
             }
             chatInputRl.etMsg.setOnClickListener {
-                showFileMode = false
-                keyBoardHeight = 0F
+                showKeyBoardMode = KEY_BOARD_MODE_TEXT
             }
             mChatListAdapter.setOnItemClickListener(this@ChatActivity)
             chatRv.itemAnimator = null
             chatRv.layoutManager = LinearLayoutManager(this@ChatActivity)
             (chatRv.layoutManager as LinearLayoutManager).reverseLayout = true
             chatRv.adapter = mChatListAdapter
-            chatRv.setItemViewCacheSize(10)
+//            chatRv.setItemViewCacheSize(10)
 
             mChatFileTypeAdapter.setOnItemClickListener(object :
                 BaseRecyclerViewAdapterV2.OnItemClickListener<MessageTheme> {
@@ -362,6 +326,12 @@ open class ChatActivity :
                     super.onScrollStateChanged(recyclerView, newState)
                     if (heightProvider!!.isSoftInputVisible) {
                         KeyboardUtils.hideSoftInput(this@ChatActivity)
+                    } else {
+                        if (showKeyBoardMode == KEY_BOARD_MODE_FILE) {
+                            showKeyBoardMode = KEY_BOARD_MODE_TEXT
+                        }
+                        viewBinding.chatInputLl.translationY = dp2px(300f)
+                        viewBinding.frameLayout.translationY = dp2px(0f)
                     }
                 }
             })
@@ -370,17 +340,6 @@ open class ChatActivity :
     }
 
     private var ltime: Long = 0
-
-    /**
-     * 时间戳转换为字符串分秒
-     * @param time:时间戳
-     * @return
-     */
-    open fun getDateCoverString(time: Long): String? {
-        val d = Date(time)
-        val sf = SimpleDateFormat("mm:ss")
-        return sf.format(d)
-    }
 
     //录音功能 初始化
     private fun initAudio() {
@@ -393,11 +352,12 @@ open class ChatActivity :
         mAudioRecodeUtils = AudioRecodeUtils()
         mAudioRecodeUtils.setOnAudioStatusUpdateListener(object :
             AudioRecodeUtils.OnAudioStatusUpdateListener {
+            @RequiresApi(Build.VERSION_CODES.O)
             override fun onUpdate(db: Double, time: Long) {
                 //根据分贝值来设置录音时话筒图标的上下波动
                 ltime = time
                 micImage.drawable.level = (3000 + 6000 * db / 100).toInt()
-                recordingTime.text = getDateCoverString(time)
+                recordingTime.text = LocalDateUtils.getDateCoverString(time)
             }
 
             override fun onStop(filePath: String) {
@@ -487,10 +447,9 @@ open class ChatActivity :
     private val mActLauncherAlbum = registerForActivityResult(
         GetContent()
     ) {
-        //UriUtil.getFileAbsolutePath(this, it),
-        val bitmap = voidToFirstBitmap(UriUtil.getFileAbsolutePath(this, it))
-        val firstUrl = bitmapToStringPath(this, bitmap!!)
-        val duration = getLocalVideoDuration(UriUtil.getFileAbsolutePath(this, it))
+        val bitmap = PathUtil.voidToFirstBitmap(UriUtil.getFileAbsolutePath(this, it))
+        val firstUrl = PathUtil.bitmapToStringPath(this, bitmap!!)
+        val duration = PathUtil.getLocalVideoDuration(UriUtil.getFileAbsolutePath(this, it))
         viewModel.sendVideoMsg(
             UriUtil.getFileAbsolutePath(this, it),
             firstUrl!!,
@@ -500,75 +459,10 @@ open class ChatActivity :
         )
     }
 
-    /**
-     * 获取视频首帧图并转化为bitmap
-     * @param videoUrl
-     * @return
-     */
-    private fun voidToFirstBitmap(videoUrl: String): Bitmap? {
-        val metadataRetriever = MediaMetadataRetriever()
-        metadataRetriever.setDataSource(videoUrl)
-        return metadataRetriever.frameAtTime
-    }
-
-    /**
-     * 将bitmap转化成本地图片路径
-     * @param context
-     * @param bitmap
-     * @return
-     */
-    private fun bitmapToStringPath(context: Context, bitmap: Bitmap): String? {
-        val filePic: File
-        val savePath: String = PathUtils.getExternalAppCachePath()
-        try {
-            filePic = File(savePath + UUID.randomUUID().toString() + ".jpg")
-            if (!filePic.exists()) {
-                filePic.parentFile.mkdirs()
-                filePic.createNewFile()
-            }
-            val fos = FileOutputStream(filePic)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
-            fos.flush()
-            fos.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-            return null
-        }
-        return filePic.absolutePath
-    }
-
-    /**
-     * get Local video duration
-     *
-     * @return
-     */
-    open fun getLocalVideoDuration(videoPath: String?): Int {
-        //除以 1000 返回是秒
-        val duration: Int
-        try {
-            val mmr = MediaMetadataRetriever()
-            mmr.setDataSource(videoPath)
-            duration = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)!!
-                .toInt() / 1000
-
-            //时长(毫秒)
-            //String duration = mmr.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION);
-            //宽
-            val width = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
-            //高
-            val height = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return 0
-        }
-        return duration
-    }
-
     //选取视频文件（和选取相册类似）
     private fun launchVideoPick() {
         mActLauncherAlbum.launch("video/*")
     }
-
 
     override fun onPause() {
         super.onPause()
@@ -603,47 +497,25 @@ open class ChatActivity :
             R.id.msg_vv -> {
                 when (item.messageType) {
                     Message.MSG_TYPE_IMAGE, Message.MSG_TYPE_VIDEO -> {
-                        showToast("预览图片")
                         val msg = messageList.filter {
                             it.messageType == Message.MSG_TYPE_IMAGE || it.messageType == Message.MSG_TYPE_VIDEO
-                        }
-                        msg.map {
-                            it.v2TIMMessage
                         }
                         PreviewActivity.showHasResult(
                             msg.toJsonTxt(),
                             msg.indexOf(item)
                         )
                     }
-//                    Message.MSG_TYPE_VIDEO -> {
-//                        showToast("播放视频")
-//                        if (item.v2TIMMessage.videoElem.videoPath.isNotEmpty()) {
-//                            VideoPlayActivity.showHasResult(item.v2TIMMessage.videoElem.videoPath)
-//                            return
-//                        }
-//                        item.v2TIMMessage.videoElem.getVideoUrl(object :
-//                            V2TIMValueCallback<String> {
-//                            override fun onSuccess(p0: String?) {
-//                                VideoPlayActivity.showHasResult(p0!!)
-//                            }
-//
-//                            override fun onError(p0: Int, p1: String?) {
-//                                showToast(p1!!)
-//                            }
-//                        })
-//                    }
                 }
             }
             else -> {
                 if (heightProvider!!.isSoftInputVisible) {
                     KeyboardUtils.hideSoftInput(this@ChatActivity)
+                } else {
+                    viewBinding.chatInputLl.translationY = dp2px(300f)
+                    viewBinding.frameLayout.translationY = dp2px(0f)
                 }
             }
         }
-    }
-
-    override fun frameLayoutId(): Int {
-        return viewBinding.frameLayout.id
     }
 
     override suspend fun onEventCallback(event: LocalLifecycleEvent) {
@@ -657,6 +529,7 @@ open class ChatActivity :
                         avatar = event.msg.faceUrl,
                         messageContent = Message.messageContent(event.msg),
                         videoUrl = Message.getVideoUrl(event.msg),
+                        imageUlr = Message.getImageUrl(event.msg),
                         messageType = event.msg.elemType,
                         messageTime = TimeUtils.date2String(TimeUtils.millis2Date(event.msg.timestamp * 1000)),
                         messageSender = event.msg.sender == AppManager.currentUserID,
