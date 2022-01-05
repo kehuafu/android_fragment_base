@@ -53,4 +53,6 @@ interface ICloudMessageManager {
         userID: String,
         firstPull: Boolean? = false
     ): List<V2TIMMessage>?
+
+    suspend fun getVideoUrl(msg: V2TIMMessage): String?
 }

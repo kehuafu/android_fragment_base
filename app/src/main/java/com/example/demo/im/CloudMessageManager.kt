@@ -168,4 +168,25 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
                 })
         }
     }
+
+    override suspend fun getVideoUrl(msg: V2TIMMessage): String? {
+        return suspendCancellableCoroutine { continuation ->
+            msg.videoElem.getVideoUrl(object : V2TIMValueCallback<String> {
+                override fun onSuccess(p0: String?) {
+                    continuation.resume(p0)
+                }
+
+                override fun onError(p0: Int, p1: String?) {
+                    continuation.resumeWithException(
+                        CloudException(
+                            ErrorResponse.createError(
+                                error = p1!!,
+                                code = p0
+                            )
+                        )
+                    )
+                }
+            })
+        }
+    }
 }

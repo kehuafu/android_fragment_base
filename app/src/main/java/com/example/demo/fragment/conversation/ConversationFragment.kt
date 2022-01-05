@@ -59,7 +59,7 @@ class ConversationFragment :
 //        baseActivity.navigation(Router.CHAT_FRAGMENT,args)
     }
 
-    override fun onEventCallback(event: LocalLifecycleEvent) {
+    override suspend fun onEventCallback(event: LocalLifecycleEvent) {
         when (event) {
             is LocalLifecycleEvent.ReceivedConversationChangedEvent -> {
                 viewModel.getConversationList()

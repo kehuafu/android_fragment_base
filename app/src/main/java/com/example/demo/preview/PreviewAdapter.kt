@@ -1,4 +1,4 @@
-package com.example.demo.video
+package com.example.demo.preview
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -22,7 +22,7 @@ class PreviewAdapter(fragmentManager: FragmentManager) :
         mediaData.takeIf {
             it.isVideo()
         }?.let {
-            return VideoFragment.newInstance(it.messageContent!!)
+            return VideoFragment.newInstance(it.videoUrl)
         }
         mediaData.takeIf {
             it.isImage()

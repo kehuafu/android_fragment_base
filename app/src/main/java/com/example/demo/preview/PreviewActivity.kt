@@ -1,21 +1,17 @@
-package com.example.demo.video
+package com.example.demo.preview
 
 import android.os.Bundle
-import androidx.viewpager.widget.ViewPager
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.BarUtils
 import com.example.demo.chat.bean.Message
 import com.example.demo.databinding.FragmentImagePreviewBinding
-import com.example.demo.databinding.FragmentVideoPlayBinding
 import com.example.demo.main.mvvm.MainState
 import com.example.demo.main.mvvm.MainViewModel
 import com.kehuafu.base.core.container.base.BaseActivity
 import com.kehuafu.base.core.ktx.showHasResult
 import com.kehuafu.base.core.ktx.toObj
-import xyz.doikki.videocontroller.StandardVideoController
-import xyz.doikki.videoplayer.ijk.IjkPlayerFactory
 
-open class ImagePreviewActivity :
+open class PreviewActivity :
     BaseActivity<FragmentImagePreviewBinding, MainViewModel, MainState>() {
 
     companion object {
@@ -26,7 +22,7 @@ open class ImagePreviewActivity :
         @JvmStatic
         fun showHasResult(playUrl: String, position: Int) {
             ActivityUtils.getTopActivity()
-                ?.showHasResult(ImagePreviewActivity::class.java) {
+                ?.showHasResult(PreviewActivity::class.java) {
                     putString(EXTRAS_PLAY_URL, playUrl)
                     putInt(EXTRAS_POSITION, position)
                 }

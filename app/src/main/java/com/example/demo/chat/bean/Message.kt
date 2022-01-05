@@ -2,8 +2,10 @@ package com.example.demo.chat.bean
 
 import android.util.Log
 import com.blankj.utilcode.util.LogUtils
+import com.example.demo.app.AppManager
 import com.kehuafu.base.core.redux.IState
 import com.tencent.imsdk.v2.V2TIMMessage
+import com.tencent.imsdk.v2.V2TIMValueCallback
 
 open class Message(
     val mid: String? = "",
@@ -11,6 +13,7 @@ open class Message(
     val avatar: String? = "",
     val name: String? = "",
     val messageContent: String? = "",
+    val videoUrl: String = "",
     val messageType: Int = MSG_TYPE_TEXT,
     val messageSender: Boolean = false,
     val messageTime: String? = "",
@@ -69,6 +72,19 @@ open class Message(
                 else -> {
                     "[其他消息]"
                 }
+            }
+        }
+
+        @JvmStatic
+        suspend fun getVideoUrl(v2TIMMessage: V2TIMMessage): String {
+            return if (v2TIMMessage.elemType == MSG_TYPE_VIDEO) {
+                if (v2TIMMessage.videoElem.videoPath.isNotEmpty()) {
+                    v2TIMMessage.videoElem.videoPath
+                } else {
+                    AppManager.iCloudMessageManager.getVideoUrl(v2TIMMessage)!!
+                }
+            } else {
+                ""
             }
         }
     }

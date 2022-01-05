@@ -41,11 +41,11 @@
             android:windowSoftInputMode="stateVisible|adjustNothing" />
 
         <activity
-            android:name=".video.VideoPlayActivity"
+            android:name=".preview.VideoPlayActivity"
             android:exported="true"
             android:windowSoftInputMode="stateVisible|adjustNothing" />
         <activity
-            android:name=".video.ImagePreviewActivity"
+            android:name=".preview.PreviewActivity"
             android:exported="true"
             android:windowSoftInputMode="stateVisible|adjustNothing" />
 

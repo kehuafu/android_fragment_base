@@ -488,7 +488,7 @@ open class ChatFragment :
         }
     }
 
-    override fun onEventCallback(event: LocalLifecycleEvent) {
+    override suspend fun onEventCallback(event: LocalLifecycleEvent) {
         when (event) {
             is LocalLifecycleEvent.ReceivedChatMsgEvent -> {
                 if (event.msg.userID.equals(userId)) {
