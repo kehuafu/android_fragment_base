@@ -20,7 +20,7 @@ object AppManager {
     private val TAG = AppManager::class.java.simpleName
 
     const val currentUserID = "android"
-    
+
     val apiService: PurpleAPI by lazy {
         NetManager().apiService
     }

@@ -539,7 +539,9 @@ open class ChatActivity :
                         v2TIMMessage = event.msg
                     )
                     messageList.add(0, message)
-                    mChatListAdapter.resetItems(messageList)
+                    runOnUiThread {
+                        mChatListAdapter.resetItems(messageList)
+                    }
                     AppManager.iCloudMessageManager.markC2CMessageAsRead(userId!!)
                 }
             }

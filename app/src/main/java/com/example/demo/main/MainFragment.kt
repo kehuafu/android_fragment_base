@@ -32,7 +32,7 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>
         private const val TAG = "MainFragment"
     }
 
-    private val tabTexts = arrayOf("微信", "通讯录", "我")
+    private val tabTexts = arrayOf("会话", "通讯录", "我的")
     private val tabDrawable = intArrayOf(
         R.drawable.message_icon,
         R.drawable.mail_list_icon,
