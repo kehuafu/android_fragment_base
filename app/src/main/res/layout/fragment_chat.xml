@@ -87,19 +87,20 @@
                     android:translationY="300dp"
                     app:layout_constraintBottom_toBottomOf="parent">
 
-<!--                    <com.example.demo.chat.widget.ChatInputView-->
-                    <!--                        android:id="@+id/chat_input_rl"-->
-                    <!--                        android:layout_width="match_parent"-->
-                    <!--                        android:layout_height="wrap_content"-->
-                    <!--                        app:layout_constraintBottom_toBottomOf="parent" />-->
-
-                    <include
-                        android:id="@+id/chat_input_rl"
-                        layout="@layout/lay_chat_input_view"
+                    <com.example.demo.chat.widget.ChatInputView
+                        android:id="@+id/chat_input_rv"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        tools:visibility="visible" />
+                        app:layout_constraintBottom_toBottomOf="parent" />
+
+                    <!--                    <include-->
+                    <!--                        android:id="@+id/chat_input_rl"-->
+                    <!--                        layout="@layout/lay_chat_input_view"-->
+                    <!--                        android:layout_width="match_parent"-->
+                    <!--                        android:layout_height="wrap_content"-->
+                    <!--                        android:visibility="gone"-->
+                    <!--                        app:layout_constraintBottom_toBottomOf="parent"-->
+                    <!--                        tools:visibility="visible" />-->
 
                     <include
                         android:id="@+id/chat_file"

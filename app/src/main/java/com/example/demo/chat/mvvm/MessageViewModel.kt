@@ -33,21 +33,27 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
             return { state, action ->
                 when (action) {
                     is MessageAction.C2CHistoryMessageList -> {
-                        state.copy(messageList = action.messageList, currentAction = action)
+                        state.copy(
+                            messageList = action.messageList,
+                            updateMessage = action.updateMessage
+                        )
                     }
                     is MessageAction.MsgSendFailed -> {
-                        state.copy(messageList = action.messageList, currentAction = action)
+                        state.copy(
+                            messageList = action.messageList,
+                            updateMessage = action.updateMessage
+                        )
                     }
                     is MessageAction.MsgSendSuccess -> {
                         state.copy(
                             messageList = action.messageList,
-                            currentAction = action
+                            updateMessage = action.updateMessage
                         )
                     }
                     is MessageAction.InitMessageThemeList -> {
                         state.copy(
                             messageTheme = action.messageTheme,
-                            currentAction = action
+                            initThemed = action.initThemed
                         )
                     }
                     else -> {
@@ -80,7 +86,12 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                 v2TIMMessage = v2TIMMessage
             )
             messageList.add(0, message)
-            dispatch(MessageAction.C2CHistoryMessageList(messageList = messageList))
+            dispatch(
+                MessageAction.C2CHistoryMessageList(
+                    messageList = messageList,
+                    updateMessage = true
+                )
+            )
         }
     }
 
@@ -102,7 +113,12 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                             message.loading = false
                         }
                     }
-                    dispatch(MessageAction.MsgSendSuccess(messageList = messageList))
+                    dispatch(
+                        MessageAction.MsgSendSuccess(
+                            messageList = messageList,
+                            updateMessage = true
+                        )
+                    )
                 }
 
                 override fun onError(p0: Int, p1: String?) {
@@ -113,7 +129,12 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                             message.sendFailed = true
                         }
                     }
-                    dispatch(MessageAction.MsgSendFailed(messageList = messageList))
+                    dispatch(
+                        MessageAction.MsgSendFailed(
+                            messageList = messageList,
+                            updateMessage = true
+                        )
+                    )
                 }
 
                 override fun onProgress(p0: Int) {
@@ -143,7 +164,8 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                         message.loading = false
                         messageList[pos] = message
                         MessageAction.MsgSendSuccess(
-                            messageList = messageList
+                            messageList = messageList,
+                            updateMessage = true
                         )
                     }
 
@@ -153,7 +175,8 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                         message.sendFailed = true
                         messageList[pos] = message
                         MessageAction.MsgSendFailed(
-                            messageList = messageList
+                            messageList = messageList,
+                            updateMessage = true
                         )
                     }
 
@@ -165,7 +188,8 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
             message.sendFailed = false
             messageList[pos] = message
             MessageAction.MsgSendSuccess(
-                messageList = messageList
+                messageList = messageList,
+                updateMessage = true
             )
         }
     }
@@ -175,7 +199,6 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
             showToast(it.errorMsg)
         }) {
             val start = System.currentTimeMillis()
-            Log.e("@@@", "start--->$start")
             val messageList = mutableListOf<Message>()
             val messages = AppManager.iCloudMessageManager.getC2CHistoryMessageList(uid, firstPull)
             if (messages != null) {
@@ -209,8 +232,12 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                     messageList.add(message)
                 }
             }
-            dispatch(MessageAction.C2CHistoryMessageList(messageList = messageList))
-            Log.e("@@@", "end:耗时--->" + (System.currentTimeMillis() - start))
+            dispatch(
+                MessageAction.C2CHistoryMessageList(
+                    messageList = messageList,
+                    updateMessage = true
+                )
+            )
         }
     }
 
@@ -219,7 +246,12 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
             showToast(it.errorMsg)
         }) {
             val messageTheme = initLocalMessageThemeList()
-            dispatch(MessageAction.InitMessageThemeList(messageTheme = messageTheme))
+            dispatch(
+                MessageAction.InitMessageThemeList(
+                    messageTheme = messageTheme,
+                    initThemed = true
+                )
+            )
         }
     }
 
@@ -250,13 +282,19 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                 uid = userId,
                 loading = true,
                 messageContent = path,
+                imageUlr = path,
                 messageType = Message.MSG_TYPE_IMAGE,
                 messageSender = true,
                 showTime = false,
                 v2TIMMessage = v2TIMMessage
             )
             messageList.add(0, message)
-            dispatch(MessageAction.C2CHistoryMessageList(messageList = messageList))
+            dispatch(
+                MessageAction.C2CHistoryMessageList(
+                    messageList = messageList,
+                    updateMessage = true
+                )
+            )
         }
     }
 
@@ -288,7 +326,12 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                 v2TIMMessage = v2TIMMessage
             )
             messageList.add(0, message)
-            dispatch(MessageAction.C2CHistoryMessageList(messageList = messageList))
+            dispatch(
+                MessageAction.C2CHistoryMessageList(
+                    messageList = messageList,
+                    updateMessage = true
+                )
+            )
         }
     }
 
@@ -316,20 +359,37 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                 v2TIMMessage = v2TIMMessage
             )
             messageList.add(0, message)
-            dispatch(MessageAction.C2CHistoryMessageList(messageList = messageList))
+            dispatch(
+                MessageAction.C2CHistoryMessageList(
+                    messageList = messageList,
+                    updateMessage = true
+                )
+            )
         }
     }
 
     sealed class MessageAction : Action {
-        class C2CHistoryMessageList(val messageList: MutableList<Message>) : MessageAction()
-        class MsgSendFailed(val messageList: MutableList<Message>) : MessageAction()
-        class MsgSendSuccess(val messageList: MutableList<Message>) : MessageAction()
-        class InitMessageThemeList(val messageTheme: MutableList<MessageTheme>) : MessageAction()
+        class C2CHistoryMessageList(
+            val messageList: MutableList<Message>,
+            val updateMessage: Boolean
+        ) : MessageAction()
+
+        class MsgSendFailed(val messageList: MutableList<Message>, val updateMessage: Boolean) :
+            MessageAction()
+
+        class MsgSendSuccess(val messageList: MutableList<Message>, val updateMessage: Boolean) :
+            MessageAction()
+
+        class InitMessageThemeList(
+            val messageTheme: MutableList<MessageTheme>,
+            val initThemed: Boolean
+        ) : MessageAction()
     }
 
     data class MessageState(
         val messageList: MutableList<Message>,
         val messageTheme: MutableList<MessageTheme>,
-        val currentAction: Action? = null
+        var initThemed: Boolean = false,
+        var updateMessage: Boolean = false
     ) : IState
 }

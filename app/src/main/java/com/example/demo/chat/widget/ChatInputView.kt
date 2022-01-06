@@ -1,23 +1,24 @@
 package com.example.demo.chat.widget
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
-import android.text.InputType
 import android.util.AttributeSet
-import android.util.Log
-import android.view.KeyEvent
-import android.view.MotionEvent
-import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.widget.EditText
-import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.TextView
+import android.view.*
+import android.widget.*
+import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
-import androidx.viewbinding.ViewBinding
+import com.blankj.utilcode.constant.PermissionConstants
+import com.blankj.utilcode.util.KeyboardUtils
+import com.blankj.utilcode.util.PermissionUtils
+import com.blankj.utilcode.util.ScreenUtils
 import com.example.demo.R
-import com.example.demo.databinding.LayChatInputViewBinding
+import com.example.demo.databinding.FragmentChatBinding
+import com.example.demo.utils.AnimatorUtils
+import com.example.demo.utils.HeightProvider
 import com.kehuafu.base.core.container.widget.toast.showToast
+import com.kehuafu.base.core.ktx.dp2px
 import com.kehuafu.base.core.ktx.viewBindings
 
 
@@ -34,44 +35,168 @@ class ChatInputView @JvmOverloads constructor(
 
     companion object {
         private val TAG = ChatInputView::class.java.simpleName
+        const val KEY_BOARD_MODE_SOUND = 0x01
+        const val KEY_BOARD_MODE_TEXT = 0x02
+        const val KEY_BOARD_MODE_EXPRESSION = 0x03
+        const val KEY_BOARD_MODE_FILE = 0x04
+        var showKeyBoardMode = KEY_BOARD_MODE_SOUND
     }
 
     private var mOnChatInputViewListener: OnChatInputViewListener? = null
 
-    private val viewBinding by viewBindings<LayChatInputViewBinding>()
+    private var view = inflate(context, R.layout.lay_chat_input_view, this)
+
+    private val viewBinding by viewBindings<FragmentChatBinding>()
+
+
+    private var heightProvider: HeightProvider? = null
 
     init {
-        View.inflate(context, R.layout.lay_chat_input_view, this)
+        heightProvider = HeightProvider(context as Activity).init()
+
+        etMsg().doAfterTextChanged {
+            if (etMsg().text.toString().trim().isBlank()) {
+                btnSendMsg().visibility = View.GONE
+                ivNavMore().visibility = View.VISIBLE
+            } else {
+                btnSendMsg().visibility = View.VISIBLE
+                ivNavMore().visibility = View.GONE
+            }
+        }
+        etMsg().setOnClickListener {
+            showKeyBoardMode = KEY_BOARD_MODE_TEXT
+        }
+
+        ivNavMore().setOnClickListener {
+            if (showKeyBoardMode == KEY_BOARD_MODE_FILE) {
+                showKeyBoardMode = KEY_BOARD_MODE_TEXT
+                KeyboardUtils.showSoftInput(this)
+                etMsg().requestFocus()
+            } else {
+                showKeyBoardMode = KEY_BOARD_MODE_FILE
+                etMsg().requestFocus()
+                etMsg().isVisible = true
+                tvVoice().isVisible = false
+                ivVoice().setPadding(0, 0, 0, 0)
+                ivVoice().setImageDrawable(
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.voice_icon
+                    )
+                )
+                if (heightProvider!!.isSoftInputVisible) {
+                    KeyboardUtils.hideSoftInput(this)
+                    return@setOnClickListener
+                }
+                viewBinding.chatRv.stopScroll()
+                AnimatorUtils.build()
+                    .startTranslateY(viewBinding.chatInputLl, dp2px(0f))
+                viewBinding.frameLayout.translationY = -dp2px(300f)
+                viewBinding.chatRv.scrollToPosition(0)
+            }
+        }
+
+        ivExpression().setOnClickListener {
+            showToast("显示我的表情包")
+            showKeyBoardMode = KEY_BOARD_MODE_EXPRESSION
+            ivExpression().setImageDrawable(
+                ContextCompat.getDrawable(
+                    context,
+                    R.drawable.keyboard
+                )
+            )
+        }
+        ivVoice().setOnClickListener {
+            if (etMsg().isVisible) {
+                PermissionUtils.permission(
+                    PermissionConstants.MICROPHONE,
+                    PermissionConstants.STORAGE
+                )
+                    .callback(object : PermissionUtils.FullCallback {
+                        override fun onGranted(permissionsGranted: List<String>) {
+                            showToast("同意授权")
+                        }
+
+                        override fun onDenied(
+                            permissionsDeniedForever: List<String>,
+                            permissionsDenied: List<String>
+                        ) {
+                            showToast("拒绝授权")
+                            return
+                        }
+                    })
+                    .theme { activity -> ScreenUtils.setFullScreen(activity) }
+                    .request()
+                showToast("切换语音模式")
+                showKeyBoardMode = KEY_BOARD_MODE_SOUND
+                if (heightProvider!!.isSoftInputVisible) {
+                    KeyboardUtils.hideSoftInput(this)
+                }
+                ivVoice().setPadding(6, 6, 6, 6)
+                ivVoice().setImageDrawable(
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.keyboard
+                    )
+                )
+            } else {
+                showToast("切换文本模式")
+                showKeyBoardMode = KEY_BOARD_MODE_TEXT
+                if (!heightProvider!!.isSoftInputVisible) {
+                    KeyboardUtils.showSoftInput(this)
+                }
+                ivVoice().setPadding(0, 0, 0, 0)
+                ivVoice().setImageDrawable(
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.voice_icon
+                    )
+                )
+            }
+            etMsg().isVisible = !etMsg().isVisible
+            tvVoice().isVisible = !etMsg().isVisible
+        }
+        btnSendMsg().setOnClickListener {
+            mOnChatInputViewListener?.onSendMsg(etMsg().text.toString().trim())
+            viewBinding.chatRv.scrollToPosition(0)
+            etMsg().text.clear()
+        }
+
+        tvVoice().setOnTouchListener(OnTouchListener { v, event ->
+            return@OnTouchListener mOnChatInputViewListener!!.onRecordVoice(v, event)
+        })
+    }
+
+    fun setOnChatInputViewListener(onChatInputViewListener: OnChatInputViewListener) {
+        this.mOnChatInputViewListener = onChatInputViewListener
     }
 
     fun etMsg(): EditText {
-        return viewBinding.etMsg
+        return view.findViewById(R.id.et_msg)
     }
 
     fun ivNavMore(): ImageView {
-        return viewBinding.ivNavMore
+        return view.findViewById(R.id.iv_nav_more)
     }
 
     fun tvVoice(): TextView {
-        return viewBinding.tvVoice
+        return view.findViewById(R.id.tv_voice)
     }
 
     fun ivVoice(): ImageView {
-        return viewBinding.ivVoice
+        return view.findViewById(R.id.iv_voice)
     }
 
     fun ivExpression(): ImageView {
-        return viewBinding.ivExpression
+        return view.findViewById(R.id.iv_expression)
     }
 
     fun btnSendMsg(): TextView {
-        return viewBinding.btnSendMsg
+        return view.findViewById(R.id.btn_send_msg)
     }
-
 
     interface OnChatInputViewListener {
         fun onRecordVoice(v: View, event: MotionEvent): Boolean
-        fun onClickVoice(v: View)
         fun onSendMsg(msg: String)
     }
 }
