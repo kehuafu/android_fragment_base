@@ -1,6 +1,5 @@
 package com.example.demo.chat.viewholder
 
-import android.graphics.BitmapFactory
 import android.view.Gravity
 import android.view.View
 import android.view.animation.AnimationUtils
@@ -9,10 +8,8 @@ import androidx.core.view.isVisible
 import com.example.demo.R
 import com.example.demo.chat.bean.Message
 import com.example.demo.databinding.LayItemChatImageMsgBinding
-import com.example.demo.databinding.LayItemChatTextMsgBinding
 import com.example.demo.utils.DensityTool
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
-import com.kehuafu.base.core.ktx.loadImage
 import com.kehuafu.base.core.ktx.loadRoundImage
 
 class ImageMsgVH(override val viewBinding: LayItemChatImageMsgBinding) :
@@ -46,8 +43,8 @@ class ImageMsgVH(override val viewBinding: LayItemChatImageMsgBinding) :
             viewBinding.leftMessageAvatar.visibility = View.GONE
             viewBinding.rightMessageAvatar.visibility = View.VISIBLE
             if (!item.loading) {
-                val height = item.v2TIMMessage.imageElem.imageList[2].height
-                val width = item.v2TIMMessage.imageElem.imageList[2].width
+                val height = item.getMessageObject().imageElem.imageList[2].height
+                val width = item.getMessageObject().imageElem.imageList[2].width
                 DensityTool.setWH(viewBinding.msgVv, width, height)
             }
 
@@ -55,8 +52,8 @@ class ImageMsgVH(override val viewBinding: LayItemChatImageMsgBinding) :
             viewBinding.llContent.gravity = Gravity.START
             viewBinding.leftMessageAvatar.visibility = View.VISIBLE
             viewBinding.rightMessageAvatar.visibility = View.GONE
-            val height = item.v2TIMMessage.imageElem.imageList[2].height
-            val width = item.v2TIMMessage.imageElem.imageList[2].width
+            val height = item.getMessageObject().imageElem.imageList[2].height
+            val width = item.getMessageObject().imageElem.imageList[2].width
             DensityTool.setWH(viewBinding.msgVv, width, height)
         }
         viewBinding.msgVv.loadRoundImage(item.messageContent!!, 10F)

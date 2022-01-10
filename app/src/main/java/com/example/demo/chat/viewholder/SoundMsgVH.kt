@@ -13,7 +13,8 @@ import com.example.demo.databinding.LayItemChatSoundMsgBinding
 import com.example.demo.utils.AudioRecodeUtils
 import com.example.demo.utils.MediaPlayerManager
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
-import com.tencent.imsdk.v2.V2TIMValueCallback
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class SoundMsgVH(override val viewBinding: LayItemChatSoundMsgBinding) :
     BaseRecyclerViewAdapterV4.BaseViewHolder<Message>(
@@ -67,31 +68,14 @@ class SoundMsgVH(override val viewBinding: LayItemChatSoundMsgBinding) :
             mOnItemClickListener?.onItemClick(it, item = item, position)
         }
         viewBinding.leftMessageLl.setOnClickListener {
-            item.v2TIMMessage.soundElem.getUrl(object : V2TIMValueCallback<String> {
-                override fun onSuccess(p0: String?) {
-                    audioRecodeUtils.playRecord(p0, anim)
-
-                }
-
-                override fun onError(p0: Int, p1: String?) {
-                    Log.e("TAG", "setStateToSoundMsg: $p1")
-                }
-            })
+            GlobalScope.launch {
+                audioRecodeUtils.playRecord(item.getSoundUrl(), anim)
+            }
         }
         viewBinding.rightMessageLl.setOnClickListener {
-            if (item.v2TIMMessage.soundElem.path.isEmpty()) {
-                item.v2TIMMessage.soundElem.getUrl(object : V2TIMValueCallback<String> {
-                    override fun onSuccess(p0: String?) {
-                        audioRecodeUtils.playRecord(p0, anim)
-                    }
-
-                    override fun onError(p0: Int, p1: String?) {
-                        Log.e("TAG", "setStateToSoundMsg: $p1")
-                    }
-                })
-                return@setOnClickListener
+            GlobalScope.launch {
+                audioRecodeUtils.playRecord(item.getSoundUrl(), anim)
             }
-            audioRecodeUtils.playRecord(item.v2TIMMessage.soundElem.path, anim)
         }
         audioRecodeUtils = AudioRecodeUtils()
         audioRecodeUtils.setOnAudioPlayStatusListener { playState, anim ->

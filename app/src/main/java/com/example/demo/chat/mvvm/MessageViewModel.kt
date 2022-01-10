@@ -8,9 +8,9 @@ import com.example.demo.app.App
 import com.example.demo.app.AppManager
 import com.kehuafu.base.core.container.widget.toast.showToast
 import com.example.demo.base.BaseRequestViewModel
-import com.example.demo.chat.bean.Message
+import com.example.demo.chat.bean.IMessage
 import com.example.demo.chat.bean.MessageTheme
-import com.example.demo.fragment.conversation.bean.Conversation
+import com.example.demo.chat.bean.Message
 import com.kehuafu.base.core.ktx.asyncCall
 import com.kehuafu.base.core.redux.Action
 import com.kehuafu.base.core.redux.IState
@@ -80,7 +80,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                 uid = userId,
                 loading = true,
                 messageContent = text,
-                messageType = Message.MSG_TYPE_TEXT,
+                messageType = IMessage.MSG_TYPE_TEXT,
                 messageSender = true,
                 showTime = false,
                 v2TIMMessage = v2TIMMessage
@@ -198,21 +198,22 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
         httpAsyncCall({
             showToast(it.errorMsg)
         }) {
-            val start = System.currentTimeMillis()
             val messageList = mutableListOf<Message>()
             val messages = AppManager.iCloudMessageManager.getC2CHistoryMessageList(uid, firstPull)
             if (messages != null) {
                 var lastTemp = TimeUtils.getNowMills()
                 var showTemp: Boolean
                 for (msg in messages) {
+                    val build = Message.build(msg)
                     val message = Message(
                         mid = msg.msgID,
                         uid = msg.userID,
                         name = msg.nickName,
                         avatar = msg.faceUrl,
-                        messageContent = Message.messageContent(msg),
-                        videoUrl = Message.getVideoUrl(msg),
-                        imageUlr = Message.getImageUrl(msg),
+                        messageContent = build.messageContent(),
+                        videoUrl = build.getVideoUrl(),
+                        imageUlr = build.getImageUrl(),
+                        soundUlr = build.getSoundUrl(),
                         messageType = msg.elemType,
                         messageTime = TimeUtils.date2String(TimeUtils.millis2Date(msg.timestamp * 1000)),
                         messageSender = msg.sender == AppManager.currentUserID,
@@ -283,7 +284,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                 loading = true,
                 messageContent = path,
                 imageUlr = path,
-                messageType = Message.MSG_TYPE_IMAGE,
+                messageType = IMessage.MSG_TYPE_IMAGE,
                 messageSender = true,
                 showTime = false,
                 v2TIMMessage = v2TIMMessage
@@ -320,7 +321,7 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                 loading = true,
                 messageContent = snapshotPath,
                 videoUrl = path,
-                messageType = Message.MSG_TYPE_VIDEO,
+                messageType = IMessage.MSG_TYPE_VIDEO,
                 messageSender = true,
                 showTime = false,
                 v2TIMMessage = v2TIMMessage
@@ -351,9 +352,10 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
             val message = Message(
                 mid = result,
                 uid = userId,
+                soundUlr = path,
                 loading = true,
                 messageContent = duration.toString(),
-                messageType = Message.MSG_TYPE_SOUND,
+                messageType = IMessage.MSG_TYPE_SOUND,
                 messageSender = true,
                 showTime = false,
                 v2TIMMessage = v2TIMMessage

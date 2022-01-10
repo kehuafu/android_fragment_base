@@ -1,6 +1,7 @@
 package com.example.demo.chat.adapter
 
 import android.view.ViewGroup
+import com.example.demo.chat.bean.IMessage
 import com.example.demo.chat.bean.Message
 import com.example.demo.chat.viewholder.*
 import com.example.demo.databinding.*
@@ -22,25 +23,25 @@ class ChatMsgAdapterTypeDelegate {
 
     fun getItemViewType(item: Message): Int {
         return when (item.messageType) {
-            Message.MSG_TYPE_TEXT -> {
+            IMessage.MSG_TYPE_TEXT -> {
                 MSG_TYPE_TEXT
             }
-            Message.MSG_TYPE_IMAGE -> {
+            IMessage.MSG_TYPE_IMAGE -> {
                 MSG_TYPE_IMAGE
             }
-            Message.MSG_TYPE_SOUND -> {
+            IMessage.MSG_TYPE_SOUND -> {
                 MSG_TYPE_SOUND
             }
-            Message.MSG_TYPE_VIDEO -> {
+            IMessage.MSG_TYPE_VIDEO -> {
                 MSG_TYPE_VIDEO
             }
-            Message.MSG_TYPE_FILE -> {
+            IMessage.MSG_TYPE_FILE -> {
                 MSG_TYPE_FILE
             }
-            Message.MSG_TYPE_LOCATION -> {
+            IMessage.MSG_TYPE_LOCATION -> {
                 MSG_TYPE_LOCATION
             }
-            Message.MSG_TYPE_FACE -> {
+            IMessage.MSG_TYPE_FACE -> {
                 MSG_TYPE_FACE
             }
             else -> {

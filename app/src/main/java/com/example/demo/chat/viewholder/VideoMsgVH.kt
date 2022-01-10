@@ -1,7 +1,6 @@
 package com.example.demo.chat.viewholder
 
 import android.graphics.BitmapFactory
-import android.text.TextUtils
 import android.util.Log
 import android.view.Gravity
 import android.view.View
@@ -10,14 +9,12 @@ import android.view.animation.LinearInterpolator
 import androidx.core.view.isVisible
 import com.example.demo.R
 import com.example.demo.chat.bean.Message
-import com.example.demo.databinding.LayItemChatImageMsgBinding
-import com.example.demo.databinding.LayItemChatTextMsgBinding
 import com.example.demo.databinding.LayItemChatVideoMsgBinding
 import com.example.demo.utils.DensityTool
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
-import com.kehuafu.base.core.ktx.loadImage
 import com.kehuafu.base.core.ktx.loadRoundImage
-import com.tencent.imsdk.v2.V2TIMValueCallback
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class VideoMsgVH(override val viewBinding: LayItemChatVideoMsgBinding) :
     BaseRecyclerViewAdapterV4.BaseViewHolder<Message>(
@@ -50,10 +47,10 @@ class VideoMsgVH(override val viewBinding: LayItemChatVideoMsgBinding) :
             viewBinding.leftMessageAvatar.visibility = View.GONE
             viewBinding.rightMessageAvatar.visibility = View.VISIBLE
             viewBinding.rightVideoDuration.text =
-                item.secToTime(item.v2TIMMessage.videoElem.duration)
+                item.secToTime(item.getMessageObject().videoElem.duration)
             val height =
-                item.v2TIMMessage.videoElem.snapshotHeight / 8 * 2.5
-            val width = item.v2TIMMessage.videoElem.snapshotWidth / 8 * 2.5
+                item.getMessageObject().videoElem.snapshotHeight / 8 * 2.5
+            val width = item.getMessageObject().videoElem.snapshotWidth / 8 * 2.5
             if (height.toInt() != 0 && width.toInt() != 0) {
                 DensityTool.setWH(viewBinding.msgVv, width.toInt(), height.toInt())
             } else {
@@ -72,19 +69,12 @@ class VideoMsgVH(override val viewBinding: LayItemChatVideoMsgBinding) :
             viewBinding.leftMessageAvatar.visibility = View.VISIBLE
             viewBinding.rightMessageAvatar.visibility = View.GONE
             val height =
-                item.v2TIMMessage.videoElem.snapshotHeight / 8 * 2.5
-            val width = item.v2TIMMessage.videoElem.snapshotWidth / 8 * 2.5
+                item.getMessageObject().videoElem.snapshotHeight / 8 * 2.5
+            val width = item.getMessageObject().videoElem.snapshotWidth / 8 * 2.5
             DensityTool.setWH(viewBinding.msgVv, width.toInt(), height.toInt())
-            item.v2TIMMessage.videoElem.getSnapshotUrl(object : V2TIMValueCallback<String> {
-                override fun onSuccess(p0: String?) {
-                    Log.e("@@@@@@", "loadImage-onSuccess-->${p0}")
-                    viewBinding.msgVv.loadRoundImage(p0, 10f)
-                }
-
-                override fun onError(p0: Int, p1: String?) {
-                    Log.e("@@@@@@", "loadImage-onError-->${p1}")
-                }
-            })
+            GlobalScope.launch {
+                viewBinding.msgVv.loadRoundImage(item.getSnapshotUrl(), 10f)
+            }
         }
         viewBinding.tvTime.isVisible = item.showTime!!
         viewBinding.tvTime.text = item.messageTime

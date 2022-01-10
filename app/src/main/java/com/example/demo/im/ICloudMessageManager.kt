@@ -55,4 +55,8 @@ interface ICloudMessageManager {
     ): List<V2TIMMessage>?
 
     suspend fun getVideoUrl(msg: V2TIMMessage): String?
+
+    suspend fun getSoundUrl(msg: V2TIMMessage): String?
+
+    suspend fun getSnapshotUrl(msg: V2TIMMessage): String?
 }

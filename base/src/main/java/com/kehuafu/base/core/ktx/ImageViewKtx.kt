@@ -23,7 +23,12 @@ import com.bumptech.glide.request.transition.Transition
  * @param isCenterCrop Boolean
  */
 @JvmOverloads
-fun ImageView.loadImage(@DrawableRes drawableId: Int = -1, @DrawableRes placeHolderId: Int = -1, @DrawableRes errorId: Int = -1, isCenterCrop: Boolean = false) {
+fun ImageView.loadImage(
+    @DrawableRes drawableId: Int = -1,
+    @DrawableRes placeHolderId: Int = -1,
+    @DrawableRes errorId: Int = -1,
+    isCenterCrop: Boolean = false
+) {
     var options = RequestOptions.placeholderOf(placeHolderId).error(errorId)
 
     if (isCenterCrop) {
@@ -42,7 +47,12 @@ fun ImageView.loadImage(@DrawableRes drawableId: Int = -1, @DrawableRes placeHol
  * @param isCenterCrop Boolean
  */
 @JvmOverloads
-fun ImageView.loadImage(url: String?, @DrawableRes placeHolderId: Int = -1, @DrawableRes errorId: Int = -1, isCenterCrop: Boolean = false) {
+fun ImageView.loadImage(
+    url: String?,
+    @DrawableRes placeHolderId: Int = -1,
+    @DrawableRes errorId: Int = -1,
+    isCenterCrop: Boolean = false
+) {
     var options = RequestOptions.placeholderOf(placeHolderId).error(errorId)
     if (isCenterCrop) {
         options = options.centerCrop()
@@ -60,13 +70,22 @@ fun ImageView.loadImage(url: String?, @DrawableRes placeHolderId: Int = -1, @Dra
  * @param bottomLeft Float
  * @param bottomRight Float
  */
-fun ImageView.loadRoundImage(url: String?, topLeft: Float, topRight: Float, bottomLeft: Float, bottomRight: Float) {
-    val requestOptions = RequestOptions.noTransformation().transform(CenterCrop(), GranularRoundedCorners(topLeft, topRight, bottomLeft, bottomRight))
+fun ImageView.loadRoundImage(
+    url: String?,
+    topLeft: Float,
+    topRight: Float,
+    bottomLeft: Float,
+    bottomRight: Float,
+    @DrawableRes placeHolderId: Int = -1,
+) {
+    val requestOptions = RequestOptions
+        .placeholderOf(placeHolderId)
+        .transform(CenterCrop(), GranularRoundedCorners(topLeft, topRight, bottomLeft, bottomRight))
     Glide.with(this).asDrawable().load(url).apply(requestOptions).into(this)
 }
 
-fun ImageView.loadRoundImage(url: String?, round: Float) {
-    loadRoundImage(url, round, round, round, round)
+fun ImageView.loadRoundImage(url: String?, round: Float, @DrawableRes placeHolderId: Int = -1) {
+    loadRoundImage(url, round, round, round, round, placeHolderId)
 }
 
 @Suppress("DEPRECATION")

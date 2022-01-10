@@ -189,4 +189,46 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
             })
         }
     }
+
+    override suspend fun getSoundUrl(msg: V2TIMMessage): String? {
+        return suspendCancellableCoroutine { continuation ->
+            msg.soundElem.getUrl(object : V2TIMValueCallback<String> {
+                override fun onSuccess(p0: String?) {
+                    continuation.resume(p0)
+                }
+
+                override fun onError(p0: Int, p1: String?) {
+                    continuation.resumeWithException(
+                        CloudException(
+                            ErrorResponse.createError(
+                                error = p1!!,
+                                code = p0
+                            )
+                        )
+                    )
+                }
+            })
+        }
+    }
+
+    override suspend fun getSnapshotUrl(msg: V2TIMMessage): String? {
+        return suspendCancellableCoroutine { continuation ->
+            msg.videoElem.getSnapshotUrl(object : V2TIMValueCallback<String> {
+                override fun onSuccess(p0: String?) {
+                    continuation.resume(p0)
+                }
+
+                override fun onError(p0: Int, p1: String?) {
+                    continuation.resumeWithException(
+                        CloudException(
+                            ErrorResponse.createError(
+                                error = p1!!,
+                                code = p0
+                            )
+                        )
+                    )
+                }
+            })
+        }
+    }
 }

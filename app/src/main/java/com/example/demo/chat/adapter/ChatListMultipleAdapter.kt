@@ -1,6 +1,5 @@
 package com.example.demo.chat.adapter
 
-import android.util.Log
 import android.view.ViewGroup
 import com.example.demo.chat.bean.Message
 import com.kehuafu.base.core.container.base.adapter.BaseListMultipleAdapter

@@ -7,6 +7,7 @@ import com.example.demo.databinding.LayItemConversationBinding
 import com.example.demo.databinding.LayItemFriendBinding
 import com.kehuafu.base.core.container.base.adapter.BaseListAdapter
 import com.kehuafu.base.core.ktx.loadImage
+import com.kehuafu.base.core.ktx.loadRoundImage
 import com.kehuafu.base.core.ktx.viewBindings
 import com.tencent.imsdk.v2.V2TIMFriendInfo
 
@@ -37,6 +38,6 @@ class FriendListAdapter : BaseListAdapter<V2TIMFriendInfo, LayItemFriendBinding>
         position: Int
     ) {
         viewBinding.title.text = item.userProfile.nickName
-        viewBinding.messageAvatar.loadImage(item.userProfile.faceUrl, R.mipmap.logo)
+        viewBinding.messageAvatar.loadRoundImage(item.userProfile.faceUrl, 10f, R.mipmap.logo)
     }
 }

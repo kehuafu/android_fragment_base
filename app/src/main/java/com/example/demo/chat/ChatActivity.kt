@@ -17,7 +17,6 @@ import com.example.demo.app.AppManager
 import com.example.demo.chat.adapter.ChatFileTypeAdapter
 import com.example.demo.chat.adapter.ChatListMultipleAdapter
 import com.example.demo.databinding.FragmentChatBinding
-import com.example.demo.chat.bean.Message
 import com.example.demo.chat.bean.MessageTheme
 import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.common.receiver.event.LocalLifecycleEvent
@@ -29,6 +28,8 @@ import com.tencent.imsdk.v2.V2TIMMessage
 import java.util.*
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
+import com.example.demo.chat.bean.IMessage
+import com.example.demo.chat.bean.Message
 import com.example.demo.chat.mvvm.MessageViewModel
 import com.example.demo.chat.widget.ChatInputView
 import com.example.demo.utils.*
@@ -287,13 +288,13 @@ open class ChatActivity :
             }
             R.id.iv_send_failed -> {
                 showToast("重发")
-                viewModel.resendMessage(item, userId!!, messageList, position!!)
+//                viewModel.resendMessage(item, userId!!, messageList, position!!)
             }
             R.id.msg_vv -> {
                 when (item.messageType) {
-                    Message.MSG_TYPE_IMAGE, Message.MSG_TYPE_VIDEO -> {
+                    IMessage.MSG_TYPE_IMAGE, IMessage.MSG_TYPE_VIDEO -> {
                         val msg = messageList.filter {
-                            it.messageType == Message.MSG_TYPE_IMAGE || it.messageType == Message.MSG_TYPE_VIDEO
+                            it.messageType == IMessage.MSG_TYPE_IMAGE || it.messageType == IMessage.MSG_TYPE_VIDEO
                         }
                         PreviewActivity.showHasResult(
                             msg.toJsonTxt(),
@@ -317,14 +318,16 @@ open class ChatActivity :
         when (event) {
             is LocalLifecycleEvent.ReceivedChatMsgEvent -> {
                 if (event.msg.userID.equals(userId)) {
+                    val build = Message.build(event.msg)
                     val message = Message(
                         mid = event.msg.msgID,
                         uid = event.msg.userID,
                         name = event.msg.nickName,
                         avatar = event.msg.faceUrl,
-                        messageContent = Message.messageContent(event.msg),
-                        videoUrl = Message.getVideoUrl(event.msg),
-                        imageUlr = Message.getImageUrl(event.msg),
+                        messageContent = build.messageContent(),
+                        videoUrl = build.getVideoUrl(),
+                        imageUlr = build.getImageUrl(),
+                        soundUlr = build.getSoundUrl(),
                         messageType = event.msg.elemType,
                         messageTime = TimeUtils.date2String(TimeUtils.millis2Date(event.msg.timestamp * 1000)),
                         messageSender = event.msg.sender == AppManager.currentUserID,

@@ -41,6 +41,6 @@ class ConversationListAdapter : BaseListAdapter<Conversation, LayItemConversatio
         viewBinding.tvContent.text = item.messageContent
         viewBinding.tvUnreadCount.text = item.messageUnreadCount.toString()
         viewBinding.tvUnreadCount.isVisible = item.messageUnreadCount != 0
-        viewBinding.messageAvatar.loadRoundImage(item.avatar, 10f)
+        viewBinding.messageAvatar.loadRoundImage(item.avatar, 10f, R.mipmap.logo)
     }
 }
