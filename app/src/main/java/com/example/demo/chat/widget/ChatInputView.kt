@@ -65,6 +65,12 @@ class ChatInputView @JvmOverloads constructor(
         }
         etMsg().setOnClickListener {
             showKeyBoardMode = KEY_BOARD_MODE_TEXT
+            ivExpression().setImageDrawable(
+                ContextCompat.getDrawable(
+                    context,
+                    R.drawable.expression_icon
+                )
+            )
         }
 
         ivNavMore().setOnClickListener {
@@ -74,7 +80,7 @@ class ChatInputView @JvmOverloads constructor(
                 etMsg().requestFocus()
             } else {
                 showKeyBoardMode = KEY_BOARD_MODE_FILE
-                etMsg().requestFocus()
+                etMsg().clearFocus()
                 etMsg().isVisible = true
                 tvVoice().isVisible = false
                 ivVoice().setPadding(0, 0, 0, 0)
@@ -84,27 +90,62 @@ class ChatInputView @JvmOverloads constructor(
                         R.drawable.voice_icon
                     )
                 )
+                ivExpression().setImageDrawable(
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.expression_icon
+                    )
+                )
+                mOnChatInputViewListener?.onShowEmo(false)
+                //键盘已拉起，显示文件列表
                 if (heightProvider!!.isSoftInputVisible) {
-                    KeyboardUtils.hideSoftInput(this)
+                    mOnChatInputViewListener?.onPullUpList(false)
                     return@setOnClickListener
                 }
-                viewBinding.chatRv.stopScroll()
-                AnimatorUtils.build()
-                    .startTranslateY(viewBinding.chatInputLl, dp2px(0f))
-                viewBinding.frameLayout.translationY = -dp2px(300f)
-                viewBinding.chatRv.scrollToPosition(0)
+                //键盘未拉起，显示文件列表
+                mOnChatInputViewListener?.onPullUpList(true)
             }
         }
 
         ivExpression().setOnClickListener {
-            showToast("显示我的表情包")
-            showKeyBoardMode = KEY_BOARD_MODE_EXPRESSION
-            ivExpression().setImageDrawable(
-                ContextCompat.getDrawable(
-                    context,
-                    R.drawable.keyboard
+            if (showKeyBoardMode == KEY_BOARD_MODE_EXPRESSION) {
+                showKeyBoardMode = KEY_BOARD_MODE_TEXT
+                KeyboardUtils.showSoftInput(this)
+                etMsg().requestFocus()
+                ivExpression().setImageDrawable(
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.expression_icon
+                    )
                 )
-            )
+            } else {
+                showKeyBoardMode = KEY_BOARD_MODE_EXPRESSION
+                ivExpression().setImageDrawable(
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.keyboard
+                    )
+                )
+                ivVoice().setPadding(0, 0, 0, 0)
+                ivVoice().setImageDrawable(
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.voice_icon
+                    )
+                )
+                etMsg().isVisible = true
+                tvVoice().isVisible = false
+                mOnChatInputViewListener?.onShowEmo(true)
+                etMsg().requestFocus()
+                //键盘已拉起，显示表情包列表
+                if (heightProvider!!.isSoftInputVisible) {
+                    mOnChatInputViewListener?.onPullUpList(false)
+                    return@setOnClickListener
+                }
+                //键盘未拉起，显示表情列表
+                mOnChatInputViewListener?.onPullUpList(true)
+            }
+
         }
         ivVoice().setOnClickListener {
             if (etMsg().isVisible) {
@@ -129,9 +170,7 @@ class ChatInputView @JvmOverloads constructor(
                     .request()
                 showToast("切换语音模式")
                 showKeyBoardMode = KEY_BOARD_MODE_SOUND
-                if (heightProvider!!.isSoftInputVisible) {
-                    KeyboardUtils.hideSoftInput(this)
-                }
+                mOnChatInputViewListener?.onPullUpList(false)
                 ivVoice().setPadding(6, 6, 6, 6)
                 ivVoice().setImageDrawable(
                     ContextCompat.getDrawable(
@@ -139,12 +178,14 @@ class ChatInputView @JvmOverloads constructor(
                         R.drawable.keyboard
                     )
                 )
+                etMsg().clearFocus()
             } else {
                 showToast("切换文本模式")
                 showKeyBoardMode = KEY_BOARD_MODE_TEXT
                 if (!heightProvider!!.isSoftInputVisible) {
                     KeyboardUtils.showSoftInput(this)
                 }
+                etMsg().requestFocus()
                 ivVoice().setPadding(0, 0, 0, 0)
                 ivVoice().setImageDrawable(
                     ContextCompat.getDrawable(
@@ -155,6 +196,12 @@ class ChatInputView @JvmOverloads constructor(
             }
             etMsg().isVisible = !etMsg().isVisible
             tvVoice().isVisible = !etMsg().isVisible
+            ivExpression().setImageDrawable(
+                ContextCompat.getDrawable(
+                    context,
+                    R.drawable.expression_icon
+                )
+            )
         }
         btnSendMsg().setOnClickListener {
             mOnChatInputViewListener?.onSendMsg(etMsg().text.toString().trim())
@@ -198,6 +245,8 @@ class ChatInputView @JvmOverloads constructor(
     interface OnChatInputViewListener {
         fun onRecordVoice(v: View, event: MotionEvent): Boolean
         fun onSendMsg(msg: String)
+        fun onPullUpList(bool: Boolean)
+        fun onShowEmo(show: Boolean)
     }
 }
 

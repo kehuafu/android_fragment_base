@@ -28,6 +28,8 @@ import com.tencent.imsdk.v2.V2TIMMessage
 import java.util.*
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
+import com.blankj.utilcode.util.ConvertUtils.px2dp
+import com.example.demo.chat.adapter.ChatEmoTypeAdapter
 import com.example.demo.chat.bean.IMessage
 import com.example.demo.chat.bean.Message
 import com.example.demo.chat.mvvm.MessageViewModel
@@ -53,6 +55,8 @@ open class ChatActivity :
     private var mChatListAdapter = ChatListMultipleAdapter()
 
     private var mChatFileTypeAdapter = ChatFileTypeAdapter()
+
+    private var mChatEmoTypeAdapter = ChatEmoTypeAdapter()
 
     private var userId: String? = ""
 
@@ -177,6 +181,15 @@ open class ChatActivity :
     private fun initKeyBoardHeightListener() {
         heightProvider = HeightProvider(this).init()
         heightProvider!!.setHeightListener {
+            if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_FILE
+                || ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_EXPRESSION
+            ) {
+                return@setHeightListener
+            } else if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_TEXT) {
+                viewBinding.chatInputLl.translationY = (-it + dp2px(300f))
+                viewBinding.frameLayout.translationY = -it.toFloat()
+                return@setHeightListener
+            }
             if (it.toFloat() > 0f) {
                 viewBinding.chatRv.stopScroll()
 //                AnimatorUtils.build()
@@ -184,13 +197,6 @@ open class ChatActivity :
                 viewBinding.chatInputLl.translationY = (-it + dp2px(300f))
                 viewBinding.frameLayout.translationY = -it.toFloat()
                 viewBinding.chatRv.scrollToPosition(0)
-                return@setHeightListener
-            }
-            if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_FILE) {
-                return@setHeightListener
-            } else if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_TEXT) {
-                viewBinding.chatInputLl.translationY = (-it + dp2px(300f))
-                viewBinding.frameLayout.translationY = -it.toFloat()
                 return@setHeightListener
             }
             viewBinding.chatInputLl.translationY = -it + dp2px(300f)
@@ -245,6 +251,7 @@ open class ChatActivity :
         super.onLoadDataSource()
         viewModel.getC2CHistoryMessageList(userId!!, true)
         viewModel.initMessageThemeList()
+        viewModel.initMessageEmoList()
     }
 
     override fun onStateChanged(state: MessageViewModel.MessageState) {
@@ -252,6 +259,10 @@ open class ChatActivity :
         if (state.initThemed) {
             mChatFileTypeAdapter.resetItems(state.messageTheme)
             state.initThemed = false
+        }
+        if (state.initEmo) {
+            mChatEmoTypeAdapter.resetItems(state.messageEmo)
+            state.initEmo = false
         }
         if (state.updateMessage) {
             messageList = state.messageList
@@ -288,7 +299,7 @@ open class ChatActivity :
             }
             R.id.iv_send_failed -> {
                 showToast("重发")
-//                viewModel.resendMessage(item, userId!!, messageList, position!!)
+                viewModel.resendMessage(item, userId!!, messageList, position!!)
             }
             R.id.msg_vv -> {
                 when (item.messageType) {
@@ -376,6 +387,40 @@ open class ChatActivity :
             userId!!,
             messageList
         )
+    }
+
+    override fun onPullUpList(bool: Boolean) {
+        if (bool) {
+            if (viewBinding.frameLayout.translationY != 0F) {
+                return
+            }
+            viewBinding.chatRv.stopScroll()
+            AnimatorUtils.build()
+                .startTranslateY(viewBinding.chatInputLl, dp2px(0f))
+            viewBinding.frameLayout.translationY = -dp2px(300f)
+            viewBinding.chatRv.scrollToPosition(0)
+        } else {
+            if (heightProvider!!.isSoftInputVisible) {
+                KeyboardUtils.hideSoftInput(this)
+            } else if (viewBinding.frameLayout.translationY != 0F) {
+                viewBinding.chatInputLl.translationY = dp2px(300f)
+                viewBinding.frameLayout.translationY = dp2px(0f)
+            }
+        }
+    }
+
+    override fun onShowEmo(show: Boolean) {
+        if (show) {
+            viewBinding.chatFile.chatFileRv.layoutManager = GridLayoutManager(this@ChatActivity, 8)
+            viewBinding.chatFile.chatFileRv.adapter = mChatEmoTypeAdapter
+            viewBinding.chatFile.chatFileRv.layoutParams.height = dp2px(250f).toInt()
+            viewBinding.chatFile.chatFileRv.background
+            viewModel.initMessageEmoList()
+        } else {
+            viewBinding.chatFile.chatFileRv.layoutManager = GridLayoutManager(this@ChatActivity, 4)
+            viewBinding.chatFile.chatFileRv.adapter = mChatFileTypeAdapter
+            viewModel.initMessageThemeList()
+        }
     }
 
     override fun onLauncherForActivityResult(path: String?, type: Int) {

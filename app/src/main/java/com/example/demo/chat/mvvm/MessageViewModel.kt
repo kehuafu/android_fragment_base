@@ -11,6 +11,7 @@ import com.example.demo.base.BaseRequestViewModel
 import com.example.demo.chat.bean.IMessage
 import com.example.demo.chat.bean.MessageTheme
 import com.example.demo.chat.bean.Message
+import com.example.demo.chat.bean.MessageEmo
 import com.kehuafu.base.core.ktx.asyncCall
 import com.kehuafu.base.core.redux.Action
 import com.kehuafu.base.core.redux.IState
@@ -24,7 +25,8 @@ import com.tencent.imsdk.v2.V2TIMSendCallback
 class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
     initialState = MessageState(
         messageList = mutableListOf(),
-        messageTheme = mutableListOf()
+        messageTheme = mutableListOf(),
+        messageEmo = mutableListOf()
     ),
     reducers = listOf(reducer())
 ) {
@@ -54,6 +56,12 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
                         state.copy(
                             messageTheme = action.messageTheme,
                             initThemed = action.initThemed
+                        )
+                    }
+                    is MessageAction.InitLocalMessageEmoList -> {
+                        state.copy(
+                            messageEmo = action.messageEmo,
+                            initEmo = action.initEmo
                         )
                     }
                     else -> {
@@ -256,6 +264,20 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
         }
     }
 
+    fun initMessageEmoList() {
+        asyncCall({
+            showToast(it.errorMsg)
+        }) {
+            val messageEmo = initLocalMessageEmoList()
+            dispatch(
+                MessageAction.InitLocalMessageEmoList(
+                    messageEmo = messageEmo,
+                    initEmo = true
+                )
+            )
+        }
+    }
+
     private fun initLocalMessageThemeList(): MutableList<MessageTheme> {
         val tmpThemeList = mutableListOf<MessageTheme>()
         val stringMessageArrays = App.appContext.resources.getStringArray(R.array.chat_file_type)
@@ -268,6 +290,21 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
             tmpThemeList.add(datingTheme)
         }
         return tmpThemeList
+    }
+
+    private fun initLocalMessageEmoList(): MutableList<MessageEmo> {
+        val tmpEmoList = mutableListOf<MessageEmo>()
+        val stringMessageArrays =
+            App.appContext.resources.getStringArray(R.array.chat_emoticon_type)
+        stringMessageArrays.forEachIndexed { index, s ->
+            val datingEmo = MessageEmo(
+                id = index,
+                title = s,
+                photoUrl = null
+            )
+            tmpEmoList.add(datingEmo)
+        }
+        return tmpEmoList
     }
 
     fun sendImageMsg(path: String, userId: String, messageList: MutableList<Message>) {
@@ -386,11 +423,18 @@ class MessageViewModel : BaseRequestViewModel<MessageViewModel.MessageState>(
             val messageTheme: MutableList<MessageTheme>,
             val initThemed: Boolean
         ) : MessageAction()
+
+        class InitLocalMessageEmoList(
+            val messageEmo: MutableList<MessageEmo>,
+            val initEmo: Boolean
+        ) : MessageAction()
     }
 
     data class MessageState(
         val messageList: MutableList<Message>,
         val messageTheme: MutableList<MessageTheme>,
+        val messageEmo: MutableList<MessageEmo>,
+        var initEmo: Boolean = false,
         var initThemed: Boolean = false,
         var updateMessage: Boolean = false
     ) : IState
