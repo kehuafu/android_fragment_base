@@ -39,8 +39,14 @@ class ChatInputView @JvmOverloads constructor(
         const val KEY_BOARD_MODE_TEXT = 0x02
         const val KEY_BOARD_MODE_EXPRESSION = 0x03
         const val KEY_BOARD_MODE_FILE = 0x04
-        var showKeyBoardMode = KEY_BOARD_MODE_SOUND
+        var showKeyBoardMode = KEY_BOARD_MODE_TEXT
+
+        @JvmStatic
+        fun resetKeyBoardMode() {
+            showKeyBoardMode = KEY_BOARD_MODE_TEXT
+        }
     }
+
 
     private var mOnChatInputViewListener: OnChatInputViewListener? = null
 
@@ -62,6 +68,9 @@ class ChatInputView @JvmOverloads constructor(
                 btnSendMsg().visibility = View.VISIBLE
                 ivNavMore().visibility = View.GONE
             }
+            mOnChatInputViewListener?.onKeyBoardInputChange(
+                etMsg().text.toString().trim().isBlank()
+            )
         }
         etMsg().setOnClickListener {
             showKeyBoardMode = KEY_BOARD_MODE_TEXT
@@ -247,6 +256,7 @@ class ChatInputView @JvmOverloads constructor(
         fun onSendMsg(msg: String)
         fun onPullUpList(bool: Boolean)
         fun onShowEmo(show: Boolean)
+        fun onKeyBoardInputChange(empty: Boolean)
     }
 }
 

@@ -15,7 +15,7 @@
         android:layout_height="30dp"
         android:background="?android:attr/selectableItemBackground"
         android:scaleType="fitXY"
-        tools:src="@drawable/wx003" />
+        tools:src="@drawable/wx00" />
 
 </LinearLayout>
 

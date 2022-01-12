@@ -71,6 +71,10 @@ class ChatMsgAdapterTypeDelegate {
                 val viewBinding by parent.viewBindings<LayItemChatSoundMsgBinding>(parent)
                 SoundMsgVH(viewBinding)
             }
+            MSG_TYPE_FACE -> {
+                val viewBinding by parent.viewBindings<LayItemChatEmoMsgBinding>(parent)
+                EmoMsgVH(viewBinding)
+            }
             else -> {
                 val viewBinding by parent.viewBindings<LayItemChatEmptyMsgBinding>(parent)
                 ChatEmptyMsgVH(viewBinding)

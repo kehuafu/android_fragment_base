@@ -1,8 +1,15 @@
 package com.example.demo.chat
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ImageSpan
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -22,25 +29,29 @@ import com.example.demo.common.receiver.LocalEventLifecycleViewModel
 import com.example.demo.common.receiver.event.LocalLifecycleEvent
 import com.kehuafu.base.core.container.base.BaseActivity
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV2
-import com.kehuafu.base.core.container.widget.toast.showToast
 import com.kehuafu.base.core.ktx.showHasResult
 import com.tencent.imsdk.v2.V2TIMMessage
 import java.util.*
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.blankj.utilcode.util.ConvertUtils.px2dp
 import com.example.demo.chat.adapter.ChatEmoTypeAdapter
 import com.example.demo.chat.bean.IMessage
 import com.example.demo.chat.bean.Message
+import com.example.demo.chat.bean.MessageEmo
 import com.example.demo.chat.mvvm.MessageViewModel
 import com.example.demo.chat.widget.ChatInputView
 import com.example.demo.utils.*
 import com.example.demo.preview.PreviewActivity
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
+import com.kehuafu.base.core.container.widget.toast.showToast
 import com.kehuafu.base.core.ktx.dp2px
+import com.kehuafu.base.core.ktx.show
 import com.kehuafu.base.core.ktx.toJsonTxt
 import java.io.File
-import java.lang.Exception
+import java.lang.reflect.Field
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 
 open class ChatActivity :
@@ -113,12 +124,80 @@ open class ChatActivity :
             (chatRv.layoutManager as LinearLayoutManager).reverseLayout = true
             chatRv.adapter = mChatListAdapter
 
+            chatFile.removeRmoIv.setOnClickListener {
+                try {
+                    val pattern: Pattern = Pattern.compile("\\[.+?\\]")
+                    //匹配所有带有[]的词语
+                    val index = chatInputRv.etMsg().selectionStart
+                    val endChar = chatInputRv.etMsg().text.toString().substring(index - 1, index)
+                    if (chatInputRv.etMsg().text.contains(pattern.toRegex()) && endChar == "]"
+                    ) {
+                        val matcher: Matcher = pattern.matcher(chatInputRv.etMsg().text)
+                        if (matcher.find()) {
+                            chatInputRv.etMsg().text.delete(
+                                index - (matcher.end() - matcher.start()),
+                                index
+                            )
+                        } else {
+                            chatInputRv.etMsg().text.delete(
+                                index - 1,
+                                index
+                            )
+                        }
+                    } else {
+                        chatInputRv.etMsg().text.delete(
+                            index - 1,
+                            index
+                        )
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
+            mChatEmoTypeAdapter.setOnItemClickListener(object :
+                BaseRecyclerViewAdapterV2.OnItemClickListener<MessageEmo> {
+                override fun onItemClick(itemView: View, item: MessageEmo, position: Int?) {
+                    try {
+                        val index = if (position!! <= 9) {
+                            "0$position"
+                        } else {
+                            position
+                        }
+                        //获取表情图片文件名
+                        val field: Field = R.drawable::class.java.getDeclaredField("wx$index")
+                        val resourceId = field.getInt(null)
+                        // 在android中要显示图片信息，必须使用Bitmap位图的对象来装载
+                        val bitmap: Bitmap = BitmapFactory.decodeResource(resources, resourceId)
+                        //要让图片替代指定的文字用ImageSpan
+                        val imageSpan = ImageSpan(
+                            this@ChatActivity,
+                            ImageResizeUtil.imageScale(
+                                bitmap,
+                                dp2px(22f).toInt(),
+                                dp2px(22f).toInt()
+                            )!!
+                        )
+                        val spannableString = SpannableString(item.title)
+                        spannableString.setSpan(
+                            imageSpan,
+                            0,
+                            item.title.length,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                        chatInputRv.etMsg().text.append(spannableString)
+                        chatInputRv.etMsg().setSelection(chatInputRv.etMsg().text.length)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            })
+
             mChatFileTypeAdapter.setOnItemClickListener(object :
                 BaseRecyclerViewAdapterV2.OnItemClickListener<MessageTheme> {
                 override fun onItemClick(itemView: View, item: MessageTheme, position: Int?) {
                     when (itemView.id) {
                         R.id.iv_type_image -> {
-                            showToast("文件类型-->" + item.title)
                             PermissionUtils.permission(
                                 PermissionConstants.STORAGE,
                                 PermissionConstants.CAMERA,
@@ -165,7 +244,9 @@ open class ChatActivity :
                     if (heightProvider!!.isSoftInputVisible) {
                         KeyboardUtils.hideSoftInput(this@ChatActivity)
                     } else {
-                        if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_FILE) {
+                        if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_FILE
+                            || ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_EXPRESSION
+                        ) {
                             ChatInputView.showKeyBoardMode = ChatInputView.KEY_BOARD_MODE_TEXT
                         }
                         viewBinding.chatInputLl.translationY = dp2px(300f)
@@ -287,6 +368,7 @@ open class ChatActivity :
         super.onDestroy()
         AppManager.localEventLifecycleViewModel.unRegister(this)
         MediaPlayerManager.getInstance().release()
+        ChatInputView.resetKeyBoardMode()
     }
 
     override fun onItemClick(itemView: View, item: Message, position: Int?) {
@@ -411,15 +493,34 @@ open class ChatActivity :
 
     override fun onShowEmo(show: Boolean) {
         if (show) {
-            viewBinding.chatFile.chatFileRv.layoutManager = GridLayoutManager(this@ChatActivity, 8)
+            viewBinding.chatFile.chatFileRv.layoutManager =
+                GridLayoutManager(this@ChatActivity, 8)
             viewBinding.chatFile.chatFileRv.adapter = mChatEmoTypeAdapter
             viewBinding.chatFile.chatFileRv.layoutParams.height = dp2px(250f).toInt()
-            viewBinding.chatFile.chatFileRv.background
             viewModel.initMessageEmoList()
         } else {
-            viewBinding.chatFile.chatFileRv.layoutManager = GridLayoutManager(this@ChatActivity, 4)
+            viewBinding.chatFile.chatFileRv.layoutManager =
+                GridLayoutManager(this@ChatActivity, 4)
             viewBinding.chatFile.chatFileRv.adapter = mChatFileTypeAdapter
             viewModel.initMessageThemeList()
+        }
+    }
+
+    override fun onKeyBoardInputChange(empty: Boolean) {
+        if (empty) {
+            viewBinding.chatFile.removeRmoIv.setColorFilter(
+                ContextCompat.getColor(
+                    this,
+                    R.color.message_space_line
+                )
+            )
+        } else {
+            viewBinding.chatFile.removeRmoIv.setColorFilter(
+                ContextCompat.getColor(
+                    this,
+                    R.color.text_color
+                )
+            )
         }
     }
 

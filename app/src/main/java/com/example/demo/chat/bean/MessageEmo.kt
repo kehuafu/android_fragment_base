@@ -3,11 +3,7 @@ package com.example.demo.chat.bean
 import android.graphics.drawable.Drawable
 import androidx.annotation.DrawableRes
 import com.example.demo.R
-import com.example.demo.app.App
-import com.kehuafu.base.core.container.widget.toast.showToast
 import com.kehuafu.base.core.redux.IState
-import com.tencent.imsdk.v2.V2TIMMessage
-import java.text.FieldPosition
 
 class MessageEmo(
     val id: Int,
@@ -17,110 +13,110 @@ class MessageEmo(
     @DrawableRes
     fun toEmoDrawId(): Int {
         return when (title) {
-            "/奸笑" -> {
-                R.drawable.wx003
+            "[奸笑]" -> {
+                R.drawable.wx00
             }
-            "/嘿哈" -> {
-                R.drawable.wx004
+            "[嘿哈]" -> {
+                R.drawable.wx01
             }
-            "/捂脸" -> {
-                R.drawable.wx005
+            "[捂脸]" -> {
+                R.drawable.wx02
             }
-            "/机智" -> {
-                R.drawable.wx006
+            "[机智]" -> {
+                R.drawable.wx03
             }
-            "/耶" -> {
-                R.drawable.wx008
+            "[耶]" -> {
+                R.drawable.wx04
             }
-            "/皱眉" -> {
-                R.drawable.wx009
+            "[皱眉]" -> {
+                R.drawable.wx05
             }
-            "/加油" -> {
-                R.drawable.wx011
+            "[加油]" -> {
+                R.drawable.wx06
             }
-            "/emm" -> {
-                R.drawable.wx012
+            "[emm]" -> {
+                R.drawable.wx07
             }
-            "/加油加油" -> {
-                R.drawable.wx014
+            "[加油加油]" -> {
+                R.drawable.wx08
             }
-            "/好的" -> {
-                R.drawable.wx015
+            "[好的]" -> {
+                R.drawable.wx09
             }
-            "/天啊" -> {
-                R.drawable.wx016
+            "[天啊]" -> {
+                R.drawable.wx10
             }
-            "/打脸" -> {
-                R.drawable.wx017
+            "[打脸]" -> {
+                R.drawable.wx11
             }
-            "/社会社会" -> {
-                R.drawable.wx018
+            "[社会社会]" -> {
+                R.drawable.wx12
             }
-            "/汗" -> {
-                R.drawable.wx019
+            "[汗]" -> {
+                R.drawable.wx13
             }
-            "/强壮" -> {
-                R.drawable.wx020
+            "[强壮]" -> {
+                R.drawable.wx14
             }
-            "/鬼魂" -> {
-                R.drawable.wx021
+            "[鬼魂]" -> {
+                R.drawable.wx15
             }
-            "/吐舌" -> {
-                R.drawable.wx022
+            "[吐舌]" -> {
+                R.drawable.wx16
             }
-            "/合十" -> {
-                R.drawable.wx023
+            "[合十]" -> {
+                R.drawable.wx17
             }
-            "/礼物" -> {
-                R.drawable.wx024
+            "[礼物]" -> {
+                R.drawable.wx18
             }
-            "/庆祝" -> {
-                R.drawable.wx025
+            "[庆祝]" -> {
+                R.drawable.wx19
             }
-            "/破涕为笑" -> {
-                R.drawable.wx026
+            "[破涕为笑]" -> {
+                R.drawable.wx20
             }
-            "/笑脸" -> {
-                R.drawable.wx027
+            "[笑脸]" -> {
+                R.drawable.wx21
             }
-            "/无语" -> {
-                R.drawable.wx028
+            "[无语]" -> {
+                R.drawable.wx22
             }
-            "/失望" -> {
-                R.drawable.wx029
+            "[失望]" -> {
+                R.drawable.wx23
             }
-            "/恐惧" -> {
-                R.drawable.wx030
+            "[恐惧]" -> {
+                R.drawable.wx24
             }
-            "/脸红" -> {
-                R.drawable.wx031
+            "[脸红]" -> {
+                R.drawable.wx25
             }
-            "/感冒" -> {
-                R.drawable.wx032
+            "[感冒]" -> {
+                R.drawable.wx26
             }
-            "/吃瓜" -> {
-                R.drawable.wx033
+            "[吃瓜]" -> {
+                R.drawable.wx27
             }
-            "/哇" -> {
-                R.drawable.wx034
+            "[哇]" -> {
+                R.drawable.wx28
             }
-            "/旺柴" -> {
-                R.drawable.wx035
+            "[旺柴]" -> {
+                R.drawable.wx29
             }
-            "/瓢虫" -> {
-                R.drawable.wx109
+            "[瓢虫]" -> {
+                R.drawable.wx30
             }
-            "/企鹅" -> {
-                R.drawable.wx132
+            "[企鹅]" -> {
+                R.drawable.wx31
             }
-            "/红包" -> {
-                R.drawable.wx007
+            "[红包]" -> {
+                R.drawable.wx32
             }
-            "/发" -> {
-                R.drawable.wx002
+            "[发]" -> {
+                R.drawable.wx33
             }
-            "/福" -> {
-                R.drawable.wx001
+            "[福]" -> {
+                R.drawable.wx34
             }
             else -> {
                 R.drawable.ic_none_drawable
