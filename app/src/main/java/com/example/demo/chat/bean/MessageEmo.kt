@@ -13,19 +13,19 @@ class MessageEmo(
     @DrawableRes
     fun toEmoDrawId(): Int {
         return when (title) {
-            "[奸笑]" -> {
+            "[奸笑/]" -> {
                 R.drawable.wx00
             }
-            "[嘿哈]" -> {
+            "[嘿哈/]" -> {
                 R.drawable.wx01
             }
-            "[捂脸]" -> {
+            "[捂脸/]" -> {
                 R.drawable.wx02
             }
-            "[机智]" -> {
+            "[机智/]" -> {
                 R.drawable.wx03
             }
-            "[耶]" -> {
+            "[耶/]" -> {
                 R.drawable.wx04
             }
             "[皱眉]" -> {

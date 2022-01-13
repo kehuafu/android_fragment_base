@@ -18,6 +18,7 @@ import com.example.demo.main.mvvm.MainViewModel
 import com.example.demo.fragment.mail.MailListFragment
 import com.example.demo.fragment.conversation.ConversationFragment
 import com.example.demo.fragment.mine.MineFragment
+import com.example.demo.utils.EmojiManager
 import com.example.demo.utils.GenerateTestUserSig
 import com.kehuafu.base.core.container.base.BaseFragment
 import com.kehuafu.base.core.container.widget.toast.showToast
@@ -54,6 +55,7 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel, MainState>
 
     override fun onLoadDataSource() {
         super.onLoadDataSource()
+        EmojiManager.initLocalEmojiDate()
         AppManager.iCloudImManager.login(
             AppManager.currentUserID,
             GenerateTestUserSig.genTestUserSig(AppManager.currentUserID),

@@ -51,7 +51,7 @@ abstract class BaseRecyclerViewAdapterV4<Item, VH : BaseRecyclerViewAdapterV4.Ba
 
     @Suppress("UNCHECKED_CAST")
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        Log.e("TAG", "onCreateViewHolder: $viewType")
+        Log.e("BaseRecyclerViewV4", "onCreateViewHolder: $viewType---->$parent")
         return if (viewType == EMPTY_TYPE) {
             mOnCreateEmptyViewHolderCallback?.onCreateEmptyViewHolder(parent) as? VH
                 ?: throw IllegalArgumentException(" Unrealized Empty ViewHolder")
@@ -63,7 +63,7 @@ abstract class BaseRecyclerViewAdapterV4<Item, VH : BaseRecyclerViewAdapterV4.Ba
     abstract fun onCreateVH(parent: ViewGroup, viewType: Int): VH
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        Log.e("TAG", "onBindViewHolder: $holder")
+        Log.e("BaseRecyclerViewV4", "onBindViewHolder: $position---->$holder")
         when (holder.itemViewType) {
             EMPTY_TYPE -> {
                 mOnCreateEmptyViewHolderCallback?.onBindEmptyViewHolder(holder, position)

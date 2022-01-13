@@ -12,11 +12,11 @@
     </string-array>
 
     <string-array name="chat_emoticon_type">
-        <item>[奸笑]</item>
-        <item>[嘿哈]</item>
-        <item>[捂脸]</item>
-        <item>[机智]</item>
-        <item>[耶]</item>
+        <item>[奸笑/]</item>
+        <item>[嘿哈/]</item>
+        <item>[捂脸/]</item>
+        <item>[机智/]</item>
+        <item>[耶/]</item>
         <item>[皱眉]</item>
         <item>[加油]</item>
         <item>[emm]</item>

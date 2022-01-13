@@ -120,7 +120,7 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
             val options = V2TIMMessageListGetOption()
             options.getType = V2TIMMessageListGetOption.V2TIM_GET_LOCAL_OLDER_MSG
             options.userID = userID
-            options.count = 20
+            options.count = 50
             if (firstPull == true) {
                 V2TIMManager.getMessageManager()
                     .getHistoryMessageList(
@@ -128,7 +128,7 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
                         object : V2TIMValueCallback<List<V2TIMMessage>> {
                             override fun onSuccess(p0: List<V2TIMMessage>?) {
                                 continuation.resume(p0!!)
-                                Log.d(TAG, "onSuccess: " + p0!!.size)
+                                Log.d(TAG, "onSuccess: " + p0.size)
                             }
 
                             override fun onError(p0: Int, p1: String?) {
@@ -148,7 +148,7 @@ class CloudMessageManager private constructor() : ICloudMessageManager,
             }
             V2TIMManager.getMessageManager().getC2CHistoryMessageList(
                 userID,
-                20,
+                100,
                 null,
                 object : V2TIMValueCallback<List<V2TIMMessage>> {
                     override fun onSuccess(p0: List<V2TIMMessage>?) {

@@ -1,6 +1,8 @@
 package com.example.demo.chat.bean
 
 import android.util.Log
+import androidx.annotation.DrawableRes
+import com.example.demo.R
 import com.example.demo.app.AppManager
 import com.kehuafu.base.core.container.widget.toast.showToast
 import com.tencent.imsdk.v2.V2TIMMessage
@@ -36,7 +38,6 @@ open class Message(
             return Message(v2TIMMessage = v2TIMMessage)
         }
     }
-
     fun secToTime(seconds: Int): String {
         val hour = seconds / 3600
         val minute = (seconds - hour * 3600) / 60

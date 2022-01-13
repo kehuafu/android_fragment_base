@@ -16,6 +16,7 @@ import com.blankj.utilcode.util.ScreenUtils
 import com.example.demo.R
 import com.example.demo.databinding.FragmentChatBinding
 import com.example.demo.utils.AnimatorUtils
+import com.example.demo.utils.EmojiManager
 import com.example.demo.utils.HeightProvider
 import com.kehuafu.base.core.container.widget.toast.showToast
 import com.kehuafu.base.core.ktx.dp2px
@@ -69,7 +70,7 @@ class ChatInputView @JvmOverloads constructor(
                 ivNavMore().visibility = View.GONE
             }
             mOnChatInputViewListener?.onKeyBoardInputChange(
-                etMsg().text.toString().trim().isBlank()
+                etMsg().text.toString()
             )
         }
         etMsg().setOnClickListener {
@@ -256,7 +257,7 @@ class ChatInputView @JvmOverloads constructor(
         fun onSendMsg(msg: String)
         fun onPullUpList(bool: Boolean)
         fun onShowEmo(show: Boolean)
-        fun onKeyBoardInputChange(empty: Boolean)
+        fun onKeyBoardInputChange(context: String)
     }
 }
 

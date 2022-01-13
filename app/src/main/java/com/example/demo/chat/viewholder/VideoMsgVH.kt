@@ -13,6 +13,7 @@ import com.example.demo.databinding.LayItemChatVideoMsgBinding
 import com.example.demo.utils.DensityTool
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
 import com.kehuafu.base.core.ktx.loadRoundImage
+import com.kehuafu.base.core.ktx.runOnMainThread
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -73,7 +74,10 @@ class VideoMsgVH(override val viewBinding: LayItemChatVideoMsgBinding) :
             val width = item.getMessageObject().videoElem.snapshotWidth / 8 * 2.5
             DensityTool.setWH(viewBinding.msgVv, width.toInt(), height.toInt())
             GlobalScope.launch {
-                viewBinding.msgVv.loadRoundImage(item.getSnapshotUrl(), 10f)
+                val url = item.getSnapshotUrl()
+                runOnMainThread({
+                    viewBinding.msgVv.loadRoundImage(url, 10f)
+                })
             }
         }
         viewBinding.tvTime.isVisible = item.showTime!!

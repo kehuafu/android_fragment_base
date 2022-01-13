@@ -13,6 +13,8 @@ import com.example.demo.databinding.LayItemChatSoundMsgBinding
 import com.example.demo.utils.AudioRecodeUtils
 import com.example.demo.utils.MediaPlayerManager
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
+import com.kehuafu.base.core.ktx.loadRoundImage
+import com.kehuafu.base.core.ktx.runOnMainThread
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -69,12 +71,18 @@ class SoundMsgVH(override val viewBinding: LayItemChatSoundMsgBinding) :
         }
         viewBinding.leftMessageLl.setOnClickListener {
             GlobalScope.launch {
-                audioRecodeUtils.playRecord(item.getSoundUrl(), anim)
+                val url = item.getSoundUrl()
+                runOnMainThread({
+                    audioRecodeUtils.playRecord(url, anim)
+                })
             }
         }
         viewBinding.rightMessageLl.setOnClickListener {
             GlobalScope.launch {
-                audioRecodeUtils.playRecord(item.getSoundUrl(), anim)
+                val url = item.getSoundUrl()
+                runOnMainThread({
+                    audioRecodeUtils.playRecord(url, anim)
+                })
             }
         }
         audioRecodeUtils = AudioRecodeUtils()

@@ -123,10 +123,11 @@ open class ChatActivity :
             chatRv.layoutManager = LinearLayoutManager(this@ChatActivity)
             (chatRv.layoutManager as LinearLayoutManager).reverseLayout = true
             chatRv.adapter = mChatListAdapter
+//            chatRv.setItemViewCacheSize(10)
 
             chatFile.removeRmoIv.setOnClickListener {
                 try {
-                    val pattern: Pattern = Pattern.compile("\\[.+?\\]")
+                    val pattern: Pattern = Pattern.compile("\\[(.+?)\\]")
                     //匹配所有带有[]的词语
                     val index = chatInputRv.etMsg().selectionStart
                     val endChar = chatInputRv.etMsg().text.toString().substring(index - 1, index)
@@ -249,8 +250,8 @@ open class ChatActivity :
                         ) {
                             ChatInputView.showKeyBoardMode = ChatInputView.KEY_BOARD_MODE_TEXT
                         }
-                        viewBinding.chatInputLl.translationY = dp2px(300f)
-                        viewBinding.frameLayout.translationY = dp2px(0f)
+//                        viewBinding.chatInputLl.translationY = dp2px(300f)
+                        viewBinding.chatRv.translationY = viewBinding.chatInputLl.translationY
                     }
                 }
             })
@@ -267,21 +268,21 @@ open class ChatActivity :
             ) {
                 return@setHeightListener
             } else if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_TEXT) {
-                viewBinding.chatInputLl.translationY = (-it + dp2px(300f))
-                viewBinding.frameLayout.translationY = -it.toFloat()
+//                viewBinding.chatInputLl.translationY = (-it + dp2px(300f))
+                viewBinding.chatRv.translationY = viewBinding.chatInputLl.translationY
                 return@setHeightListener
             }
             if (it.toFloat() > 0f) {
                 viewBinding.chatRv.stopScroll()
 //                AnimatorUtils.build()
 //                    .startTranslateY(viewBinding.chatInputLl, (-it + dp2px(300f)))//带动画效果
-                viewBinding.chatInputLl.translationY = (-it + dp2px(300f))
-                viewBinding.frameLayout.translationY = -it.toFloat()
+//                viewBinding.chatInputLl.translationY = (-it + dp2px(300f))
+                viewBinding.chatRv.translationY = viewBinding.chatInputLl.translationY
                 viewBinding.chatRv.scrollToPosition(0)
                 return@setHeightListener
             }
-            viewBinding.chatInputLl.translationY = -it + dp2px(300f)
-            viewBinding.frameLayout.translationY = it.toFloat()
+//            viewBinding.chatInputLl.translationY = -it + dp2px(300f)
+            viewBinding.chatRv.translationY = viewBinding.chatInputLl.translationY
         }
     }
 
@@ -330,9 +331,9 @@ open class ChatActivity :
 
     override fun onLoadDataSource() {
         super.onLoadDataSource()
-        viewModel.getC2CHistoryMessageList(userId!!, true)
         viewModel.initMessageThemeList()
         viewModel.initMessageEmoList()
+        viewModel.getC2CHistoryMessageList(userId!!, true)
     }
 
     override fun onStateChanged(state: MessageViewModel.MessageState) {
@@ -400,8 +401,8 @@ open class ChatActivity :
                 if (heightProvider!!.isSoftInputVisible) {
                     KeyboardUtils.hideSoftInput(this@ChatActivity)
                 } else {
-                    viewBinding.chatInputLl.translationY = dp2px(300f)
-                    viewBinding.frameLayout.translationY = dp2px(0f)
+//                    viewBinding.chatInputLl.translationY = dp2px(300f)
+                    viewBinding.chatRv.translationY = viewBinding.chatInputLl.translationY
                 }
             }
         }
@@ -473,20 +474,20 @@ open class ChatActivity :
 
     override fun onPullUpList(bool: Boolean) {
         if (bool) {
-            if (viewBinding.frameLayout.translationY != 0F) {
+            if (viewBinding.chatRv.translationY != viewBinding.chatInputLl.translationY) {
                 return
             }
             viewBinding.chatRv.stopScroll()
             AnimatorUtils.build()
                 .startTranslateY(viewBinding.chatInputLl, dp2px(0f))
-            viewBinding.frameLayout.translationY = -dp2px(300f)
+            viewBinding.chatRv.translationY = viewBinding.chatInputLl.translationY
             viewBinding.chatRv.scrollToPosition(0)
         } else {
             if (heightProvider!!.isSoftInputVisible) {
                 KeyboardUtils.hideSoftInput(this)
-            } else if (viewBinding.frameLayout.translationY != 0F) {
-                viewBinding.chatInputLl.translationY = dp2px(300f)
-                viewBinding.frameLayout.translationY = dp2px(0f)
+            } else if (viewBinding.chatRv.translationY != 0F) {
+//                viewBinding.chatInputLl.translationY = dp2px(300f)
+                viewBinding.chatRv.translationY = viewBinding.chatInputLl.translationY
             }
         }
     }
@@ -506,8 +507,8 @@ open class ChatActivity :
         }
     }
 
-    override fun onKeyBoardInputChange(empty: Boolean) {
-        if (empty) {
+    override fun onKeyBoardInputChange(context: String) {
+        if (context.isEmpty()) {
             viewBinding.chatFile.removeRmoIv.setColorFilter(
                 ContextCompat.getColor(
                     this,

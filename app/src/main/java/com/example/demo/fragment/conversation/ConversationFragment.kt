@@ -37,6 +37,7 @@ class ConversationFragment :
             messageList.itemAnimator = null
             messageList.layoutManager = LinearLayoutManager(baseActivity)
             messageList.adapter = mConversationListAdapter
+//            messageList.recycledViewPool.setMaxRecycledViews(0, 10)
         }
     }
 
