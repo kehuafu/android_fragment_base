@@ -3,6 +3,7 @@ package com.example.demo.utils;
 import android.app.Activity;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -11,12 +12,15 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
+import androidx.annotation.RequiresApi;
+
 import com.blankj.utilcode.util.BarUtils;
 import com.blankj.utilcode.util.ScreenUtils;
 
 public class HeightProvider extends PopupWindow implements ViewTreeObserver.OnGlobalLayoutListener {
     private Activity mActivity;
     private View rootView;
+    private View view;
     private HeightListener listener;
     private int heightMax; // 记录popup内容区的最大高度
     private int mKeyboardHeight = 0;
@@ -24,6 +28,7 @@ public class HeightProvider extends PopupWindow implements ViewTreeObserver.OnGl
     public HeightProvider(Activity activity) {
         super(activity);
         this.mActivity = activity;
+        view = mActivity.getWindow().getDecorView();
 
         // 基础配置
         rootView = new View(activity);
@@ -44,7 +49,6 @@ public class HeightProvider extends PopupWindow implements ViewTreeObserver.OnGl
 
     public HeightProvider init() {
         if (!isShowing()) {
-            final View view = mActivity.getWindow().getDecorView();
             // 延迟加载popupwindow，如果不加延迟就会报错
             view.post(new Runnable() {
                 @Override
@@ -71,9 +75,9 @@ public class HeightProvider extends PopupWindow implements ViewTreeObserver.OnGl
 
         // 两者的差值就是键盘的高度
         int keyboardHeight = heightMax - rect.bottom;
-        Log.e("@@", "heightMax-->" + heightMax);
-        Log.e("@@", "bottom-->" + rect.bottom);
-        Log.e("@@", "keyboardHeight-->" + keyboardHeight);
+        Log.e("HeightProvider", "heightMax-->" + heightMax);
+        Log.e("HeightProvider", "bottom-->" + rect.bottom);
+        Log.e("HeightProvider", "keyboardHeight-->" + keyboardHeight);
         if (listener != null) {
             if (BarUtils.getNavBarHeight() == keyboardHeight) {
                 heightMax = heightMax - BarUtils.getNavBarHeight();
@@ -92,5 +96,9 @@ public class HeightProvider extends PopupWindow implements ViewTreeObserver.OnGl
 
     public interface HeightListener {
         void onHeightChanged(int height);
+    }
+
+    public void release() {
+        dismiss();
     }
 }

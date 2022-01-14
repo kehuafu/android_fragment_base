@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.core.content.ContextCompat
@@ -48,19 +49,13 @@ class ChatInputView @JvmOverloads constructor(
         }
     }
 
-
     private var mOnChatInputViewListener: OnChatInputViewListener? = null
 
     private var view = inflate(context, R.layout.lay_chat_input_view, this)
 
     private val viewBinding by viewBindings<FragmentChatBinding>()
 
-
-    private var heightProvider: HeightProvider? = null
-
     init {
-        heightProvider = HeightProvider(context as Activity).init()
-
         etMsg().doAfterTextChanged {
             if (etMsg().text.toString().trim().isBlank()) {
                 btnSendMsg().visibility = View.GONE
@@ -86,7 +81,8 @@ class ChatInputView @JvmOverloads constructor(
         ivNavMore().setOnClickListener {
             if (showKeyBoardMode == KEY_BOARD_MODE_FILE) {
                 showKeyBoardMode = KEY_BOARD_MODE_TEXT
-                KeyboardUtils.showSoftInput(this)
+//                KeyboardUtils.showSoftInput(this)
+                mOnChatInputViewListener?.onPullUpList(false)
                 etMsg().requestFocus()
             } else {
                 showKeyBoardMode = KEY_BOARD_MODE_FILE
@@ -107,13 +103,7 @@ class ChatInputView @JvmOverloads constructor(
                     )
                 )
                 mOnChatInputViewListener?.onShowEmo(false)
-                //键盘已拉起，显示文件列表
-                if (heightProvider!!.isSoftInputVisible) {
-                    mOnChatInputViewListener?.onPullUpList(false)
-                    return@setOnClickListener
-                }
-                //键盘未拉起，显示文件列表
-                mOnChatInputViewListener?.onPullUpList(true)
+//                mOnChatInputViewListener?.onPullUpList(heightProvider!!.isSoftInputVisible)
             }
         }
 
@@ -147,13 +137,7 @@ class ChatInputView @JvmOverloads constructor(
                 tvVoice().isVisible = false
                 mOnChatInputViewListener?.onShowEmo(true)
                 etMsg().requestFocus()
-                //键盘已拉起，显示表情包列表
-                if (heightProvider!!.isSoftInputVisible) {
-                    mOnChatInputViewListener?.onPullUpList(false)
-                    return@setOnClickListener
-                }
-                //键盘未拉起，显示表情列表
-                mOnChatInputViewListener?.onPullUpList(true)
+//                mOnChatInputViewListener?.onPullUpList(heightProvider!!.isSoftInputVisible)
             }
 
         }
@@ -192,9 +176,9 @@ class ChatInputView @JvmOverloads constructor(
             } else {
                 showToast("切换文本模式")
                 showKeyBoardMode = KEY_BOARD_MODE_TEXT
-                if (!heightProvider!!.isSoftInputVisible) {
-                    KeyboardUtils.showSoftInput(this)
-                }
+//                if (!heightProvider!!.isSoftInputVisible) {
+//                    KeyboardUtils.showSoftInput(this)
+//                }
                 etMsg().requestFocus()
                 ivVoice().setPadding(0, 0, 0, 0)
                 ivVoice().setImageDrawable(
@@ -255,7 +239,7 @@ class ChatInputView @JvmOverloads constructor(
     interface OnChatInputViewListener {
         fun onRecordVoice(v: View, event: MotionEvent): Boolean
         fun onSendMsg(msg: String)
-        fun onPullUpList(bool: Boolean)
+        fun onPullUpList(isSoftInputVisible: Boolean)
         fun onShowEmo(show: Boolean)
         fun onKeyBoardInputChange(context: String)
     }

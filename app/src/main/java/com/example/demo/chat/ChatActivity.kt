@@ -10,6 +10,7 @@ import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ImageSpan
+import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -34,6 +35,7 @@ import com.tencent.imsdk.v2.V2TIMMessage
 import java.util.*
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.core.view.marginBottom
 import androidx.recyclerview.widget.RecyclerView
 import com.example.demo.chat.adapter.ChatEmoTypeAdapter
 import com.example.demo.chat.bean.IMessage
@@ -46,7 +48,6 @@ import com.example.demo.preview.PreviewActivity
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
 import com.kehuafu.base.core.container.widget.toast.showToast
 import com.kehuafu.base.core.ktx.dp2px
-import com.kehuafu.base.core.ktx.show
 import com.kehuafu.base.core.ktx.toJsonTxt
 import java.io.File
 import java.lang.reflect.Field
@@ -75,7 +76,7 @@ open class ChatActivity :
 
     private lateinit var lp: WindowManager.LayoutParams
 
-    private lateinit var mPop: PopupWindow
+    private var mPop: PopupWindow? = null
 
     private lateinit var mAudioRecodeUtils: AudioRecodeUtils
 
@@ -121,7 +122,7 @@ open class ChatActivity :
             mChatListAdapter.setOnItemClickListener(this@ChatActivity)
             chatRv.itemAnimator = null
             chatRv.layoutManager = LinearLayoutManager(this@ChatActivity)
-            (chatRv.layoutManager as LinearLayoutManager).reverseLayout = true
+//            (chatRv.layoutManager as LinearLayoutManager).reverseLayout = true
             chatRv.adapter = mChatListAdapter
 //            chatRv.setItemViewCacheSize(10)
 
@@ -242,17 +243,18 @@ open class ChatActivity :
             chatRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                     super.onScrollStateChanged(recyclerView, newState)
-                    if (heightProvider!!.isSoftInputVisible) {
-                        KeyboardUtils.hideSoftInput(this@ChatActivity)
-                    } else {
-                        if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_FILE
-                            || ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_EXPRESSION
-                        ) {
-                            ChatInputView.showKeyBoardMode = ChatInputView.KEY_BOARD_MODE_TEXT
-                        }
-//                        viewBinding.chatInputLl.translationY = dp2px(300f)
-                        viewBinding.chatRv.translationY = viewBinding.chatInputLl.translationY
-                    }
+//                    if (heightProvider!!.isSoftInputVisible) {
+//                        KeyboardUtils.hideSoftInput(this@ChatActivity)
+//                    } else {
+//                        if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_FILE
+//                            || ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_EXPRESSION
+//                        ) {
+//                            ChatInputView.showKeyBoardMode = ChatInputView.KEY_BOARD_MODE_TEXT
+//                        }
+//                        viewBinding.chatInputLl.translationY = dp2px(300F)
+//                        viewBinding.chatFile.chatFileLl.minimumHeight = dp2px(300F).toInt()
+//                        viewBinding.chatRv.translationY = dp2px(0F)
+//                    }
                 }
             })
         }
@@ -263,26 +265,53 @@ open class ChatActivity :
     private fun initKeyBoardHeightListener() {
         heightProvider = HeightProvider(this).init()
         heightProvider!!.setHeightListener {
-            if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_FILE
-                || ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_EXPRESSION
-            ) {
-                return@setHeightListener
-            } else if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_TEXT) {
-//                viewBinding.chatInputLl.translationY = (-it + dp2px(300f))
-                viewBinding.chatRv.translationY = viewBinding.chatInputLl.translationY
-                return@setHeightListener
-            }
-            if (it.toFloat() > 0f) {
-                viewBinding.chatRv.stopScroll()
+            Log.e("ChatActivity", "initKeyBoardHeightListener: $it")
+//            if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_FILE
+//                || ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_EXPRESSION
+//            ) {
+//                return@setHeightListener
+//            } else if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_TEXT
+//                && viewBinding.chatRv.translationY != 0F
+//            ) {
+//                viewBinding.chatInputLl.translationY = dp2px(0F)
+//                viewBinding.chatFile.chatFileLl.minimumHeight = it
+//                viewBinding.chatRv.translationY = -it.toFloat()
+//                return@setHeightListener
+//            }
+
+            val showSoftKeyboard = it.toFloat() > 0F
+            if (showSoftKeyboard) {
+//                viewBinding.chatRv.stopScroll()
+//                //                viewBinding.chatInputLl.translationY = dp2px(0F)
+                AnimatorUtils.build()
+                    .startTranslateY(viewBinding.chatInputLl, dp2px(0F))//带动画效果
+//                viewBinding.chatFile.chatFileLl.minimumHeight = it
+//                viewBinding.chatRv.translationY = -it.toFloat()
+                Log.e(
+                    "ChatActivity",
+                    "frameLayoutHeight: ${viewBinding.frameLayout.height}"
+                )
+                //带动画效果
 //                AnimatorUtils.build()
-//                    .startTranslateY(viewBinding.chatInputLl, (-it + dp2px(300f)))//带动画效果
-//                viewBinding.chatInputLl.translationY = (-it + dp2px(300f))
-                viewBinding.chatRv.translationY = viewBinding.chatInputLl.translationY
-                viewBinding.chatRv.scrollToPosition(0)
-                return@setHeightListener
+//                    .startMinimumHeight(
+//                        viewBinding.chatFile.chatFileLl,
+//                        it
+//                    )
+                AnimatorUtils.build()
+                    .startMinimumHeights(
+                        viewBinding.chatRv, (viewBinding.frameLayout.height - it)
+                    )
+//                viewBinding.chatFile.chatFileLl.layoutParams.height = it
+//                viewBinding.chatFile.chatFileLl.requestLayout()
+//                viewBinding.chatRv.layoutParams.height = viewBinding.frameLayout.height - it
+//                viewBinding.chatRv.requestLayout()
+                viewBinding.chatRv.scrollToPosition(messageList.size - 1)
+            } else {
+                viewBinding.chatFile.chatFileLl.layoutParams.height = it
+                viewBinding.chatRv.layoutParams.height = viewBinding.frameLayout.height
+                viewBinding.chatFile.chatFileLl.requestLayout()
+                viewBinding.chatRv.requestLayout()
             }
-//            viewBinding.chatInputLl.translationY = -it + dp2px(300f)
-            viewBinding.chatRv.translationY = viewBinding.chatInputLl.translationY
         }
     }
 
@@ -348,7 +377,8 @@ open class ChatActivity :
         }
         if (state.updateMessage) {
             messageList = state.messageList
-            mChatListAdapter.resetItems(messageList)
+            mChatListAdapter.resetItems(messageList.asReversed())
+            viewBinding.chatRv.scrollToPosition(messageList.size - 1)
             state.updateMessage = false
         }
     }
@@ -357,6 +387,10 @@ open class ChatActivity :
         super.onPause()
         if (heightProvider!!.isSoftInputVisible) {
             KeyboardUtils.hideSoftInput(this@ChatActivity)
+        }
+        if (this.isFinishing && mPop != null) {
+            mPop!!.dismiss()
+            mPop = null
         }
     }
 
@@ -370,6 +404,10 @@ open class ChatActivity :
         AppManager.localEventLifecycleViewModel.unRegister(this)
         MediaPlayerManager.getInstance().release()
         ChatInputView.resetKeyBoardMode()
+        if (heightProvider != null) {
+            heightProvider!!.release()
+            heightProvider = null
+        }
     }
 
     override fun onItemClick(itemView: View, item: Message, position: Int?) {
@@ -398,12 +436,14 @@ open class ChatActivity :
                 }
             }
             else -> {
-                if (heightProvider!!.isSoftInputVisible) {
+/*                if (heightProvider!!.isSoftInputVisible) {
                     KeyboardUtils.hideSoftInput(this@ChatActivity)
                 } else {
-//                    viewBinding.chatInputLl.translationY = dp2px(300f)
-                    viewBinding.chatRv.translationY = viewBinding.chatInputLl.translationY
-                }
+                    ChatInputView.showKeyBoardMode = ChatInputView.KEY_BOARD_MODE_TEXT
+                    viewBinding.chatInputLl.translationY = dp2px(300F)
+                    viewBinding.chatFile.chatFileLl.minimumHeight = dp2px(300F).toInt()
+                    viewBinding.chatRv.translationY = dp2px(0F)
+                }*/
             }
         }
     }
@@ -448,9 +488,9 @@ open class ChatActivity :
             MotionEvent.ACTION_DOWN -> {
                 lp.alpha = 0.4f
                 window.attributes = lp
-                mPop.width = LinearLayout.LayoutParams.MATCH_PARENT
-                mPop.height = LinearLayout.LayoutParams.MATCH_PARENT
-                mPop.showAtLocation(rl, Gravity.CENTER, 0, 0)
+                mPop!!.width = LinearLayout.LayoutParams.MATCH_PARENT
+                mPop!!.height = LinearLayout.LayoutParams.MATCH_PARENT
+                mPop!!.showAtLocation(rl, Gravity.CENTER, 0, 0)
                 mAudioRecodeUtils.startRecord()
             }
             MotionEvent.ACTION_UP -> {
@@ -458,7 +498,7 @@ open class ChatActivity :
                 lp.alpha = 1f
                 window.attributes = lp
                 mAudioRecodeUtils.stopRecord() //结束录音（保存录音文件）
-                mPop.dismiss()
+                mPop!!.dismiss()
             }
         }
         return true
@@ -472,24 +512,25 @@ open class ChatActivity :
         )
     }
 
-    override fun onPullUpList(bool: Boolean) {
-        if (bool) {
-            if (viewBinding.chatRv.translationY != viewBinding.chatInputLl.translationY) {
-                return
-            }
-            viewBinding.chatRv.stopScroll()
-            AnimatorUtils.build()
-                .startTranslateY(viewBinding.chatInputLl, dp2px(0f))
-            viewBinding.chatRv.translationY = viewBinding.chatInputLl.translationY
-            viewBinding.chatRv.scrollToPosition(0)
-        } else {
-            if (heightProvider!!.isSoftInputVisible) {
-                KeyboardUtils.hideSoftInput(this)
-            } else if (viewBinding.chatRv.translationY != 0F) {
-//                viewBinding.chatInputLl.translationY = dp2px(300f)
-                viewBinding.chatRv.translationY = viewBinding.chatInputLl.translationY
-            }
-        }
+    override fun onPullUpList(isSoftInputVisible: Boolean) {
+        Log.e(
+            "onPullUpList",
+            "onPullUpList----->$isSoftInputVisible${viewBinding.chatRv.translationY}"
+        )
+//        if (!isSoftInputVisible) {
+//            if (viewBinding.chatRv.translationY == 0F) {
+//                viewBinding.chatRv.stopScroll()
+//                AnimatorUtils.build()
+//                    .startTranslateY(viewBinding.chatInputLl, dp2px(0F))//带动画效果
+//                viewBinding.chatFile.chatFileLl.minimumHeight = dp2px(300F).toInt()
+//                viewBinding.chatRv.translationY = -dp2px(300F)
+////                viewBinding.chatRv.scrollToPosition(0)
+//            } else {
+//                KeyboardUtils.showSoftInput(this)
+//            }
+//        } else {
+//            KeyboardUtils.hideSoftInput(this)
+//        }
     }
 
     override fun onShowEmo(show: Boolean) {
