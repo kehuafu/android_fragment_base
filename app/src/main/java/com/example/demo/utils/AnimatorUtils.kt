@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import androidx.core.animation.addListener
+import androidx.recyclerview.widget.RecyclerView
 
 class AnimatorUtils {
 
@@ -36,7 +37,12 @@ class AnimatorUtils {
     /**
      * 软键盘的过渡动画效果
      */
-    fun startMinimumHeight(view: View, currentHeight: Int) {
+    fun startMinimumHeight(
+        view: View,
+        recyclerView: RecyclerView,
+        currentHeight: Int,
+        size: Int = 0
+    ) {
         val animator: ValueAnimator =
             ValueAnimator.ofInt(view.height, currentHeight)
         //设置求值器
@@ -49,6 +55,10 @@ class AnimatorUtils {
             Log.e("AnimatorUtils", "startMinimumHeight: " + it.animatedValue)
             view.layoutParams.height = it.animatedValue as Int
             view.requestLayout()
+            recyclerView.requestLayout()
+            if (it.animatedValue as Int >= currentHeight) {
+                recyclerView.scrollToPosition(size)
+            }
         }
     }
 

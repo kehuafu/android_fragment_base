@@ -30,6 +30,7 @@
     </LinearLayout>
 
     <FrameLayout
+        android:id="@+id/remove_rmo_fl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="20dp"
@@ -38,7 +39,8 @@
         android:padding="12dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/chat_file_ll"
-        app:layout_constraintRight_toRightOf="@+id/chat_file_ll">
+        app:layout_constraintRight_toRightOf="@+id/chat_file_ll"
+        tools:visibility="visible">
 
         <ImageView
             android:id="@+id/remove_rmo_iv"

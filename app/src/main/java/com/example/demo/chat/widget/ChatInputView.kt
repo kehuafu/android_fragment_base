@@ -1,27 +1,24 @@
 package com.example.demo.chat.widget
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.core.content.ContextCompat
+import androidx.core.view.doOnLayout
+import androidx.core.view.doOnNextLayout
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
+import androidx.core.widget.doBeforeTextChanged
+import androidx.core.widget.doOnTextChanged
 import com.blankj.utilcode.constant.PermissionConstants
-import com.blankj.utilcode.util.KeyboardUtils
 import com.blankj.utilcode.util.PermissionUtils
 import com.blankj.utilcode.util.ScreenUtils
 import com.example.demo.R
-import com.example.demo.databinding.FragmentChatBinding
-import com.example.demo.utils.AnimatorUtils
-import com.example.demo.utils.EmojiManager
-import com.example.demo.utils.HeightProvider
 import com.kehuafu.base.core.container.widget.toast.showToast
-import com.kehuafu.base.core.ktx.dp2px
-import com.kehuafu.base.core.ktx.viewBindings
 
 
 /**
@@ -53,8 +50,6 @@ class ChatInputView @JvmOverloads constructor(
 
     private var view = inflate(context, R.layout.lay_chat_input_view, this)
 
-    private val viewBinding by viewBindings<FragmentChatBinding>()
-
     init {
         etMsg().doAfterTextChanged {
             if (etMsg().text.toString().trim().isBlank()) {
@@ -64,8 +59,11 @@ class ChatInputView @JvmOverloads constructor(
                 btnSendMsg().visibility = View.VISIBLE
                 ivNavMore().visibility = View.GONE
             }
-            mOnChatInputViewListener?.onKeyBoardInputChange(
+            mOnChatInputViewListener?.onEtMsgContentChange(
                 etMsg().text.toString()
+            )
+            mOnChatInputViewListener?.onEtMsgInputHeightChange(
+                etMsg().height
             )
         }
         etMsg().setOnClickListener {
@@ -81,8 +79,7 @@ class ChatInputView @JvmOverloads constructor(
         ivNavMore().setOnClickListener {
             if (showKeyBoardMode == KEY_BOARD_MODE_FILE) {
                 showKeyBoardMode = KEY_BOARD_MODE_TEXT
-//                KeyboardUtils.showSoftInput(this)
-                mOnChatInputViewListener?.onPullUpList(false)
+                mOnChatInputViewListener?.onPullUpList(true, showKeyBoardMode)
                 etMsg().requestFocus()
             } else {
                 showKeyBoardMode = KEY_BOARD_MODE_FILE
@@ -103,14 +100,17 @@ class ChatInputView @JvmOverloads constructor(
                     )
                 )
                 mOnChatInputViewListener?.onShowEmo(false)
-//                mOnChatInputViewListener?.onPullUpList(heightProvider!!.isSoftInputVisible)
+                mOnChatInputViewListener?.onPullUpList(
+                    false,
+                    showKeyBoardMode
+                )
             }
         }
 
         ivExpression().setOnClickListener {
             if (showKeyBoardMode == KEY_BOARD_MODE_EXPRESSION) {
                 showKeyBoardMode = KEY_BOARD_MODE_TEXT
-                KeyboardUtils.showSoftInput(this)
+                mOnChatInputViewListener?.onPullUpList(true, showKeyBoardMode)
                 etMsg().requestFocus()
                 ivExpression().setImageDrawable(
                     ContextCompat.getDrawable(
@@ -135,9 +135,12 @@ class ChatInputView @JvmOverloads constructor(
                 )
                 etMsg().isVisible = true
                 tvVoice().isVisible = false
-                mOnChatInputViewListener?.onShowEmo(true)
                 etMsg().requestFocus()
-//                mOnChatInputViewListener?.onPullUpList(heightProvider!!.isSoftInputVisible)
+                mOnChatInputViewListener?.onShowEmo(true)
+                mOnChatInputViewListener?.onPullUpList(
+                    false,
+                    showKeyBoardMode
+                )
             }
 
         }
@@ -162,9 +165,8 @@ class ChatInputView @JvmOverloads constructor(
                     })
                     .theme { activity -> ScreenUtils.setFullScreen(activity) }
                     .request()
-                showToast("切换语音模式")
                 showKeyBoardMode = KEY_BOARD_MODE_SOUND
-                mOnChatInputViewListener?.onPullUpList(false)
+                mOnChatInputViewListener?.onPullUpList(false, showKeyBoardMode)
                 ivVoice().setPadding(6, 6, 6, 6)
                 ivVoice().setImageDrawable(
                     ContextCompat.getDrawable(
@@ -174,12 +176,8 @@ class ChatInputView @JvmOverloads constructor(
                 )
                 etMsg().clearFocus()
             } else {
-                showToast("切换文本模式")
                 showKeyBoardMode = KEY_BOARD_MODE_TEXT
-//                if (!heightProvider!!.isSoftInputVisible) {
-//                    KeyboardUtils.showSoftInput(this)
-//                }
-                etMsg().requestFocus()
+                mOnChatInputViewListener?.onPullUpList(true, showKeyBoardMode)
                 ivVoice().setPadding(0, 0, 0, 0)
                 ivVoice().setImageDrawable(
                     ContextCompat.getDrawable(
@@ -190,6 +188,7 @@ class ChatInputView @JvmOverloads constructor(
             }
             etMsg().isVisible = !etMsg().isVisible
             tvVoice().isVisible = !etMsg().isVisible
+            etMsg().requestFocus()
             ivExpression().setImageDrawable(
                 ContextCompat.getDrawable(
                     context,
@@ -199,13 +198,21 @@ class ChatInputView @JvmOverloads constructor(
         }
         btnSendMsg().setOnClickListener {
             mOnChatInputViewListener?.onSendMsg(etMsg().text.toString().trim())
-            viewBinding.chatRv.scrollToPosition(0)
             etMsg().text.clear()
         }
 
         tvVoice().setOnTouchListener(OnTouchListener { v, event ->
             return@OnTouchListener mOnChatInputViewListener!!.onRecordVoice(v, event)
         })
+    }
+
+    fun resetEmoKeyBoard() {
+        ivExpression().setImageDrawable(
+            ContextCompat.getDrawable(
+                context,
+                R.drawable.expression_icon
+            )
+        )
     }
 
     fun setOnChatInputViewListener(onChatInputViewListener: OnChatInputViewListener) {
@@ -239,9 +246,10 @@ class ChatInputView @JvmOverloads constructor(
     interface OnChatInputViewListener {
         fun onRecordVoice(v: View, event: MotionEvent): Boolean
         fun onSendMsg(msg: String)
-        fun onPullUpList(isSoftInputVisible: Boolean)
+        fun onPullUpList(isShowSoftVisible: Boolean, showKeyBoardMode: Int)
         fun onShowEmo(show: Boolean)
-        fun onKeyBoardInputChange(context: String)
+        fun onEtMsgContentChange(context: String)
+        fun onEtMsgInputHeightChange(height: Int)
     }
 }
 

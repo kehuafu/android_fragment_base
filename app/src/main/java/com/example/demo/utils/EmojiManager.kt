@@ -29,11 +29,13 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
+import kotlin.math.log
 
 
 object EmojiManager {
 
     var emojiList: HashMap<String, Int> = HashMap()
+    private const val TAG = "EmojiManager"
 
     fun initLocalEmojiDate() {
         val stringMessageArrays =
@@ -51,17 +53,50 @@ object EmojiManager {
         }
     }
 
-    fun test(text: TextView, context: String) {
-        val richTextWrapper = RichTextWrapper(text)
-        richTextWrapper.addResolver(ImageResolver::class.java)
-        richTextWrapper.setOnRichTextListener(
-            ImageResolver::class.java,
-            object : RichTextClickListener {
-                override fun onRichTextClick(v: TextView?, content: String?) {
-                    Log.e("TAG", "onRichTextClick: $content")
-                }
-            })
-        richTextWrapper.setText(context)
+    fun removeEMO(editText: EditText, context: Context) {
+        val pattern: Pattern = Pattern.compile("\\[(.+?)\\]")
+        val index = editText.selectionStart//光标位置
+        if (!editText.text.contains(pattern.toRegex())) {
+            editText.text.delete(
+                index - 1,
+                index
+            )
+            return
+        }
+        val matcherLastLeftIndex = editText.text.toString().substring(0, index).lastIndexOf("[")
+        Log.e("EmojiManager", "index: $index")
+        Log.e("EmojiManager", "matcherLastLeftIndex: $matcherLastLeftIndex")
+        val text: String = if (matcherLastLeftIndex == -1) {
+            editText.text.toString().substring(0, index)
+        } else {
+            editText.text.toString().substring(matcherLastLeftIndex, index)
+        }
+        Log.e(TAG, "removeEMO: $text")
+        val matcher: Matcher = pattern.matcher(text)
+        //匹配结果
+        if (matcher.find()) {
+            //如果emojiList含有，进行替换
+            val matcherLastRightIndex = text.lastIndexOf("]")
+            Log.e("EmojiManager", "matcherLastRightIndex: $matcherLastRightIndex")
+            if (emojiList[matcher.group()] != null && matcherLastRightIndex == text.length - 1) {
+                val start = matcher.start()
+                val end = matcher.end()
+                editText.text.delete(
+                    index - (end - start),
+                    index
+                )
+            } else {
+                editText.text.delete(
+                    index - 1,
+                    index
+                )
+            }
+        } else {
+            editText.text.delete(
+                index - 1,
+                index
+            )
+        }
     }
 
     fun disposeText(

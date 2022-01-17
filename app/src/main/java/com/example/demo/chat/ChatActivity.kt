@@ -3,10 +3,8 @@ package com.example.demo.chat
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Matrix
 import android.os.Build
 import android.os.Bundle
-import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ImageSpan
@@ -35,7 +33,7 @@ import com.tencent.imsdk.v2.V2TIMMessage
 import java.util.*
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
-import androidx.core.view.marginBottom
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.example.demo.chat.adapter.ChatEmoTypeAdapter
 import com.example.demo.chat.bean.IMessage
@@ -51,8 +49,6 @@ import com.kehuafu.base.core.ktx.dp2px
 import com.kehuafu.base.core.ktx.toJsonTxt
 import java.io.File
 import java.lang.reflect.Field
-import java.util.regex.Matcher
-import java.util.regex.Pattern
 
 
 open class ChatActivity :
@@ -104,6 +100,18 @@ open class ChatActivity :
     }
 
     override fun onBackPressed() {
+        if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_FILE
+            || ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_EXPRESSION
+        ) {
+            ChatInputView.showKeyBoardMode = ChatInputView.KEY_BOARD_MODE_TEXT
+            viewBinding.chatFile.chatFileLl.layoutParams.height = 0
+            viewBinding.chatRv.layoutParams.height = viewBinding.frameLayout.height
+            viewBinding.chatFile.chatFileLl.requestLayout()
+            viewBinding.chatRv.requestLayout()
+            viewBinding.chatFile.removeRmoFl.isVisible = false
+            viewBinding.chatInputRv.resetEmoKeyBoard()
+            return
+        }
         finish()
     }
 
@@ -122,41 +130,23 @@ open class ChatActivity :
             mChatListAdapter.setOnItemClickListener(this@ChatActivity)
             chatRv.itemAnimator = null
             chatRv.layoutManager = LinearLayoutManager(this@ChatActivity)
-//            (chatRv.layoutManager as LinearLayoutManager).reverseLayout = true
             chatRv.adapter = mChatListAdapter
-//            chatRv.setItemViewCacheSize(10)
 
             chatFile.removeRmoIv.setOnClickListener {
-                try {
-                    val pattern: Pattern = Pattern.compile("\\[(.+?)\\]")
-                    //匹配所有带有[]的词语
-                    val index = chatInputRv.etMsg().selectionStart
-                    val endChar = chatInputRv.etMsg().text.toString().substring(index - 1, index)
-                    if (chatInputRv.etMsg().text.contains(pattern.toRegex()) && endChar == "]"
-                    ) {
-                        val matcher: Matcher = pattern.matcher(chatInputRv.etMsg().text)
-                        if (matcher.find()) {
-                            chatInputRv.etMsg().text.delete(
-                                index - (matcher.end() - matcher.start()),
-                                index
-                            )
-                        } else {
-                            chatInputRv.etMsg().text.delete(
-                                index - 1,
-                                index
-                            )
-                        }
-                    } else {
-                        chatInputRv.etMsg().text.delete(
-                            index - 1,
-                            index
-                        )
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+                if (chatInputRv.etMsg().text.isEmpty()) return@setOnClickListener
+                EmojiManager.removeEMO(chatInputRv.etMsg(), this@ChatActivity)
             }
-
+            chatRv.setOnTouchListener { v, event ->
+                if (heightProvider!!.isSoftInputVisible) {
+                    KeyboardUtils.hideSoftInput(this@ChatActivity)
+                } else {
+                    if (viewBinding.chatFile.chatFileLl.layoutParams.height == 0) {
+                        return@setOnTouchListener false
+                    }
+                    resetCustomKeyBoard()
+                }
+                false
+            }
             mChatEmoTypeAdapter.setOnItemClickListener(object :
                 BaseRecyclerViewAdapterV2.OnItemClickListener<MessageEmo> {
                 override fun onItemClick(itemView: View, item: MessageEmo, position: Int?) {
@@ -243,18 +233,19 @@ open class ChatActivity :
             chatRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                     super.onScrollStateChanged(recyclerView, newState)
-//                    if (heightProvider!!.isSoftInputVisible) {
-//                        KeyboardUtils.hideSoftInput(this@ChatActivity)
-//                    } else {
-//                        if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_FILE
-//                            || ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_EXPRESSION
-//                        ) {
-//                            ChatInputView.showKeyBoardMode = ChatInputView.KEY_BOARD_MODE_TEXT
-//                        }
-//                        viewBinding.chatInputLl.translationY = dp2px(300F)
-//                        viewBinding.chatFile.chatFileLl.minimumHeight = dp2px(300F).toInt()
-//                        viewBinding.chatRv.translationY = dp2px(0F)
-//                    }
+                    viewBinding.chatFile.removeRmoFl.isVisible = false
+                    if (heightProvider?.isSoftInputVisible!!) {
+                        KeyboardUtils.hideSoftInput(this@ChatActivity)
+                    } else {
+                        if (viewBinding.chatFile.chatFileLl.layoutParams.height == 0) return
+                        if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_FILE
+                            || ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_EXPRESSION
+                        ) {
+                            ChatInputView.showKeyBoardMode = ChatInputView.KEY_BOARD_MODE_TEXT
+                            viewBinding.chatInputRv.resetEmoKeyBoard()
+                        }
+                        resetCustomKeyBoard()
+                    }
                 }
             })
         }
@@ -265,54 +256,38 @@ open class ChatActivity :
     private fun initKeyBoardHeightListener() {
         heightProvider = HeightProvider(this).init()
         heightProvider!!.setHeightListener {
-            Log.e("ChatActivity", "initKeyBoardHeightListener: $it")
-//            if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_FILE
-//                || ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_EXPRESSION
-//            ) {
-//                return@setHeightListener
-//            } else if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_TEXT
-//                && viewBinding.chatRv.translationY != 0F
-//            ) {
-//                viewBinding.chatInputLl.translationY = dp2px(0F)
-//                viewBinding.chatFile.chatFileLl.minimumHeight = it
-//                viewBinding.chatRv.translationY = -it.toFloat()
-//                return@setHeightListener
-//            }
-
+            if (ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_FILE
+                || ChatInputView.showKeyBoardMode == ChatInputView.KEY_BOARD_MODE_EXPRESSION
+            ) {
+                return@setHeightListener
+            }
             val showSoftKeyboard = it.toFloat() > 0F
             if (showSoftKeyboard) {
-//                viewBinding.chatRv.stopScroll()
-//                //                viewBinding.chatInputLl.translationY = dp2px(0F)
-                AnimatorUtils.build()
-                    .startTranslateY(viewBinding.chatInputLl, dp2px(0F))//带动画效果
-//                viewBinding.chatFile.chatFileLl.minimumHeight = it
-//                viewBinding.chatRv.translationY = -it.toFloat()
-                Log.e(
-                    "ChatActivity",
-                    "frameLayoutHeight: ${viewBinding.frameLayout.height}"
-                )
-                //带动画效果
-//                AnimatorUtils.build()
-//                    .startMinimumHeight(
-//                        viewBinding.chatFile.chatFileLl,
-//                        it
-//                    )
-                AnimatorUtils.build()
-                    .startMinimumHeights(
-                        viewBinding.chatRv, (viewBinding.frameLayout.height - it)
-                    )
-//                viewBinding.chatFile.chatFileLl.layoutParams.height = it
-//                viewBinding.chatFile.chatFileLl.requestLayout()
-//                viewBinding.chatRv.layoutParams.height = viewBinding.frameLayout.height - it
-//                viewBinding.chatRv.requestLayout()
-                viewBinding.chatRv.scrollToPosition(messageList.size - 1)
+                showCustomKeyBoard(it)
             } else {
-                viewBinding.chatFile.chatFileLl.layoutParams.height = it
-                viewBinding.chatRv.layoutParams.height = viewBinding.frameLayout.height
-                viewBinding.chatFile.chatFileLl.requestLayout()
-                viewBinding.chatRv.requestLayout()
+                resetCustomKeyBoard(it)
             }
         }
+    }
+
+    private fun showCustomKeyBoard(it: Int = 0) {
+        viewBinding.chatFile.removeRmoFl.isVisible = false
+        viewBinding.chatRv.stopScroll()
+        //不带动画效果
+        viewBinding.chatFile.chatFileLl.layoutParams.height = it
+        viewBinding.chatFile.chatFileLl.requestLayout()
+        viewBinding.chatRv.layoutParams.height = viewBinding.frameLayout.height - it
+        viewBinding.chatRv.requestLayout()
+        viewBinding.chatRv.scrollToPosition(messageList.size - 1)
+    }
+
+    private fun resetCustomKeyBoard(it: Int = 0) {
+        ChatInputView.showKeyBoardMode = ChatInputView.KEY_BOARD_MODE_TEXT
+        viewBinding.chatFile.chatFileLl.layoutParams.height = it
+        viewBinding.chatRv.layoutParams.height = viewBinding.frameLayout.height
+        viewBinding.chatFile.chatFileLl.requestLayout()
+        viewBinding.chatRv.requestLayout()
+        viewBinding.chatFile.removeRmoFl.isVisible = false
     }
 
     private fun initRecordVoice() {
@@ -436,16 +411,16 @@ open class ChatActivity :
                 }
             }
             else -> {
-/*                if (heightProvider!!.isSoftInputVisible) {
+                if (heightProvider!!.isSoftInputVisible) {
                     KeyboardUtils.hideSoftInput(this@ChatActivity)
                 } else {
-                    ChatInputView.showKeyBoardMode = ChatInputView.KEY_BOARD_MODE_TEXT
-                    viewBinding.chatInputLl.translationY = dp2px(300F)
-                    viewBinding.chatFile.chatFileLl.minimumHeight = dp2px(300F).toInt()
-                    viewBinding.chatRv.translationY = dp2px(0F)
-                }*/
+                    if (viewBinding.chatFile.chatFileLl.layoutParams.height == 0) return
+                    viewBinding.chatInputRv.resetEmoKeyBoard()
+                    resetCustomKeyBoard()
+                }
             }
         }
+        viewBinding.chatFile.removeRmoFl.isVisible = false
     }
 
     override suspend fun onEventCallback(event: LocalLifecycleEvent) {
@@ -512,25 +487,41 @@ open class ChatActivity :
         )
     }
 
-    override fun onPullUpList(isSoftInputVisible: Boolean) {
-        Log.e(
-            "onPullUpList",
-            "onPullUpList----->$isSoftInputVisible${viewBinding.chatRv.translationY}"
-        )
-//        if (!isSoftInputVisible) {
-//            if (viewBinding.chatRv.translationY == 0F) {
-//                viewBinding.chatRv.stopScroll()
-//                AnimatorUtils.build()
-//                    .startTranslateY(viewBinding.chatInputLl, dp2px(0F))//带动画效果
-//                viewBinding.chatFile.chatFileLl.minimumHeight = dp2px(300F).toInt()
-//                viewBinding.chatRv.translationY = -dp2px(300F)
-////                viewBinding.chatRv.scrollToPosition(0)
-//            } else {
-//                KeyboardUtils.showSoftInput(this)
-//            }
-//        } else {
-//            KeyboardUtils.hideSoftInput(this)
-//        }
+    override fun onPullUpList(isShowSoftVisible: Boolean, showKeyBoardMode: Int) {
+        when (showKeyBoardMode) {
+            ChatInputView.KEY_BOARD_MODE_TEXT -> {
+                viewBinding.chatRv.stopScroll()
+                KeyboardUtils.showSoftInput(this)
+                viewBinding.chatFile.removeRmoFl.isVisible = false
+            }
+            ChatInputView.KEY_BOARD_MODE_SOUND -> {
+                viewBinding.chatRv.stopScroll()
+                if (heightProvider!!.isSoftInputVisible) {
+                    KeyboardUtils.hideSoftInput(this)
+                } else {
+                    resetCustomKeyBoard()
+                }
+                viewBinding.chatFile.removeRmoFl.isVisible = false
+            }
+            ChatInputView.KEY_BOARD_MODE_FILE -> {
+                viewBinding.chatRv.stopScroll()
+                if (heightProvider!!.isSoftInputVisible) {
+                    KeyboardUtils.hideSoftInput(this)
+                }
+                showCustomKeyBoard(dp2px(300f).toInt())
+            }
+            ChatInputView.KEY_BOARD_MODE_EXPRESSION -> {
+                viewBinding.chatRv.stopScroll()
+                if (heightProvider!!.isSoftInputVisible) {
+                    KeyboardUtils.hideSoftInput(this)
+                }
+                showCustomKeyBoard(dp2px(330f).toInt())
+                viewBinding.chatFile.removeRmoFl.isVisible = true
+            }
+            else -> {
+                viewBinding.chatFile.removeRmoFl.isVisible = false
+            }
+        }
     }
 
     override fun onShowEmo(show: Boolean) {
@@ -548,7 +539,7 @@ open class ChatActivity :
         }
     }
 
-    override fun onKeyBoardInputChange(context: String) {
+    override fun onEtMsgContentChange(context: String) {
         if (context.isEmpty()) {
             viewBinding.chatFile.removeRmoIv.setColorFilter(
                 ContextCompat.getColor(
@@ -564,6 +555,13 @@ open class ChatActivity :
                 )
             )
         }
+    }
+
+    override fun onEtMsgInputHeightChange(height: Int) {
+        viewBinding.chatRv.layoutParams.height =
+            viewBinding.frameLayout.height - viewBinding.chatInputLl.height
+        viewBinding.chatRv.requestLayout()
+        viewBinding.chatRv.scrollToPosition(messageList.size - 1)
     }
 
     override fun onLauncherForActivityResult(path: String?, type: Int) {
