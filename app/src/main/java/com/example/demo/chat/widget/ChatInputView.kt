@@ -152,7 +152,7 @@ class ChatInputView @JvmOverloads constructor(
                 )
                     .callback(object : PermissionUtils.FullCallback {
                         override fun onGranted(permissionsGranted: List<String>) {
-                            showToast("同意授权")
+//                            showToast("同意授权")
                         }
 
                         override fun onDenied(

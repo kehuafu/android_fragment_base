@@ -12,11 +12,11 @@
     </string-array>
 
     <string-array name="chat_emoticon_type">
-        <item>[奸笑/]</item>
-        <item>[嘿哈/]</item>
-        <item>[捂脸/]</item>
-        <item>[机智/]</item>
-        <item>[耶/]</item>
+        <item>[奸笑]</item>
+        <item>[嘿哈]</item>
+        <item>[捂脸]</item>
+        <item>[机智]</item>
+        <item>[耶]</item>
         <item>[皱眉]</item>
         <item>[加油]</item>
         <item>[emm]</item>
@@ -47,5 +47,51 @@
         <item>[红包]</item>
         <item>[发]</item>
         <item>[福]</item>
+        <item>[裂开]</item>
+        <item>[苦涩]</item>
+        <item>[叹气]</item>
+        <item>[让我看看]</item>
+        <item>[666]</item>
+        <item>[翻白眼]</item>
+        <item>[微笑]</item>
+        <item>[撇嘴]</item>
+        <item>[色]</item>
+        <item>[发呆]</item>
+        <item>[得意]</item>
+        <item>[流泪]</item>
+        <item>[害羞]</item>
+        <item>[闭嘴]</item>
+        <item>[睡]</item>
+        <item>[大哭]</item>
+        <item>[尴尬]</item>
+        <item>[发怒]</item>
+        <item>[调皮]</item>
+        <item>[呲牙]</item>
+        <item>[惊讶]</item>
+        <item>[难过]</item>
+        <item>[酷]</item>
+        <item>[冷汗]</item>
+        <item>[抓狂]</item>
+        <item>[吐]</item>
+        <item>[偷笑]</item>
+        <item>[可爱]</item>
+        <item>[白眼]</item>
+        <item>[傲慢]</item>
+        <item>[饥饿]</item>
+        <item>[困]</item>
+        <item>[惊恐]</item>
+        <item>[流汗]</item>
+        <item>[憨笑]</item>
+        <item>[悠闲]</item>
+        <item>[奋斗]</item>
+        <item>[咒骂]</item>
+        <item>[疑问]</item>
+        <item>[嘘]</item>
+        <item>[晕]</item>
+        <item>[折磨]</item>
+        <item>[衰]</item>
+        <item>[骷髅]</item>
+        <item>[敲打]</item>
+        <item>[再见]</item>
     </string-array>
 </resources>

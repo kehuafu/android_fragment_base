@@ -3,12 +3,12 @@ package com.example.demo.chat
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ImageSpan
-import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -48,7 +48,6 @@ import com.kehuafu.base.core.container.widget.toast.showToast
 import com.kehuafu.base.core.ktx.dp2px
 import com.kehuafu.base.core.ktx.toJsonTxt
 import java.io.File
-import java.lang.reflect.Field
 
 
 open class ChatActivity :
@@ -150,25 +149,25 @@ open class ChatActivity :
             mChatEmoTypeAdapter.setOnItemClickListener(object :
                 BaseRecyclerViewAdapterV2.OnItemClickListener<MessageEmo> {
                 override fun onItemClick(itemView: View, item: MessageEmo, position: Int?) {
+                    val text = EmojiManager.disposeText(
+                        chatInputRv.etMsg().text.toString(),
+                        this@ChatActivity,
+                        chatInputRv.etMsg().lineHeight
+                    )
+                    chatInputRv.etMsg().setText(text)
+                    chatInputRv.etMsg().setSelection(chatInputRv.etMsg().text.length)
                     try {
-                        val index = if (position!! <= 9) {
-                            "0$position"
-                        } else {
-                            position
-                        }
-                        //获取表情图片文件名
-                        val field: Field = R.drawable::class.java.getDeclaredField("wx$index")
-                        val resourceId = field.getInt(null)
-                        // 在android中要显示图片信息，必须使用Bitmap位图的对象来装载
-                        val bitmap: Bitmap = BitmapFactory.decodeResource(resources, resourceId)
-                        //要让图片替代指定的文字用ImageSpan
+                        val resourceId = item.toEmoDrawId()
+                        val fuDrawable: Drawable =
+                            ContextCompat.getDrawable(this@ChatActivity, resourceId)!!
+                        fuDrawable.setBounds(
+                            0,
+                            0,
+                            chatInputRv.etMsg().lineHeight,
+                            chatInputRv.etMsg().lineHeight
+                        )
                         val imageSpan = ImageSpan(
-                            this@ChatActivity,
-                            ImageResizeUtil.imageScale(
-                                bitmap,
-                                dp2px(22f).toInt(),
-                                dp2px(22f).toInt()
-                            )!!
+                            fuDrawable
                         )
                         val spannableString = SpannableString(item.title)
                         spannableString.setSpan(
@@ -529,7 +528,7 @@ open class ChatActivity :
             viewBinding.chatFile.chatFileRv.layoutManager =
                 GridLayoutManager(this@ChatActivity, 8)
             viewBinding.chatFile.chatFileRv.adapter = mChatEmoTypeAdapter
-            viewBinding.chatFile.chatFileRv.layoutParams.height = dp2px(250f).toInt()
+            viewBinding.chatFile.chatFileRv.requestLayout()
             viewModel.initMessageEmoList()
         } else {
             viewBinding.chatFile.chatFileRv.layoutManager =
