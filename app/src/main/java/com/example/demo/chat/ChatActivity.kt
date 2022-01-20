@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ImageSpan
+import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -47,6 +48,8 @@ import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
 import com.kehuafu.base.core.container.widget.toast.showToast
 import com.kehuafu.base.core.ktx.dp2px
 import com.kehuafu.base.core.ktx.toJsonTxt
+import com.kelin.photoselector.PhotoSelector
+import com.kelin.photoselector.model.PhotoImpl
 import java.io.File
 
 
@@ -83,6 +86,7 @@ open class ChatActivity :
 
     companion object {
         const val EXTRAS_TARGET_ID = "com.example.demo.chat.EXTRAS_TARGET_ID"
+        private const val TAG = "ChatActivity"
 
         @JvmStatic
         fun showHasResult(targetId: String) {
@@ -183,45 +187,38 @@ open class ChatActivity :
                     }
                 }
             })
-
             mChatFileTypeAdapter.setOnItemClickListener(object :
                 BaseRecyclerViewAdapterV2.OnItemClickListener<MessageTheme> {
                 override fun onItemClick(itemView: View, item: MessageTheme, position: Int?) {
-                    when (itemView.id) {
-                        R.id.iv_type_image -> {
-                            PermissionUtils.permission(
-                                PermissionConstants.STORAGE,
-                                PermissionConstants.CAMERA,
-                                PermissionConstants.LOCATION
-                            )
-                                .callback(object : PermissionUtils.FullCallback {
-                                    override fun onGranted(permissionsGranted: List<String>) {
-                                        LogUtils.d(permissionsGranted)
-                                        when (item.title) {
-                                            "相册" -> {
-                                                mActivityResultLauncherUtils.launchAlbum()
-                                            }
-                                            "拍摄" -> {
-                                                mActivityResultLauncherUtils.launchCameraUri()
-                                            }
-                                            "文件" -> {
-                                                mActivityResultLauncherUtils.launchVideoPick()
-                                            }
-                                        }
-                                    }
-
-                                    override fun onDenied(
-                                        permissionsDeniedForever: List<String>,
-                                        permissionsDenied: List<String>
-                                    ) {
-                                        LogUtils.d(permissionsDeniedForever, permissionsDenied)
-                                    }
-                                })
-                                .theme { activity -> ScreenUtils.setFullScreen(activity) }
-                                .request()
-                        }
-                        else -> {
-
+                    item.openPictureSelector(this@ChatActivity) {
+                        it.forEach { photo ->
+                            val path = photo.uri
+                            if (photo.isVideo) {
+                                val bitmap =
+                                    PathUtil.voidToFirstBitmap(path)
+                                val firstUrl =
+                                    PathUtil.bitmapToStringPath(
+                                        this@ChatActivity,
+                                        bitmap!!
+                                    )
+                                val duration =
+                                    PathUtil.getLocalVideoDuration(
+                                        photo.uri
+                                    )
+                                viewModel.sendVideoMsg(
+                                    path = path,
+                                    snapshotPath = firstUrl!!,
+                                    duration = duration,
+                                    userId = userId!!,
+                                    messageList = messageList
+                                )
+                            } else {
+                                viewModel.sendImageMsg(
+                                    path = path,
+                                    userId = userId!!,
+                                    messageList = messageList
+                                )
+                            }
                         }
                     }
                 }
@@ -446,7 +443,7 @@ open class ChatActivity :
                     )
                     messageList.add(0, message)
                     runOnUiThread {
-                        mChatListAdapter.resetItems(messageList)
+                        mChatListAdapter.resetItems(messageList.asReversed())
                     }
                     AppManager.iCloudMessageManager.markC2CMessageAsRead(userId!!)
                 }

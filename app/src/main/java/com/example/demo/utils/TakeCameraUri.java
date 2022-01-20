@@ -37,7 +37,7 @@ public class TakeCameraUri extends ActivityResultContract<Object, Uri> {
                     .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
         } else {
             //应用认证表示
-            String authorities = "这里为您自己定义的fileProvider";
+            String authorities = "fileProvider";
             uri = FileProvider.getUriForFile(context, authorities,
                     new File(context.getExternalCacheDir().getAbsolutePath(), fileName));
         }

@@ -35,9 +35,6 @@ class ChatFileTypeAdapter : BaseListAdapter<MessageTheme, LayItemChatFileItemBin
         viewBinding: LayItemChatFileItemBinding,
         position: Int
     ) {
-        viewBinding.ivTypeImage.setOnClickListener {
-            mOnItemClickListener?.onItemClick(it, item, position)
-        }
         viewBinding.tvTypeName.text = item.title
         viewBinding.ivTypeImage.loadImage(item.toThemeDrawId())
     }

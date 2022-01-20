@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/rlKelinPhotoSelectorToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#CC000000">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="?android:attr/actionBarSize"
+            android:paddingTop="3dp"
+            tools:ignore="UselessParent">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/ivKelinPhotoSelectorFinish"
+                android:layout_width="?android:attr/actionBarSize"
+                android:layout_height="?android:attr/actionBarSize"
+                android:padding="14dp"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/ic_kelin_photo_selector_navigation_close" />
+
+            <TextView
+                android:id="@+id/tvKelinPhotoSelectorReselect"
+                android:layout_width="wrap_content"
+                android:layout_height="?android:attr/actionBarSize"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:gravity="center"
+                android:paddingStart="8dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="8dp"
+                android:text="@string/kelin_photo_selector_reselect"
+                android:textColor="@android:color/white"
+                tools:ignore="RelativeOverlap" />
+
+            <TextView
+                android:id="@+id/tvKelinPhotoSelectorPageTitle"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="50dp"
+                android:layout_marginRight="50dp"
+                android:ellipsize="marquee"
+                android:gravity="center"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:singleLine="true"
+                android:textColor="#fff"
+                android:textSize="17sp"
+                tools:text="相册选择" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvKelinPhotoSelectorPhotoListView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/black"
+            android:orientation="vertical" />
+
+        <TextView
+            android:id="@+id/tvKelinPhotoSelectorModifiedDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#8000"
+            android:paddingStart="12dp"
+            android:paddingTop="1dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="1dp"
+            android:textColor="@android:color/white"
+            android:visibility="gone"
+            tools:ignore="SmallSp"
+            tools:text="2020-04-29"
+            tools:visibility="visible" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="#CC000000">
+
+        <RelativeLayout
+            android:id="@+id/rlKelinPhotoSelectorAlbumName"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp">
+
+            <TextView
+                android:id="@+id/tvKelinPhotoSelectorAlbumName"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="12dp"
+                android:layout_marginLeft="12dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
+                android:gravity="center"
+                android:maxLines="1"
+                android:textColor="@android:color/white"
+                tools:text="全部" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+                android:src="@drawable/ic_kelin_photo_selector_album_indicator" />
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/tvKelinPhotoSelectorPreview"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/kelin_photo_selector_preview"
+            android:textColor="@android:color/white" />
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <Button
+                android:id="@+id/btnKelinPhotoSelectorDone"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginEnd="12dp"
+                android:layout_marginRight="12dp"
+                android:background="@drawable/selector_kelin_photo_selector_done_button_bg"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:textAllCaps="false"
+                android:textColor="@color/selector_kelin_photo_done_button_text"
+                tools:text="完成(1/9)" />
+        </RelativeLayout>
+    </LinearLayout>
+</LinearLayout>

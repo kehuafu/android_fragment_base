@@ -1,5 +1,6 @@
 package com.example.demo.utils
 
+import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 

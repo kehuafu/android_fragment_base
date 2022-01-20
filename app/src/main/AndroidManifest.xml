@@ -5,15 +5,21 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.INTERNET" /> <!-- 相机权限 -->
-    <uses-permission android:name="android.permission.CAMERA" /> <!-- SD卡权限 -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!--网络权限，如果你需要预览网络图片或视频则必须添加改权限-->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!--相机权限，拍照、录像时的必要权限-->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!--录制视频权限，录像时的必要权限-->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!--读取外部存储权限，PhotoSelector库中所有功能都会使用到的权限-->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!--写入外部存储权限，PhotoSelector库中所有功能都会使用到的权限-->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> <!-- Always include this permission -->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> <!-- Include only if your app benefits from precise location access. -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
         android:name=".app.App"
@@ -21,10 +27,11 @@
         android:icon="@mipmap/logo"
         android:label="@string/app_name"
         android:networkSecurityConfig="@xml/network_security_config"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.Mvr"
-        tools:targetApi="n">
+        tools:targetApi="q">
         <activity
             android:name=".main.MainActivity"
             android:exported="true"
@@ -41,9 +48,10 @@
             android:windowSoftInputMode="stateVisible|adjustNothing" />
 
         <activity
-            android:name=".preview.VideoPlayActivity"
-            android:exported="true"
-            android:windowSoftInputMode="stateVisible|adjustNothing" />
+            android:name="com.kelin.photoselector.PhotoSelectorActivity"
+            android:configChanges="screenSize|orientation"
+            android:theme="@style/PhotoSelectorTheme" />
+
         <activity
             android:name=".preview.PreviewActivity"
             android:exported="true"
@@ -51,12 +59,12 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
+            android:authorities="${applicationId}.fileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
+                android:resource="@xml/provider_paths" />
         </provider>
     </application>
 

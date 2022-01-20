@@ -15,7 +15,15 @@
         <!-- Customize your theme here. -->
         <!-- 隐藏标题栏 -->
         <item name="android:windowNoTitle">true</item>
-<!--        <item name="android:navigationBarColor">@color/tab_nav_background</item>-->
-<!--        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>-->
+        <!--        <item name="android:navigationBarColor">@color/tab_nav_background</item>-->
+        <!--        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>-->
+    </style>
+
+    <style name="PhotoSelectorTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/purple_200</item>
+        <item name="colorPrimaryDark">@color/purple_500</item>
+        <item name="colorAccent">@color/tab_selected</item>
+        <item name="android:navigationBarColor">@color/photo_nav_background</item>
     </style>
 </resources>

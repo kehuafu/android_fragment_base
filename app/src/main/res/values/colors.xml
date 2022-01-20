@@ -24,4 +24,5 @@
     <color name="color_transparent">#00000000</color>
     <color name="network_error_color">#FDEDEE</color>
     <color name="chat_emo_background">#EEEEEE</color>
+    <color name="photo_nav_background">#CC000000</color>
 </resources>
