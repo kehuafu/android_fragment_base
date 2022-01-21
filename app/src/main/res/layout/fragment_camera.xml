@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.example.demo.chat.widget.camera.AutoFitTextureView
+        android:id="@+id/mAutoFitTextureView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <FrameLayout
+        android:id="@+id/close_camera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="80dp"
+        android:background="?android:attr/selectableItemBackground"
+        app:layout_constraintBottom_toBottomOf="@+id/frame_layout_video"
+        app:layout_constraintRight_toLeftOf="@+id/frame_layout_video"
+        app:layout_constraintTop_toTopOf="@+id/frame_layout_video">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="@drawable/shape_radius_30"
+            android:padding="2dp"
+            android:src="@drawable/cramera_close_icon" />
+    </FrameLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="30dp"
+        android:text="轻触拍照，长按摄像"
+        android:textColor="@color/white"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toTopOf="@+id/frame_layout_video"
+        app:layout_constraintLeft_toLeftOf="@+id/frame_layout_video"
+        app:layout_constraintRight_toRightOf="@+id/frame_layout_video" />
+
+    <FrameLayout
+        android:id="@+id/frame_layout_video"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginBottom="40dp"
+        android:background="@drawable/shape_radius_80"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+        <FrameLayout
+            android:id="@+id/frame_layout_photo"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_gravity="center"
+            android:background="@drawable/shape_radius_60" />
+
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -9,7 +9,7 @@ android {
     defaultConfig {
         applicationId "com.example.mvr"
         minSdk 21
-        targetSdk 29
+        targetSdk 30
         versionCode 1
         versionName "1.0"
 
@@ -54,7 +54,7 @@ android {
         }
     }
     compileSdkVersion 30
-    buildToolsVersion '29.0.2'
+    buildToolsVersion '30.0.2'
 
 }
 

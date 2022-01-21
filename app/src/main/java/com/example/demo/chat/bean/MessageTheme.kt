@@ -8,7 +8,10 @@ import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.lifecycle.ViewModel
 import com.example.demo.R
+import com.example.demo.app.Router
+import com.example.demo.chat.ChatActivity
 import com.example.demo.chat.mvvm.MessageViewModel
+import com.example.demo.chat.widget.camera.CameraActivity
 import com.example.demo.utils.PathUtil
 import com.kehuafu.base.core.container.widget.toast.showToast
 import com.kehuafu.base.core.redux.IState
@@ -60,21 +63,22 @@ class MessageTheme(
             "相册" -> {
                 PhotoSelector.openPictureSelector(context) { photos ->
                     if (photos.isNullOrEmpty()) {
-                        showToast("选择已被取消")
+//                        showToast("选择已被取消")
                     } else {
                         result.invoke(photos)
                     }
                 }
             }
             "拍摄" -> {
-                PhotoSelector.takePhoto(context as Activity) {
-                    Log.e("PhotoSelector", "openPictureSelector: $it")
-                    if (it != null) {
-                        result.invoke(listOf(PhotoImpl(it.absolutePath)))
-                    } else {
-                        showToast("已取消拍照")
-                    }
-                }
+//                PhotoSelector.takePhoto(context as Activity) {
+//                    Log.e("PhotoSelector", "openPictureSelector: $it")
+//                    if (it != null) {
+//                        result.invoke(listOf(PhotoImpl(it.absolutePath)))
+//                    } else {
+//                        showToast("已取消拍照")
+//                    }
+//                }
+                CameraActivity.show()
             }
             "文件" -> {
 //                mActivityResultLauncherUtils.launchVideoPick()
