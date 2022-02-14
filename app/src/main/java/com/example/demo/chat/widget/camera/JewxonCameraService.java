@@ -15,6 +15,7 @@ import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.media.MediaRecorder;
@@ -24,6 +25,7 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.util.Size;
 import android.view.Surface;
+import android.view.SurfaceHolder;
 import android.view.TextureView;
 
 import androidx.annotation.NonNull;
@@ -56,8 +58,19 @@ public class JewxonCameraService extends Service {
         }
     }
 
+    interface PictureCallBack {
+        void getLocalPicturePath(String path);
+
+        void getLocalVideoPath(String path);
+    }
+
     private LocalServiceBinder mLocalServiceBinder = new LocalServiceBinder();
 
+    private PictureCallBack mPictureCallBack;
+
+    public void setmPictureCallBack(PictureCallBack mPictureCallBack) {
+        this.mPictureCallBack = mPictureCallBack;
+    }
 
     @Nullable
     @Override
@@ -90,15 +103,15 @@ public class JewxonCameraService extends Service {
     private HandlerThread mBackgroundThread;
     private Handler mBackgroundHandler;
     private Semaphore mCameraOpenCloseLock = new Semaphore(1);
+    private TextureView mTextureView;
 
 
     private File mMFile;
 
     private void initCamera() {
-        mMFile = new File(PathUtils.getExternalAppDcimPath(), +System.currentTimeMillis() + ".jpg");
         startBackgroundThread();
         setupImageReader2();
-        openCamera();
+        openCamera(null);
     }
 
     private CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
@@ -106,8 +119,13 @@ public class JewxonCameraService extends Service {
         @Override
         public void onOpened(@NonNull CameraDevice cameraDevice) {
             mCameraDevice = cameraDevice;
-            startPreview(null);
             mCameraOpenCloseLock.release();
+            HzxLoger.HzxLog("onOpened----摄像头被打开");
+            if (mTextureView != null) {
+                if (mTextureView.isAvailable()) {
+                    startPreview(mTextureView);
+                }
+            }
         }
 
         @Override
@@ -115,6 +133,7 @@ public class JewxonCameraService extends Service {
             mCameraOpenCloseLock.release();
             cameraDevice.close();
             mCameraDevice = null;
+            HzxLoger.HzxLog("onDisconnected----摄像头已断开");
         }
 
         @Override
@@ -132,13 +151,18 @@ public class JewxonCameraService extends Service {
 
 
     @SuppressWarnings("MissingPermission")
-    private void openCamera() {
-        CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+    private void openCamera(String cameraId) {
         try {
+            CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
             if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                 throw new RuntimeException("Time out waiting to lock camera opening.");
             }
-            mCameraId = manager.getCameraIdList()[0];
+            if (cameraId == null) {
+                mCameraId = manager.getCameraIdList()[0];
+            } else {
+                mCameraId = cameraId;
+            }
+            HzxLoger.HzxLog("openCamera--->" + mCameraId);
             setUpCameraOutputs();
 
             mMediaRecorder = new MediaRecorder();
@@ -148,10 +172,35 @@ public class JewxonCameraService extends Service {
         }
     }
 
+    /**
+     * 切换摄像头
+     */
+    public void switchCamera(TextureView textureView, Boolean isBack) {
+        try {
+            CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+            if (textureView.isAvailable()) {
+                mTextureView = textureView;
+            }
+            if (isBack) {
+                //后置转前置
+                closeCamera();
+                HzxLoger.HzxLog("switchCamera---->切换前置摄像头");
+                openCamera(manager.getCameraIdList()[1]);
+            } else {
+                //前置转后置
+                closeCamera();
+                HzxLoger.HzxLog("switchCamera---->切换后置摄像头");
+                openCamera(manager.getCameraIdList()[0]);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @SuppressWarnings("SuspiciousNameCombination")
     private void setUpCameraOutputs() {
-        CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
+            CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
             CameraCharacteristics characteristics = manager.getCameraCharacteristics(mCameraId);
             Size largest = new Size(1920, 1080);
             mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
@@ -160,7 +209,7 @@ public class JewxonCameraService extends Service {
                     mOnImageAvailableListener, mBackgroundHandler);
 
             Boolean available = characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
-            mFlashSupported = available == null ? false : available;
+            mFlashSupported = available != null && available;
         } catch (CameraAccessException e) {
             e.printStackTrace();
         } catch (NullPointerException e) {
@@ -204,6 +253,7 @@ public class JewxonCameraService extends Service {
 
     private List<Surface> mSurfaces = new ArrayList<>();
 
+
     public void startPreview(TextureView mTextureView) {
         try {
             closePreviewSession();
@@ -230,9 +280,9 @@ public class JewxonCameraService extends Service {
 
                         @Override
                         public void onConfigured(@NonNull CameraCaptureSession session) {
-                            HzxLoger.HzxLog("onConfigured----摄像头被打开");
                             mPreviewSession = session;
                             updatePreview();
+                            HzxLoger.HzxLog("onConfigured----预览画面");
                         }
 
                         @Override
@@ -250,7 +300,6 @@ public class JewxonCameraService extends Service {
             return;
         }
         try {
-
             mPreviewBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
             setAutoFlash(mPreviewBuilder);
             mPreviewBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
@@ -269,6 +318,7 @@ public class JewxonCameraService extends Service {
         if (mNextVideoAbsolutePath == null || mNextVideoAbsolutePath.isEmpty()) {
             mNextVideoAbsolutePath = getVideoFilePath(this);
         }
+        HzxLoger.HzxLog("mNextVideoAbsolutePath--->" + mNextVideoAbsolutePath);
         mMediaRecorder.setOutputFile(mNextVideoAbsolutePath);
         mMediaRecorder.setVideoEncodingBitRate(10000000);
         mMediaRecorder.setVideoFrameRate(30);
@@ -283,6 +333,17 @@ public class JewxonCameraService extends Service {
         final File dir = context.getExternalFilesDir(null);
         return (dir == null ? "" : (dir.getAbsolutePath() + "/"))
                 + System.currentTimeMillis() + ".mp4";
+    }
+
+    public void stopRecordingVideo(TextureView mTextureView) {
+        mMediaRecorder.stop();
+        mMediaRecorder.reset();
+
+        HzxLoger.HzxLog("Video 保存路径-->" + mNextVideoAbsolutePath);
+        mPictureCallBack.getLocalVideoPath(mNextVideoAbsolutePath);
+        mNextVideoAbsolutePath = null;
+
+        startPreview(mTextureView);
     }
 
     public void startRecordingVideo(TextureView mTextureView) {
@@ -330,6 +391,7 @@ public class JewxonCameraService extends Service {
     }
 
     public void takePicture() {
+        mMFile = new File(PathUtils.getExternalAppDcimPath(), +System.currentTimeMillis() + ".jpg");
         lockFocus();
     }
 
@@ -398,6 +460,7 @@ public class JewxonCameraService extends Service {
                                                @NonNull TotalCaptureResult result) {
 
                     HzxLoger.HzxLog("保存路径--->" + mMFile.toString());
+                    mPictureCallBack.getLocalPicturePath(mMFile.toString());
                     unlockFocus();
                 }
 
@@ -508,16 +571,6 @@ public class JewxonCameraService extends Service {
         }
     }
 
-    public void stopRecordingVideo(TextureView mTextureView) {
-        mMediaRecorder.stop();
-        mMediaRecorder.reset();
-
-        HzxLoger.HzxLog("Video saved: " + mNextVideoAbsolutePath);
-        mNextVideoAbsolutePath = null;
-
-        startPreview(mTextureView);
-    }
-
     @Override
     public void onDestroy() {
         HzxLoger.HzxLog("onDestroy");
@@ -543,5 +596,4 @@ public class JewxonCameraService extends Service {
             e.printStackTrace();
         }
     }
-
 }

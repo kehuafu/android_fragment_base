@@ -12,6 +12,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!--相机权限，拍照、录像时的必要权限-->
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
     <!--录制视频权限，录像时的必要权限-->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!--读取外部存储权限，PhotoSelector库中所有功能都会使用到的权限-->
