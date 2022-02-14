@@ -22,13 +22,16 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
     ServiceConnection, JewxonCameraService.PictureCallBack {
 
     private var mIsRecordingVideo = false
-    private var mBackCamera = true //默认后置摄像头
+    private var mIsBackCamera = true //默认后置摄像头
     private var mService: JewxonCameraService? = null
     private var mJewxonService: Intent? = null
 
     override fun onResume() {
         super.onResume()
         HzxLoger.HzxLog("onResume--->" + viewBinding.mAutoFitTextureView.isAvailable)
+        if (viewBinding.mAutoFitTextureView.isAvailable) {
+            mService!!.onResume(viewBinding.mAutoFitTextureView)
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -44,8 +47,8 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
             }
 
             switchIv.setOnClickListener {
-                mService!!.switchCamera(mAutoFitTextureView, mBackCamera)
-                mBackCamera = !mBackCamera
+                mService!!.switchCamera(mAutoFitTextureView, mIsBackCamera)
+                mIsBackCamera = !mIsBackCamera
             }
             frameLayoutPhoto.setOnClickListener {
                 mService!!.takePicture()

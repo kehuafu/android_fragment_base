@@ -3,6 +3,7 @@ package com.example.demo.chat.widget.camera;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
@@ -37,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -97,8 +99,8 @@ public class JewxonCameraService extends Service {
 
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mPreviewSession;
-    private Size mVideoSize = new Size(1080, 720);
-    private Size mPreviewSize = new Size(1080, 720);
+    private Size mVideoSize = new Size(1280, 720);
+    private Size mPreviewSize = new Size(1280, 720);
     private MediaRecorder mMediaRecorder;
     private HandlerThread mBackgroundThread;
     private Handler mBackgroundHandler;
@@ -146,9 +148,14 @@ public class JewxonCameraService extends Service {
     };
     private String mNextVideoAbsolutePath;
     private CaptureRequest.Builder mPreviewBuilder;
+    private CaptureRequest.Builder captureBuilder;
     private ImageReader mMMImageReader2;
     private Surface mMImageReader2_surface;
 
+    public void onResume(TextureView textureView) {
+        mTextureView = textureView;
+        openCamera(mCameraId);
+    }
 
     @SuppressWarnings("MissingPermission")
     private void openCamera(String cameraId) {
@@ -203,6 +210,7 @@ public class JewxonCameraService extends Service {
             CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
             CameraCharacteristics characteristics = manager.getCameraCharacteristics(mCameraId);
             Size largest = new Size(1920, 1080);
+
             mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
                     ImageFormat.JPEG, /*maxImages*/2);
             mImageReader.setOnImageAvailableListener(
@@ -303,6 +311,7 @@ public class JewxonCameraService extends Service {
             mPreviewBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
             setAutoFlash(mPreviewBuilder);
             mPreviewBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+
             mCaptureRequest = mPreviewBuilder.build();
             mPreviewSession.setRepeatingRequest(mCaptureRequest, null, mBackgroundHandler);
         } catch (CameraAccessException e) {
@@ -368,7 +377,6 @@ public class JewxonCameraService extends Service {
             mSurfaces.add(mMImageReader2_surface);
             mPreviewBuilder.addTarget(mMImageReader2_surface);
 
-
             mCameraDevice.createCaptureSession(mSurfaces, new CameraCaptureSession.StateCallback() {
 
                 @Override
@@ -401,6 +409,8 @@ public class JewxonCameraService extends Service {
     private static final int STATE_WAITING_NON_PRECAPTURE = 3;
     private static final int STATE_PICTURE_TAKEN = 4;
     private int mState = STATE_PREVIEW;
+    private int mCameraSensorOrientation = 0;       //摄像头方向
+    private CameraCharacteristics mCameraCharacteristics;
 
     private void lockFocus() {
         try {
@@ -442,16 +452,33 @@ public class JewxonCameraService extends Service {
 
     private void captureStillPicture() {
         try {
-            final CaptureRequest.Builder captureBuilder =
+            captureBuilder =
                     mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
 
             HzxLoger.HzxLog("开始拍照");
             captureBuilder.addTarget(mImageReader.getSurface());
 
+            CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+            for (String id : manager.getCameraIdList()) {
+                CameraCharacteristics cameraCharacteristics = manager.getCameraCharacteristics(id);
+                int facing = cameraCharacteristics.get(CameraCharacteristics.LENS_FACING);
+                if (facing == CameraCharacteristics.LENS_FACING_BACK) {
+                    mCameraId = id;
+                    mCameraCharacteristics = cameraCharacteristics;
+                }
+            }
+            int supportLevel = mCameraCharacteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
+            if (supportLevel == CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY) {
+                HzxLoger.HzxLog("相机硬件不支持新特性");
+            }
+            //获取摄像头方向
+            mCameraSensorOrientation = mCameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
             captureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                     CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-            setAutoFlash(captureBuilder);
+            //根据摄像头方向对保存的照片进行旋转，使其为"自然方向"
+            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, mCameraSensorOrientation);
 
+            setAutoFlash(captureBuilder);
             CameraCaptureSession.CaptureCallback CaptureCallback = new CameraCaptureSession.CaptureCallback() {
 
                 @Override
@@ -498,7 +525,7 @@ public class JewxonCameraService extends Service {
     private void setAutoFlash(CaptureRequest.Builder requestBuilder) {
         if (mFlashSupported) {
             requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
-                    CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                    CaptureRequest.CONTROL_AE_MODE_ON);//闪光灯(模式)
         }
     }
 
