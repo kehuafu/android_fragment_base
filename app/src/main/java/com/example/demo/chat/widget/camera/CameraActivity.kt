@@ -33,6 +33,15 @@ open class CameraActivity :
     }
 
     override fun onBackPressed() {
+        val fragments = supportFragmentManager.fragments
+        for (fragment in fragments) {
+            if (fragment is CameraFragment) {
+                val bool = fragment.onBackPressed()
+                if (bool) {
+                    return
+                }
+            }
+        }
         finish()
         overridePendingTransition(R.anim.activity_in_bottom, R.anim.activity_out_top)
     }

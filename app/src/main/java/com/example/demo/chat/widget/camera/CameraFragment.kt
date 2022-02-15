@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.os.IBinder
 import android.view.MotionEvent
 import android.view.View
+import com.blankj.utilcode.util.FileUtils
 import com.example.demo.databinding.FragmentCameraBinding
 import com.example.demo.main.mvvm.MainState
 import com.example.demo.main.mvvm.MainViewModel
@@ -17,6 +18,7 @@ import com.kehuafu.base.core.container.widget.toast.showToast
 import com.kehuafu.base.core.ktx.loadImage
 import com.kehuafu.base.core.ktx.runOnMainThread
 import xyz.doikki.videoplayer.ijk.IjkPlayerFactory
+import java.io.FileNotFoundException
 
 class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainState>(),
     ServiceConnection, JewxonCameraService.PictureCallBack {
@@ -25,6 +27,7 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
     private var mIsBackCamera = true //默认后置摄像头
     private var mService: JewxonCameraService? = null
     private var mJewxonService: Intent? = null
+    private var mFilePath: String = ""
 
     override fun onResume() {
         super.onResume()
@@ -73,20 +76,38 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
                             mIsRecordingVideo = false
                         }
                     }
+                    MotionEvent.ACTION_CANCEL -> {
+                        if (mIsRecordingVideo) {
+                            mService!!.stopRecordingVideo(mAutoFitTextureView)
+                            mIsRecordingVideo = false
+                        }
+                    }
                 }
                 false
             }
             backPreviewVideo.setOnClickListener {
                 videoViewController.visibility = View.VISIBLE
                 videoViewPreview.visibility = View.GONE
+                videoView.release()
                 videoView.visibility = View.GONE
                 if (viewBinding.mAutoFitTextureView.isAvailable) {
                     mAutoFitTextureView.visibility = View.VISIBLE
                 }
+                deleteTempFile()
             }
             tvSendPicture.setOnClickListener {
 
             }
+        }
+    }
+
+    private fun deleteTempFile() {
+        try {
+            val bool = FileUtils.delete(mFilePath)
+            mFilePath = ""
+            HzxLoger.HzxLog("删除临时路径结果--->$bool")
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
         }
     }
 
@@ -113,10 +134,14 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
         super.onDestroy()
         requireActivity().unbindService(this)
         requireActivity().stopService(mJewxonService)
+        if (viewBinding.videoView.isActivated) {
+            viewBinding.videoView.release()
+        }
     }
 
     override fun getLocalPicturePath(path: String?) {
         if (!path.isNullOrEmpty()) {
+            mFilePath = path
             runOnMainThread({
                 withViewBinding {
                     videoViewController.visibility = View.INVISIBLE
@@ -133,6 +158,7 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
 
     override fun getLocalVideoPath(path: String?) {
         if (!path.isNullOrEmpty()) {
+            mFilePath = path
             runOnMainThread({
                 withViewBinding {
                     videoViewController.visibility = View.GONE
@@ -149,5 +175,22 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
                 }
             })
         }
+    }
+
+    fun onBackPressed(): Boolean {
+        if (mFilePath.isNotEmpty()) {
+            withViewBinding {
+                videoViewController.visibility = View.VISIBLE
+                videoViewPreview.visibility = View.GONE
+                videoView.release()
+                videoView.visibility = View.GONE
+                if (viewBinding.mAutoFitTextureView.isAvailable) {
+                    mAutoFitTextureView.visibility = View.VISIBLE
+                }
+            }
+            deleteTempFile()
+            return true
+        }
+        return false
     }
 }
