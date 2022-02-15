@@ -58,7 +58,7 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
                 showToast("开始摄像")
                 mIsRecordingVideo = true
                 mService!!.startRecordingVideo(mAutoFitTextureView)
-                false
+                true
             }
 
             frameLayoutPhoto.setOnTouchListener { v, event ->
@@ -68,12 +68,6 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
                     }
                     MotionEvent.ACTION_UP -> {
                         HzxLoger.HzxLog("ACTION_UP")
-                        if (mIsRecordingVideo) {
-                            mService!!.stopRecordingVideo(mAutoFitTextureView)
-                            mIsRecordingVideo = false
-                        }
-                    }
-                    MotionEvent.ACTION_CANCEL -> {
                         if (mIsRecordingVideo) {
                             mService!!.stopRecordingVideo(mAutoFitTextureView)
                             mIsRecordingVideo = false

@@ -16,7 +16,6 @@ import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
-import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.media.MediaRecorder;
@@ -26,7 +25,6 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.util.Size;
 import android.view.Surface;
-import android.view.SurfaceHolder;
 import android.view.TextureView;
 
 import androidx.annotation.NonNull;
@@ -99,8 +97,8 @@ public class JewxonCameraService extends Service {
 
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mPreviewSession;
-    private Size mVideoSize = new Size(1280, 720);
-    private Size mPreviewSize = new Size(1280, 720);
+    private Size mVideoSize = new Size(1920, 1080);
+    private Size mPreviewSize = new Size(1920, 1080);
     private MediaRecorder mMediaRecorder;
     private HandlerThread mBackgroundThread;
     private Handler mBackgroundHandler;
@@ -210,9 +208,10 @@ public class JewxonCameraService extends Service {
             CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
             CameraCharacteristics characteristics = manager.getCameraCharacteristics(mCameraId);
             Size largest = new Size(1920, 1080);
+//            Size largest = new Size(8000, 6000);
 
             mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
-                    ImageFormat.JPEG, /*maxImages*/2);
+                    ImageFormat.JPEG, /*maxImages*/1);
             mImageReader.setOnImageAvailableListener(
                     mOnImageAvailableListener, mBackgroundHandler);
 
@@ -303,6 +302,7 @@ public class JewxonCameraService extends Service {
         }
     }
 
+
     private void updatePreview() {
         if (null == mCameraDevice) {
             return;
@@ -321,26 +321,35 @@ public class JewxonCameraService extends Service {
 
 
     private void setUpMediaRecorder() throws IOException {
-        mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
-        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        if (mNextVideoAbsolutePath == null || mNextVideoAbsolutePath.isEmpty()) {
-            mNextVideoAbsolutePath = getVideoFilePath(this);
-        }
-        HzxLoger.HzxLog("mNextVideoAbsolutePath--->" + mNextVideoAbsolutePath);
-        mMediaRecorder.setOutputFile(mNextVideoAbsolutePath);
-        mMediaRecorder.setVideoEncodingBitRate(10000000);
-        mMediaRecorder.setVideoFrameRate(30);
-        mMediaRecorder.setVideoSize(mVideoSize.getWidth(), mVideoSize.getHeight());
-        mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-        mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        try {
+            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+            mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+            mCameraCharacteristics = manager.getCameraCharacteristics(mCameraId);
+            //获取摄像头方向
+            mCameraSensorOrientation = mCameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+            mMediaRecorder.setOrientationHint(mCameraSensorOrientation);
+            if (mNextVideoAbsolutePath == null || mNextVideoAbsolutePath.isEmpty()) {
+                mNextVideoAbsolutePath = getVideoFilePath(this);
+            }
+            HzxLoger.HzxLog("mNextVideoAbsolutePath--->" + mNextVideoAbsolutePath);
+            mMediaRecorder.setOutputFile(mNextVideoAbsolutePath);
+            mMediaRecorder.setVideoEncodingBitRate(5 * 1024 * 1024);
+            mMediaRecorder.setVideoFrameRate(30);
+            mMediaRecorder.setVideoSize(mVideoSize.getWidth(), mVideoSize.getHeight());
+            mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+            mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 
-        mMediaRecorder.prepare();
+            mMediaRecorder.prepare();
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     private String getVideoFilePath(Context context) {
         final File dir = context.getExternalFilesDir(null);
-        return (dir == null ? "" : (dir.getAbsolutePath() + "/"))
+        return (dir == null ? "" : (PathUtils.getExternalDcimPath() + "/"))
                 + System.currentTimeMillis() + ".mp4";
     }
 
@@ -399,7 +408,7 @@ public class JewxonCameraService extends Service {
     }
 
     public void takePicture() {
-        mMFile = new File(PathUtils.getExternalAppDcimPath(), +System.currentTimeMillis() + ".jpg");
+        mMFile = new File(PathUtils.getExternalDcimPath(), +System.currentTimeMillis() + ".jpg");
         lockFocus();
     }
 
@@ -444,8 +453,10 @@ public class JewxonCameraService extends Service {
 
         @Override
         public void onImageAvailable(ImageReader reader) {
-//            HzxLoger.HzxLog("onImageAvailable--->" + reader.acquireNextImage());
-            mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), mMFile));
+            Image image = reader.acquireNextImage();
+            HzxLoger.HzxLog("onImageAvailable--->" + image);
+            mBackgroundHandler.post(new ImageSaver(image, mMFile, mPictureCallBack,
+                    String.valueOf(CameraCharacteristics.LENS_FACING_BACK).equals(mCameraId)));
         }
     };
 
@@ -459,18 +470,8 @@ public class JewxonCameraService extends Service {
             captureBuilder.addTarget(mImageReader.getSurface());
 
             CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-            for (String id : manager.getCameraIdList()) {
-                CameraCharacteristics cameraCharacteristics = manager.getCameraCharacteristics(id);
-                int facing = cameraCharacteristics.get(CameraCharacteristics.LENS_FACING);
-                if (facing == CameraCharacteristics.LENS_FACING_BACK) {
-                    mCameraId = id;
-                    mCameraCharacteristics = cameraCharacteristics;
-                }
-            }
-            int supportLevel = mCameraCharacteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
-            if (supportLevel == CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY) {
-                HzxLoger.HzxLog("相机硬件不支持新特性");
-            }
+            mCameraCharacteristics = manager.getCameraCharacteristics(mCameraId);
+
             //获取摄像头方向
             mCameraSensorOrientation = mCameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
             captureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
@@ -479,7 +480,7 @@ public class JewxonCameraService extends Service {
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, mCameraSensorOrientation);
 
             setAutoFlash(captureBuilder);
-            CameraCaptureSession.CaptureCallback CaptureCallback = new CameraCaptureSession.CaptureCallback() {
+            CameraCaptureSession.CaptureCallback captureCallback = new CameraCaptureSession.CaptureCallback() {
 
                 @Override
                 public void onCaptureCompleted(@NonNull CameraCaptureSession session,
@@ -504,7 +505,7 @@ public class JewxonCameraService extends Service {
 
             mPreviewSession.stopRepeating();
             mPreviewSession.abortCaptures();
-            mPreviewSession.capture(captureBuilder.build(), CaptureCallback, null);
+            mPreviewSession.capture(captureBuilder.build(), captureCallback, null);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
