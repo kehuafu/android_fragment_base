@@ -1,6 +1,9 @@
 package com.example.demo.chat
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
@@ -15,6 +18,8 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.blankj.utilcode.constant.PermissionConstants
@@ -42,6 +47,8 @@ import com.example.demo.chat.bean.Message
 import com.example.demo.chat.bean.MessageEmo
 import com.example.demo.chat.mvvm.MessageViewModel
 import com.example.demo.chat.widget.ChatInputView
+import com.example.demo.chat.widget.camera.CameraActivity
+import com.example.demo.chat.widget.camera.HzxLoger
 import com.example.demo.utils.*
 import com.example.demo.preview.PreviewActivity
 import com.kehuafu.base.core.container.base.adapter.BaseRecyclerViewAdapterV4
@@ -118,6 +125,41 @@ open class ChatActivity :
         finish()
     }
 
+    //创建ActivityResultLauncher
+    val resultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                val result = it.data?.getStringExtra("filePath") ?: "empty"
+                HzxLoger.HzxLog("registerForActivityResult--->$result")
+                if (result.endsWith(".mp4")) {
+                    val bitmap =
+                        PathUtil.voidToFirstBitmap(result)
+                    val firstUrl =
+                        PathUtil.bitmapToStringPath(
+                            this@ChatActivity,
+                            bitmap!!
+                        )
+                    val duration =
+                        PathUtil.getLocalVideoDuration(
+                            result
+                        )
+                    viewModel.sendVideoMsg(
+                        path = result,
+                        snapshotPath = firstUrl!!,
+                        duration = duration,
+                        userId = userId!!,
+                        messageList = messageList
+                    )
+                } else if (result.endsWith(".jpg")) {
+                    viewModel.sendImageMsg(
+                        path = result,
+                        userId = userId!!,
+                        messageList = messageList
+                    )
+                }
+            }
+        }
+
     @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onViewCreated(savedInstanceState: Bundle?) {
         BarUtils.setStatusBarLightMode(this, true)
@@ -190,6 +232,17 @@ open class ChatActivity :
             mChatFileTypeAdapter.setOnItemClickListener(object :
                 BaseRecyclerViewAdapterV2.OnItemClickListener<MessageTheme> {
                 override fun onItemClick(itemView: View, item: MessageTheme, position: Int?) {
+                    when (item.title) {
+                        "拍摄" -> {
+                            resultLauncher.launch(
+                                Intent(
+                                    this@ChatActivity,
+                                    CameraActivity::class.java
+                                )
+                            )
+                            return
+                        }
+                    }
                     item.openPictureSelector(this@ChatActivity) {
                         it.forEach { photo ->
                             val path = photo.uri

@@ -78,7 +78,8 @@ class MessageTheme(
 //                        showToast("已取消拍照")
 //                    }
 //                }
-                CameraActivity.show()
+//                CameraActivity.show()
+
             }
             "文件" -> {
 //                mActivityResultLauncherUtils.launchVideoPick()

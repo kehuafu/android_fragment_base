@@ -1,6 +1,7 @@
 package com.example.demo.chat.widget.camera
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -10,6 +11,7 @@ import android.os.IBinder
 import android.view.MotionEvent
 import android.view.View
 import com.blankj.utilcode.util.FileUtils
+import com.example.demo.R
 import com.example.demo.databinding.FragmentCameraBinding
 import com.example.demo.main.mvvm.MainState
 import com.example.demo.main.mvvm.MainViewModel
@@ -96,7 +98,13 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
                 deleteTempFile()
             }
             tvSendPicture.setOnClickListener {
-
+                val resultIntent = Intent().apply { putExtra("filePath", mFilePath) }
+                requireActivity().setResult(Activity.RESULT_OK, resultIntent)
+                requireActivity().finish()
+                requireActivity().overridePendingTransition(
+                    R.anim.activity_in_bottom,
+                    R.anim.activity_out_top
+                )
             }
         }
     }
