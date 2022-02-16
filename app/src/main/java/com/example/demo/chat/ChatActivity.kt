@@ -233,45 +233,51 @@ open class ChatActivity :
                 BaseRecyclerViewAdapterV2.OnItemClickListener<MessageTheme> {
                 override fun onItemClick(itemView: View, item: MessageTheme, position: Int?) {
                     when (item.title) {
+                        "相册" -> {
+                            item.openPictureSelector(this@ChatActivity) {
+                                it.forEach { photo ->
+                                    val path = photo.uri
+                                    if (photo.isVideo) {
+                                        val bitmap =
+                                            PathUtil.voidToFirstBitmap(path)
+                                        val firstUrl =
+                                            PathUtil.bitmapToStringPath(
+                                                this@ChatActivity,
+                                                bitmap!!
+                                            )
+                                        val duration =
+                                            PathUtil.getLocalVideoDuration(
+                                                photo.uri
+                                            )
+                                        viewModel.sendVideoMsg(
+                                            path = path,
+                                            snapshotPath = firstUrl!!,
+                                            duration = duration,
+                                            userId = userId!!,
+                                            messageList = messageList
+                                        )
+                                    } else {
+                                        viewModel.sendImageMsg(
+                                            path = path,
+                                            userId = userId!!,
+                                            messageList = messageList
+                                        )
+                                    }
+                                }
+                            }
+                        }
                         "拍摄" -> {
+                            //系统相机
+//                            PhotoSelector.takePhoto(this@ChatActivity) {
+//                                HzxLoger.HzxLog("PhotoSelector--->" + it!!.absolutePath)
+//                            }
+                            //自定义相机
                             resultLauncher.launch(
                                 Intent(
                                     this@ChatActivity,
                                     CameraActivity::class.java
                                 )
                             )
-                            return
-                        }
-                    }
-                    item.openPictureSelector(this@ChatActivity) {
-                        it.forEach { photo ->
-                            val path = photo.uri
-                            if (photo.isVideo) {
-                                val bitmap =
-                                    PathUtil.voidToFirstBitmap(path)
-                                val firstUrl =
-                                    PathUtil.bitmapToStringPath(
-                                        this@ChatActivity,
-                                        bitmap!!
-                                    )
-                                val duration =
-                                    PathUtil.getLocalVideoDuration(
-                                        photo.uri
-                                    )
-                                viewModel.sendVideoMsg(
-                                    path = path,
-                                    snapshotPath = firstUrl!!,
-                                    duration = duration,
-                                    userId = userId!!,
-                                    messageList = messageList
-                                )
-                            } else {
-                                viewModel.sendImageMsg(
-                                    path = path,
-                                    userId = userId!!,
-                                    messageList = messageList
-                                )
-                            }
                         }
                     }
                 }

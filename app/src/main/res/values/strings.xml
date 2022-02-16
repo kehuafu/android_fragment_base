@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">高仿微信</string>
-    <string name="one_more_press_2_back">再按一次返回桌面</string>
+    <string name="app_name" translatable="false">ChatIM</string>
+    <string name="one_more_press_2_back" translatable="false">再按一次返回桌面</string>
 </resources>

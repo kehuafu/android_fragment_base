@@ -59,30 +59,9 @@ class MessageTheme(
     }
 
     fun openPictureSelector(context: Context, result: (photos: List<Photo>) -> Unit) {
-        when (title) {
-            "相册" -> {
-                PhotoSelector.openPictureSelector(context) { photos ->
-                    if (photos.isNullOrEmpty()) {
-//                        showToast("选择已被取消")
-                    } else {
-                        result.invoke(photos)
-                    }
-                }
-            }
-            "拍摄" -> {
-//                PhotoSelector.takePhoto(context as Activity) {
-//                    Log.e("PhotoSelector", "openPictureSelector: $it")
-//                    if (it != null) {
-//                        result.invoke(listOf(PhotoImpl(it.absolutePath)))
-//                    } else {
-//                        showToast("已取消拍照")
-//                    }
-//                }
-//                CameraActivity.show()
-
-            }
-            "文件" -> {
-//                mActivityResultLauncherUtils.launchVideoPick()
+        PhotoSelector.openPictureSelector(context) { photos ->
+            if (photos != null) {
+                result.invoke(photos)
             }
         }
     }

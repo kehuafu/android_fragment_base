@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.IBinder
 import android.view.MotionEvent
 import android.view.View
@@ -21,6 +22,7 @@ import com.kehuafu.base.core.ktx.loadImage
 import com.kehuafu.base.core.ktx.runOnMainThread
 import xyz.doikki.videoplayer.ijk.IjkPlayerFactory
 import java.io.FileNotFoundException
+import java.util.*
 
 class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainState>(),
     ServiceConnection, JewxonCameraService.PictureCallBack {
@@ -30,6 +32,14 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
     private var mService: JewxonCameraService? = null
     private var mJewxonService: Intent? = null
     private var mFilePath: String = ""
+    private lateinit var mRecorderVideoTimer: Timer
+
+    private var timeCountInMilliSeconds = 15000L //录制视频的最大时间为15秒
+    private lateinit var countDownTimer: CountDownTimer
+
+    companion object {
+        const val RECORDER_VIDEO_MAX_TIME = 15000L //录制视频的最大时间为15秒
+    }
 
     override fun onResume() {
         super.onResume()
@@ -60,9 +70,9 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
             }
 
             frameLayoutPhoto.setOnLongClickListener {
-                showToast("开始摄像")
                 mIsRecordingVideo = true
                 mService!!.startRecordingVideo(mAutoFitTextureView)
+                startTimer()
                 true
             }
 
@@ -71,19 +81,21 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
                     MotionEvent.ACTION_DOWN -> {
                         HzxLoger.HzxLog("ACTION_DOWN")
                     }
-                    MotionEvent.ACTION_UP -> {
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
                         HzxLoger.HzxLog("ACTION_UP")
                         if (mIsRecordingVideo) {
                             mService!!.stopRecordingVideo(mAutoFitTextureView)
                             mIsRecordingVideo = false
+                            stopCountDownTimer()
                         }
                     }
-                    MotionEvent.ACTION_CANCEL -> {
-                        if (mIsRecordingVideo) {
-                            mService!!.stopRecordingVideo(mAutoFitTextureView)
-                            mIsRecordingVideo = false
-                        }
-                    }
+//                    MotionEvent.ACTION_CANCEL -> {
+//                        if (mIsRecordingVideo) {
+//                            mService!!.stopRecordingVideo(mAutoFitTextureView)
+//                            mIsRecordingVideo = false
+//                            stopCountDownTimer()
+//                        }
+//                    }
                 }
                 false
             }
@@ -96,6 +108,7 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
                     mAutoFitTextureView.visibility = View.VISIBLE
                 }
                 deleteTempFile()
+                stopTimer()
             }
             tvSendPicture.setOnClickListener {
                 val resultIntent = Intent().apply { putExtra("filePath", mFilePath) }
@@ -107,6 +120,56 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
                 )
             }
         }
+    }
+
+    private fun startTimer() {
+        withViewBinding {
+            circleProgress.scaleX = 1.3F
+            circleProgress.scaleY = 1.3F
+            frameLayoutVideo.scaleX = 1.3F
+            frameLayoutVideo.scaleY = 1.3F
+            frameLayoutPhoto.scaleX = 0.5F
+            frameLayoutPhoto.scaleY = 0.5F
+        }
+        startCountDownTimer()
+    }
+
+    private fun stopTimer() {
+        withViewBinding {
+            circleProgress.scaleX = 1.0F
+            circleProgress.scaleY = 1.0F
+            frameLayoutVideo.scaleX = 1.0F
+            frameLayoutVideo.scaleY = 1.0F
+            frameLayoutPhoto.scaleX = 1.0F
+            frameLayoutPhoto.scaleY = 1.0F
+            circleProgress.progress = 0
+        }
+        stopCountDownTimer()
+    }
+
+    private fun startCountDownTimer() {
+        countDownTimer = object : CountDownTimer(RECORDER_VIDEO_MAX_TIME, 1000) {
+            override fun onTick(millisUntilProgress: Long) {
+                val currentM = (millisUntilProgress / 1000).toInt()
+                val maxM = (RECORDER_VIDEO_MAX_TIME / 1000).toInt()
+                viewBinding.circleProgress.progress =
+                    100 - (100 / maxM) * (currentM + 1)
+            }
+
+            override fun onFinish() {
+                stopTimer()
+                if (mIsRecordingVideo) {
+                    mService!!.stopRecordingVideo(viewBinding.mAutoFitTextureView)
+                    mIsRecordingVideo = false
+                }
+            }
+
+        }
+        countDownTimer.start()
+    }
+
+    private fun stopCountDownTimer() {
+        countDownTimer.cancel()
     }
 
     private fun deleteTempFile() {
@@ -197,6 +260,7 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
                 }
             }
             deleteTempFile()
+            stopTimer()
             return true
         }
         return false
