@@ -104,8 +104,6 @@ public class JewxonCameraService extends Service {
     private Handler mBackgroundHandler;
     private Semaphore mCameraOpenCloseLock = new Semaphore(1);
     private TextureView mTextureView;
-
-
     private File mMFile;
 
     private void initCamera() {

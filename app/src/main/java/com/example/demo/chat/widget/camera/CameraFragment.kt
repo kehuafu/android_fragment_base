@@ -35,7 +35,7 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
     private lateinit var mRecorderVideoTimer: Timer
 
     private var timeCountInMilliSeconds = 15000L //录制视频的最大时间为15秒
-    private lateinit var countDownTimer: CountDownTimer
+    private var countDownTimer: CountDownTimer? = null
 
     companion object {
         const val RECORDER_VIDEO_MAX_TIME = 15000L //录制视频的最大时间为15秒
@@ -66,6 +66,7 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
                 mIsBackCamera = !mIsBackCamera
             }
             frameLayoutPhoto.setOnClickListener {
+                mIsRecordingVideo = false
                 mService!!.takePicture()
             }
 
@@ -108,7 +109,9 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
                     mAutoFitTextureView.visibility = View.VISIBLE
                 }
                 deleteTempFile()
-                stopTimer()
+                if (mIsRecordingVideo) {
+                    stopTimer()
+                }
             }
             tvSendPicture.setOnClickListener {
                 val resultIntent = Intent().apply { putExtra("filePath", mFilePath) }
@@ -165,11 +168,13 @@ class CameraFragment : BaseFragment<FragmentCameraBinding, MainViewModel, MainSt
             }
 
         }
-        countDownTimer.start()
+        countDownTimer!!.start()
     }
 
     private fun stopCountDownTimer() {
-        countDownTimer.cancel()
+        if (countDownTimer != null) {
+            countDownTimer!!.cancel()
+        }
     }
 
     private fun deleteTempFile() {
